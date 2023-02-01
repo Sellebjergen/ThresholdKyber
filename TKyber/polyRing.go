@@ -1,45 +1,155 @@
 package TKyber
 
-import "ThresholdKyber.com/m/kyber"
-
 type polyRing struct {
 	q   int
-	mod *kyber.Poly
+	mod *Polynomial
+}
+
+type Polynomial struct {
+	Coeffs []int32
 }
 
 func (*polyRing) init() *polyRing {
 	rq := &polyRing{
 		q:   3329,
-		mod: getModuloPoly(),
+		mod: getModulusPoly(),
 	}
 
 	return rq
 }
 
-func (*polyRing) add() {
+func (r *polyRing) add(a, b *Polynomial) *Polynomial {
+	out := make([]int32, max(len(a.Coeffs), len(b.Coeffs)))
+	for i, coef := range a.Coeffs {
+		out[i] += coef
+	}
+	for i, coef := range b.Coeffs {
+		out[i] += coef
+	}
 
+	pre_reduce := Polynomial{Coeffs: out}
+	return r.reduce(pre_reduce)
 }
 
-func (*polyRing) sub() {
+func (r *polyRing) sub(a, b *Polynomial) *Polynomial {
+	out := make([]int32, max(len(a.Coeffs), len(b.Coeffs)))
+	for i, coef := range a.Coeffs {
+		out[i] += coef
+	}
+	for i, coef := range b.Coeffs {
+		out[i] -= coef
+	}
 
+	pre_reduce := Polynomial{Coeffs: out}
+	return r.reduce(pre_reduce)
 }
 
-func (*polyRing) mult() {
+func (r *polyRing) mult(a, b *Polynomial) *Polynomial {
+	out := make([]int32, len(a.Coeffs)+len(b.Coeffs)-1)
 
+	for i := 0; i < len(a.Coeffs); i++ {
+		for j := 0; j < len(b.Coeffs); j++ {
+			out[i+j] += a.Coeffs[i] * b.Coeffs[j]
+		}
+	}
+
+	pre_reduce := Polynomial{Coeffs: out}
+
+	return r.reduce(pre_reduce)
 }
 
-func (*polyRing) polynomialLongDivision(pol kyber.Poly) {
+func (r *polyRing) mult_const(a *Polynomial, c int32) *Polynomial {
+	out := make([]int32, len(a.Coeffs))
+	for i := 0; i < len(a.Coeffs); i++ {
+		out[i] = a.Coeffs[i] * c
+	}
+	pre_reduce := Polynomial{Coeffs: out}
+
+	return r.reduce(pre_reduce)
+}
+
+func (r *polyRing) polynomialLongDivision(pol Polynomial) {
 	// TODO
 }
 
-func (*polyRing) syntheticLongDivison(pol kyber.Poly) {
+func (r *polyRing) rem_syntheticLongDivison(pol Polynomial) *Polynomial {
+	if r.mod.getDeg() > pol.getDeg() {
+		return &pol
+	}
 
+	out := Reverse(pol.Coeffs)
+	divisor := Reverse(r.mod.Coeffs)
+	normalizer := divisor[0]
+	for i := 0; i < pol.getDeg()-r.mod.getDeg()+1; i++ {
+		out[i] /= normalizer
+		coef := out[i]
+		if coef != 0 {
+			for j := 1; j < len(divisor); j++ {
+				out[i+j] += -divisor[j] * coef
+			}
+		}
+	}
+	final := Reverse(out)
+	return &Polynomial{Coeffs: final[:len(divisor)-1]}
 }
 
-func getModuloPoly() *kyber.Poly {
-	res := [256]uint16{}
+func (r *polyRing) reduce(pol Polynomial) *Polynomial {
+	rem := r.rem_syntheticLongDivison(pol)
+	out := rem
+	// Compute mod q for each coeff
+	for i := 0; i < len(out.Coeffs); i++ {
+		out.Coeffs[i] = out.Coeffs[i] % int32(r.q) // ALERT, NOT EUCLIDEAN MODULO
+	}
+	return trimPoly(out)
+}
+
+func getModulusPoly() *Polynomial {
+	res := make([]int32, 256)
 	res[0] = 1
 	res[255] = 1
 
-	return &kyber.Poly{Coeffs: res}
+	return &Polynomial{Coeffs: res}
+}
+
+/* func (p *Polynomial) toKyberPoly() *kyber.Poly {
+	return &kyber.Poly{Coeffs: *(*[256]uint16)(p.Coeffs)}
+} */
+
+func (p *Polynomial) getDeg() int {
+	return len(p.Coeffs)
+}
+
+func max(x, y int) int {
+	if x < y {
+		return y
+	}
+	return x
+}
+
+func trimPoly(p *Polynomial) *Polynomial {
+	coeffs := p.Coeffs
+	for coeffs[len(coeffs)-1] == 0 {
+		coeffs = coeffs[:len(coeffs)-1]
+	}
+	return &Polynomial{Coeffs: coeffs}
+}
+
+func (p *Polynomial) Copy() *Polynomial {
+	out_coef := make([]int32, len(p.Coeffs))
+	copy(out_coef, p.Coeffs)
+	return &Polynomial{Coeffs: out_coef}
+}
+
+func (p *Polynomial) lead() int32 {
+	return p.Coeffs[len(p.Coeffs)-1]
+}
+
+func Reverse(input []int32) []int32 {
+	var output []int32
+
+	for i := len(input) - 1; i >= 0; i-- {
+		output = append(output, input[i])
+	}
+
+	return output
 }
