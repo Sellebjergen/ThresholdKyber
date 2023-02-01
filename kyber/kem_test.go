@@ -104,7 +104,7 @@ func doTestKEMInvalidSkA(t *testing.T, p *ParameterSet) {
 		require.NoError(err, "KEMEncrypt()")
 
 		// Replace secret key with random values.
-		_, err = rand.Read(skA.sk.packed)
+		_, err = rand.Read(skA.sk.Packed)
 		require.NoError(err, "rand.Read()")
 
 		// Alice uses Bob's response to get her secret key.

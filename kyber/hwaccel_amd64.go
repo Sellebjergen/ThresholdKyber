@@ -5,6 +5,7 @@
 // Commons "CC0" public domain dedication. See LICENSE or
 // <http://creativecommons.org/publicdomain/zero/1.0/> for full details.
 
+//go:build amd64 && !gccgo && !noasm && go1.10
 // +build amd64,!gccgo,!noasm,go1.10
 
 package kyber
@@ -216,7 +217,7 @@ func invnttYMM(a *[kyberN]uint16) {
 	invnttAVX2(&a[0], &zetasInvExp[0])
 }
 
-func pointwiseAccYMM(p *poly, a, b *polyVec) {
+func pointwiseAccYMM(p *poly, a, b *PolyVec) {
 	// Unlike the C code, a polyVec won't have the polys in contigious
 	// memory.  So each assembly function takes vectors of pointers to
 	// each polyvec's polys.

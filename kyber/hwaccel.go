@@ -24,7 +24,7 @@ type hwaccelImpl struct {
 	name           string
 	nttFn          func(*[kyberN]uint16)
 	invnttFn       func(*[kyberN]uint16)
-	pointwiseAccFn func(*poly, *polyVec, *polyVec)
+	pointwiseAccFn func(*poly, *PolyVec, *PolyVec)
 	cbdFn          func(*poly, []byte, int)
 }
 

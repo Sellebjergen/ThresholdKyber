@@ -7,12 +7,12 @@
 
 package kyber
 
-type polyVec struct {
+type PolyVec struct {
 	vec []*poly
 }
 
 // Compress and serialize vector of polynomials.
-func (v *polyVec) compress(r []byte) {
+func (v *PolyVec) compress(r []byte) {
 	var off int
 	for _, vec := range v.vec {
 		for j := 0; j < kyberN/8; j++ {
@@ -39,7 +39,7 @@ func (v *polyVec) compress(r []byte) {
 
 // De-serialize and decompress vector of polynomials; approximate inverse of
 // polyVec.compress().
-func (v *polyVec) decompress(a []byte) {
+func (v *PolyVec) decompress(a []byte) {
 	var off int
 	for _, vec := range v.vec {
 		for j := 0; j < kyberN/8; j++ {
@@ -57,51 +57,58 @@ func (v *polyVec) decompress(a []byte) {
 }
 
 // Serialize vector of polynomials.
-func (v *polyVec) toBytes(r []byte) {
+func (v *PolyVec) toBytes(r []byte) {
 	for i, p := range v.vec {
 		p.toBytes(r[i*polySize:])
 	}
 }
 
 // De-serialize vector of polynomials; inverse of polyVec.toBytes().
-func (v *polyVec) fromBytes(a []byte) {
+func (v *PolyVec) fromBytes(a []byte) {
 	for i, p := range v.vec {
 		p.fromBytes(a[i*polySize:])
 	}
 }
 
 // Apply forward NTT to all elements of a vector of polynomials.
-func (v *polyVec) ntt() {
+func (v *PolyVec) ntt() {
 	for _, p := range v.vec {
 		p.ntt()
 	}
 }
 
 // Apply inverse NTT to all elements of a vector of polynomials.
-func (v *polyVec) invntt() {
+func (v *PolyVec) invntt() {
 	for _, p := range v.vec {
 		p.invntt()
 	}
 }
 
 // Pointwise multiply elements of a and b and accumulate into p.
-func (p *poly) pointwiseAcc(a, b *polyVec) {
+func (p *poly) pointwiseAcc(a, b *PolyVec) {
 	hardwareAccelImpl.pointwiseAccFn(p, a, b)
 }
 
 // Add vectors of polynomials.
-func (v *polyVec) add(a, b *polyVec) {
+func (v *PolyVec) Add(a, b *PolyVec) {
 	for i, p := range v.vec {
 		p.add(a.vec[i], b.vec[i])
 	}
 }
 
+// Sub vectors of polynomials.
+func (v *PolyVec) Sub(a, b *PolyVec) {
+	for i, p := range v.vec {
+		p.sub(a.vec[i], b.vec[i])
+	}
+}
+
 // Get compressed and serialized size in bytes.
-func (v *polyVec) compressedSize() int {
+func (v *PolyVec) compressedSize() int {
 	return len(v.vec) * compressedCoeffSize
 }
 
-func pointwiseAccRef(p *poly, a, b *polyVec) {
+func pointwiseAccRef(p *poly, a, b *PolyVec) {
 	for j := 0; j < kyberN; j++ {
 		t := montgomeryReduce(4613 * uint32(b.vec[0].coeffs[j])) // 4613 = 2^{2*18} % q
 		p.coeffs[j] = montgomeryReduce(uint32(a.vec[0].coeffs[j]) * uint32(t))

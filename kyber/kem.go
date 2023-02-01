@@ -33,7 +33,7 @@ var (
 // PrivateKey is a Kyber private key.
 type PrivateKey struct {
 	PublicKey
-	sk *indcpaSecretKey
+	sk *IndcpaSecretKey
 	z  []byte
 }
 
@@ -42,7 +42,7 @@ func (sk *PrivateKey) Bytes() []byte {
 	p := sk.PublicKey.p
 
 	b := make([]byte, 0, p.secretKeySize)
-	b = append(b, sk.sk.packed...)
+	b = append(b, sk.sk.Packed...)
 	b = append(b, sk.PublicKey.pk.packed...)
 	b = append(b, sk.PublicKey.pk.h[:]...)
 	b = append(b, sk.z...)
@@ -57,9 +57,9 @@ func (p *ParameterSet) PrivateKeyFromBytes(b []byte) (*PrivateKey, error) {
 	}
 
 	sk := new(PrivateKey)
-	sk.sk = new(indcpaSecretKey)
+	sk.sk = new(IndcpaSecretKey)
 	sk.z = make([]byte, SymSize)
-	sk.PublicKey.pk = new(indcpaPublicKey)
+	sk.PublicKey.pk = new(IndcpaPublicKey)
 	sk.PublicKey.p = p
 
 	// De-serialize the public key first.
@@ -84,7 +84,7 @@ func (p *ParameterSet) PrivateKeyFromBytes(b []byte) (*PrivateKey, error) {
 
 // PublicKey is a Kyber public key.
 type PublicKey struct {
-	pk *indcpaPublicKey
+	pk *IndcpaPublicKey
 	p  *ParameterSet
 }
 
@@ -96,7 +96,7 @@ func (pk *PublicKey) Bytes() []byte {
 // PublicKeyFromBytes deserializes a byte serialized PublicKey.
 func (p *ParameterSet) PublicKeyFromBytes(b []byte) (*PublicKey, error) {
 	pk := &PublicKey{
-		pk: new(indcpaPublicKey),
+		pk: new(IndcpaPublicKey),
 		p:  p,
 	}
 
