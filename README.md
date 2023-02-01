@@ -1,2 +1,0 @@
-# ThresholdKyber
-Master thesis
