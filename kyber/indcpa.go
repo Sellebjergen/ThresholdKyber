@@ -138,7 +138,7 @@ func (sk *indcpaSecretKey) fromBytes(p *ParameterSet, b []byte) error {
 
 // Generates public and private key for the CPA-secure public-key encryption
 // scheme underlying Kyber.
-func (p *ParameterSet) indcpaKeyPair(rng io.Reader) (*indcpaPublicKey, *indcpaSecretKey, error) {
+func (p *ParameterSet) IndcpaKeyPair(rng io.Reader) (*indcpaPublicKey, *indcpaSecretKey, error) {
 	buf := make([]byte, SymSize+SymSize)
 	if _, err := io.ReadFull(rng, buf[:SymSize]); err != nil {
 		return nil, nil, err
@@ -193,7 +193,7 @@ func (p *ParameterSet) indcpaKeyPair(rng io.Reader) (*indcpaPublicKey, *indcpaSe
 
 // Encryption function of the CPA-secure public-key encryption scheme
 // underlying Kyber.
-func (p *ParameterSet) indcpaEncrypt(c, m []byte, pk *indcpaPublicKey, coins []byte) {
+func (p *ParameterSet) IndcpaEncrypt(c, m []byte, pk *indcpaPublicKey, coins []byte) {
 	var k, v, epp poly
 	var seed [SymSize]byte
 
@@ -244,7 +244,7 @@ func (p *ParameterSet) indcpaEncrypt(c, m []byte, pk *indcpaPublicKey, coins []b
 
 // Decryption function of the CPA-secure public-key encryption scheme
 // underlying Kyber.
-func (p *ParameterSet) indcpaDecrypt(m, c []byte, sk *indcpaSecretKey) {
+func (p *ParameterSet) IndcpaDecrypt(m, c []byte, sk *indcpaSecretKey) {
 	var v, mp poly
 
 	skpv, bp := p.allocPolyVec(), p.allocPolyVec()

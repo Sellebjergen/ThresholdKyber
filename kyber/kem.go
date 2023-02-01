@@ -113,7 +113,7 @@ func (p *ParameterSet) GenerateKeyPair(rng io.Reader) (*PublicKey, *PrivateKey, 
 	kp := new(PrivateKey)
 
 	var err error
-	if kp.PublicKey.pk, kp.sk, err = p.indcpaKeyPair(rng); err != nil {
+	if kp.PublicKey.pk, kp.sk, err = p.IndcpaKeyPair(rng); err != nil {
 		return nil, nil, err
 	}
 
@@ -141,7 +141,7 @@ func (pk *PublicKey) KEMEncrypt(rng io.Reader) (cipherText []byte, sharedSecret 
 	kr := hKr.Sum(nil)
 
 	cipherText = make([]byte, pk.p.cipherTextSize)
-	pk.p.indcpaEncrypt(cipherText, buf[:], pk.pk, kr[SymSize:]) // coins are in kr[SymSize:]
+	pk.p.IndcpaEncrypt(cipherText, buf[:], pk.pk, kr[SymSize:]) // coins are in kr[SymSize:]
 
 	hc := sha3.Sum256(cipherText)
 	copy(kr[SymSize:], hc[:]) // overwrite coins in kr with H(c)
@@ -165,13 +165,13 @@ func (sk *PrivateKey) KEMDecrypt(cipherText []byte) (sharedSecret []byte) {
 	if len(cipherText) != p.CipherTextSize() {
 		panic(ErrInvalidCipherTextSize)
 	}
-	p.indcpaDecrypt(buf[:SymSize], cipherText, sk.sk)
+	p.IndcpaDecrypt(buf[:SymSize], cipherText, sk.sk)
 
 	copy(buf[SymSize:], sk.PublicKey.pk.h[:]) // Multitarget countermeasure for coins + contributory KEM
 	kr := sha3.Sum512(buf[:])
 
 	cmp := make([]byte, p.cipherTextSize)
-	p.indcpaEncrypt(cmp, buf[:SymSize], sk.PublicKey.pk, kr[SymSize:]) // coins are in kr[SymSize:]
+	p.IndcpaEncrypt(cmp, buf[:SymSize], sk.PublicKey.pk, kr[SymSize:]) // coins are in kr[SymSize:]
 
 	hc := sha3.Sum256(cipherText)
 	copy(kr[SymSize:], hc[:]) // overwrite coins in kr with H(c)
