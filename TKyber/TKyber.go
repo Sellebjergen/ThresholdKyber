@@ -18,5 +18,5 @@ func PartDec() {
 
 func (r *polyRing) Combine(ct []byte, d_is []*share) *kyber.Poly {
 	r.Rec(d_is) // Can't use return value at the moment
-	return nil  //pol.toKyberPoly()
+	return nil
 }
