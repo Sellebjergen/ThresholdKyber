@@ -31,14 +31,14 @@ func unpackPublicKey(pk *PolyVec, seed, packedPk []byte) {
 
 // Serialize the ciphertext as concatenation of the compressed and serialized
 // vector of polynomials b and the compressed and serialized polynomial v.
-func packCiphertext(r []byte, b *PolyVec, v *poly) {
+func packCiphertext(r []byte, b *PolyVec, v *Poly) {
 	b.compress(r)
 	v.compress(r[b.compressedSize():])
 }
 
 // De-serialize and decompress ciphertext from a byte array; approximate
 // inverse of packCiphertext.
-func unpackCiphertext(b *PolyVec, v *poly, c []byte) {
+func unpackCiphertext(b *PolyVec, v *Poly, c []byte) {
 	b.decompress(c)
 	v.decompress(c[b.compressedSize():])
 }
@@ -84,7 +84,7 @@ func genMatrix(a []PolyVec, seed []byte, transposed bool) {
 			for ctr, pos, maxPos := 0, 0, len(buf); ctr < kyberN; {
 				val := (uint16(buf[pos]) | (uint16(buf[pos+1]) << 8)) & 0x1fff
 				if val < kyberQ {
-					p.coeffs[ctr] = val
+					p.Coeffs[ctr] = val
 					ctr++
 				}
 				if pos += 2; pos == maxPos {
@@ -194,7 +194,7 @@ func (p *ParameterSet) IndcpaKeyPair(rng io.Reader) (*IndcpaPublicKey, *IndcpaSe
 // Encryption function of the CPA-secure public-key encryption scheme
 // underlying Kyber.
 func (p *ParameterSet) IndcpaEncrypt(c, m []byte, pk *IndcpaPublicKey, coins []byte) {
-	var k, v, epp poly
+	var k, v, epp Poly
 	var seed [SymSize]byte
 
 	pkpv := p.AllocPolyVec()
@@ -245,7 +245,7 @@ func (p *ParameterSet) IndcpaEncrypt(c, m []byte, pk *IndcpaPublicKey, coins []b
 // Decryption function of the CPA-secure public-key encryption scheme
 // underlying Kyber.
 func (p *ParameterSet) IndcpaDecrypt(m, c []byte, sk *IndcpaSecretKey) {
-	var v, mp poly
+	var v, mp Poly
 
 	skpv, bp := p.AllocPolyVec(), p.AllocPolyVec()
 	unpackCiphertext(&bp, &v, c)
@@ -270,9 +270,9 @@ func (p *ParameterSet) allocMatrix() []PolyVec {
 }
 
 func (p *ParameterSet) AllocPolyVec() PolyVec {
-	vec := make([]*poly, 0, p.k)
+	vec := make([]*Poly, 0, p.k)
 	for i := 0; i < p.k; i++ {
-		vec = append(vec, new(poly))
+		vec = append(vec, new(Poly))
 	}
 
 	return PolyVec{vec}

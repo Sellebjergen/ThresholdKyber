@@ -217,7 +217,7 @@ func invnttYMM(a *[kyberN]uint16) {
 	invnttAVX2(&a[0], &zetasInvExp[0])
 }
 
-func pointwiseAccYMM(p *poly, a, b *PolyVec) {
+func pointwiseAccYMM(p *Poly, a, b *PolyVec) {
 	// Unlike the C code, a polyVec won't have the polys in contigious
 	// memory.  So each assembly function takes vectors of pointers to
 	// each polyvec's polys.
@@ -226,24 +226,24 @@ func pointwiseAccYMM(p *poly, a, b *PolyVec) {
 
 	var aVec, bVec [4]*uint16 // k is in {2,3,4}.
 	for i := range a.vec {
-		aVec[i] = &a.vec[i].coeffs[0]
-		bVec[i] = &b.vec[i].coeffs[0]
+		aVec[i] = &a.vec[i].Coeffs[0]
+		bVec[i] = &b.vec[i].Coeffs[0]
 	}
 
 	switch len(a.vec) {
 	case 2:
-		pointwiseAccK2AVX2(&p.coeffs[0], &aVec[0], &bVec[0])
+		pointwiseAccK2AVX2(&p.Coeffs[0], &aVec[0], &bVec[0])
 	case 3:
-		pointwiseAccK3AVX2(&p.coeffs[0], &aVec[0], &bVec[0])
+		pointwiseAccK3AVX2(&p.Coeffs[0], &aVec[0], &bVec[0])
 	case 4:
-		pointwiseAccK4AVX2(&p.coeffs[0], &aVec[0], &bVec[0])
+		pointwiseAccK4AVX2(&p.Coeffs[0], &aVec[0], &bVec[0])
 	}
 }
 
-func cbdYMM(p *poly, buf []byte, eta int) {
+func cbdYMM(p *Poly, buf []byte, eta int) {
 	switch eta {
 	case 4:
-		cbdEta4AVX2(&p.coeffs[0], &buf[0])
+		cbdEta4AVX2(&p.Coeffs[0], &buf[0])
 	default:
 		cbdRef(p, buf, eta)
 	}

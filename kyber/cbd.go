@@ -19,11 +19,11 @@ func loadLittleEndian(x []byte, bytes int) uint64 {
 // Given an array of uniformly random bytes, compute polynomial with
 // coefficients distributed according to a centered binomial distribution
 // with parameter eta.
-func (p *poly) cbd(buf []byte, eta int) {
+func (p *Poly) cbd(buf []byte, eta int) {
 	hardwareAccelImpl.cbdFn(p, buf, eta)
 }
 
-func cbdRef(p *poly, buf []byte, eta int) {
+func cbdRef(p *Poly, buf []byte, eta int) {
 	switch eta {
 	case 3:
 		var a, b [4]uint32
@@ -43,10 +43,10 @@ func cbdRef(p *poly, buf []byte, eta int) {
 			a[3] = (d >> 18) & 0x7
 			b[3] = (d >> 21)
 
-			p.coeffs[4*i+0] = uint16(a[0] + kyberQ - b[0])
-			p.coeffs[4*i+1] = uint16(a[1] + kyberQ - b[1])
-			p.coeffs[4*i+2] = uint16(a[2] + kyberQ - b[2])
-			p.coeffs[4*i+3] = uint16(a[3] + kyberQ - b[3])
+			p.Coeffs[4*i+0] = uint16(a[0] + kyberQ - b[0])
+			p.Coeffs[4*i+1] = uint16(a[1] + kyberQ - b[1])
+			p.Coeffs[4*i+2] = uint16(a[2] + kyberQ - b[2])
+			p.Coeffs[4*i+3] = uint16(a[3] + kyberQ - b[3])
 		}
 	case 4:
 		var a, b [4]uint32
@@ -66,10 +66,10 @@ func cbdRef(p *poly, buf []byte, eta int) {
 			a[3] = (d >> 24) & 0xf
 			b[3] = (d >> 28)
 
-			p.coeffs[4*i+0] = uint16(a[0] + kyberQ - b[0])
-			p.coeffs[4*i+1] = uint16(a[1] + kyberQ - b[1])
-			p.coeffs[4*i+2] = uint16(a[2] + kyberQ - b[2])
-			p.coeffs[4*i+3] = uint16(a[3] + kyberQ - b[3])
+			p.Coeffs[4*i+0] = uint16(a[0] + kyberQ - b[0])
+			p.Coeffs[4*i+1] = uint16(a[1] + kyberQ - b[1])
+			p.Coeffs[4*i+2] = uint16(a[2] + kyberQ - b[2])
+			p.Coeffs[4*i+3] = uint16(a[3] + kyberQ - b[3])
 		}
 	case 5:
 		var a, b [4]uint64
@@ -89,10 +89,10 @@ func cbdRef(p *poly, buf []byte, eta int) {
 			a[3] = (d >> 30) & 0x1f
 			b[3] = (d >> 35)
 
-			p.coeffs[4*i+0] = uint16(a[0] + kyberQ - b[0])
-			p.coeffs[4*i+1] = uint16(a[1] + kyberQ - b[1])
-			p.coeffs[4*i+2] = uint16(a[2] + kyberQ - b[2])
-			p.coeffs[4*i+3] = uint16(a[3] + kyberQ - b[3])
+			p.Coeffs[4*i+0] = uint16(a[0] + kyberQ - b[0])
+			p.Coeffs[4*i+1] = uint16(a[1] + kyberQ - b[1])
+			p.Coeffs[4*i+2] = uint16(a[2] + kyberQ - b[2])
+			p.Coeffs[4*i+3] = uint16(a[3] + kyberQ - b[3])
 		}
 	default:
 		panic("kyber: eta must be in {3,4,5}")
