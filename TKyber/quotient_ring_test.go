@@ -6,7 +6,7 @@ import (
 )
 
 // ================= Add tests =================
-func TestAdd(t *testing.T) { // Fails likely due to mod being regular and not euclid
+func TestAddQuotRing(t *testing.T) {
 	fx := &Polynomial{Coeffs: []int32{1, 0, 1}}
 	quot_ring := new(polyRing)
 	quot_ring.q = 32
@@ -23,7 +23,7 @@ func TestAdd(t *testing.T) { // Fails likely due to mod being regular and not eu
 }
 
 // ================= Mult tests =================
-func TestMul(t *testing.T) {
+func TestMultQuotRing(t *testing.T) {
 	fx := &Polynomial{Coeffs: []int32{1, 0, 1}}
 	quot_ring := new(polyRing)
 	quot_ring.q = 32
@@ -35,7 +35,24 @@ func TestMul(t *testing.T) {
 	res := quot_ring.mult(lhs, rhs)
 
 	if !reflect.DeepEqual(res.Coeffs, []int32{23, 15}) {
-		t.Errorf("Sub failed!")
+		t.Errorf("Mult failed!")
+	}
+}
+
+// ================= Mult w/ constant tests =================
+func TestMultConstQuotRing(t *testing.T) {
+	fx := &Polynomial{Coeffs: []int32{1, 0, 1}}
+	quot_ring := new(polyRing)
+	quot_ring.q = 32
+	quot_ring.mod = fx
+
+	lhs := &Polynomial{Coeffs: []int32{3, 17, 2, -3, 6}}
+	rhs := int32(3)
+
+	res := quot_ring.mult_const(lhs, rhs)
+
+	if !reflect.DeepEqual(res.Coeffs, []int32{21, 28}) {
+		t.Errorf("Mult const failed!")
 	}
 }
 
@@ -50,7 +67,6 @@ func TestReduce(t *testing.T) {
 	if !reflect.DeepEqual(quot_ring.reduce(to_reduce).Coeffs, []int32{3}) {
 		t.Errorf("Reduce failed!")
 	}
-
 }
 
 func TestReduceNegativeNumb(t *testing.T) {
@@ -60,7 +76,17 @@ func TestReduceNegativeNumb(t *testing.T) {
 	quot_ring.mod = fx
 	to_reduce := &Polynomial{Coeffs: []int32{-17, 38, -12, 1}}
 	if !reflect.DeepEqual(quot_ring.reduce(to_reduce).Coeffs, []int32{27, 5}) {
-		t.Errorf("Reduce failed!")
+		t.Errorf("Reduce failed for negative numbers!")
 	}
+}
 
+func TestReduceComplex(t *testing.T) {
+	fx := &Polynomial{Coeffs: []int32{1, 0, 0, 0, 0, 1}}
+	quot_ring := new(polyRing)
+	quot_ring.q = 32
+	quot_ring.mod = fx
+	to_reduce := &Polynomial{Coeffs: []int32{13, 2, 5, -1}}
+	if !reflect.DeepEqual(quot_ring.reduce(to_reduce).Coeffs, []int32{13, 2, 5, 31}) {
+		t.Errorf("Reduce failed for complex case!")
+	}
 }

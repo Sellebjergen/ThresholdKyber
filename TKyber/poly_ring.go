@@ -54,8 +54,11 @@ func (p *Polynomial) getDeg() int {
 
 func trimPoly(p *Polynomial) *Polynomial {
 	coeffs := p.Coeffs
-	for coeffs[len(coeffs)-1] == 0 {
+	for len(coeffs) > 0 && coeffs[len(coeffs)-1] == 0 {
 		coeffs = coeffs[:len(coeffs)-1]
+	}
+	if len(coeffs) == 0 {
+		return &Polynomial{Coeffs: []int32{0}}
 	}
 	return &Polynomial{Coeffs: coeffs}
 }

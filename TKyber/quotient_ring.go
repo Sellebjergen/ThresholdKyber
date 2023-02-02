@@ -31,7 +31,6 @@ func (r *polyRing) mult(a, b *Polynomial) *Polynomial {
 
 func (r *polyRing) mult_const(a *Polynomial, c int32) *Polynomial {
 	pre_reduce := mult_const(a, c)
-
 	return r.reduce(pre_reduce)
 }
 
@@ -39,9 +38,9 @@ func (r *polyRing) polynomialLongDivision(pol Polynomial) {
 	// TODO
 }
 
-func (r *polyRing) rem_syntheticLongDivison(pol Polynomial) *Polynomial {
+func (r *polyRing) syntheticLongDivison(pol Polynomial) (*Polynomial, *Polynomial) {
 	if r.mod.getDeg() > pol.getDeg() {
-		return &pol
+		return &Polynomial{Coeffs: []int32{0}}, &pol
 	}
 
 	out := Reverse(pol.Coeffs)
@@ -57,11 +56,11 @@ func (r *polyRing) rem_syntheticLongDivison(pol Polynomial) *Polynomial {
 		}
 	}
 	final := Reverse(out)
-	return &Polynomial{Coeffs: final[:len(divisor)-1]}
+	return &Polynomial{Coeffs: final[len(divisor)-1:]}, &Polynomial{Coeffs: final[:len(divisor)-1]}
 }
 
 func (r *polyRing) reduce(pol *Polynomial) *Polynomial {
-	rem := r.rem_syntheticLongDivison(*pol)
+	_, rem := r.syntheticLongDivison(*pol)
 	out := rem
 	// Compute mod q for each coeff
 	for i := 0; i < len(out.Coeffs); i++ {
