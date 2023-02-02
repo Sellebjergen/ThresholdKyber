@@ -126,13 +126,3 @@ func trimPoly(p *Polynomial) *Polynomial {
 	}
 	return &Polynomial{Coeffs: coeffs}
 }
-
-func (p *Polynomial) Copy() *Polynomial {
-	out_coef := make([]int32, len(p.Coeffs))
-	copy(out_coef, p.Coeffs)
-	return &Polynomial{Coeffs: out_coef}
-}
-
-func (p *Polynomial) lead() int32 {
-	return p.Coeffs[len(p.Coeffs)-1]
-}
