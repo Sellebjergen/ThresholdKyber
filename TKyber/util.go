@@ -1,5 +1,6 @@
 package TKyber
 
+// Regular max function for ints
 func max(x, y int) int {
 	if x < y {
 		return y
@@ -7,7 +8,8 @@ func max(x, y int) int {
 	return x
 }
 
-func mod(x, m int32) int32 {
+// Euclidean modulo function
+func euc_mod(x, m int32) int32 {
 	res := x % m
 	if res < 0 {
 		res += m
@@ -15,6 +17,7 @@ func mod(x, m int32) int32 {
 	return res
 }
 
+// Reverses slice of int32s
 func Reverse(input []int32) []int32 {
 	var output []int32
 
