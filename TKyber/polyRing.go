@@ -119,21 +119,6 @@ func (p *Polynomial) getDeg() int {
 	return len(p.Coeffs)
 }
 
-func max(x, y int) int {
-	if x < y {
-		return y
-	}
-	return x
-}
-
-func mod(x, m int32) int32 {
-	res := x % m
-	if res < 0 {
-		res += m
-	}
-	return res
-}
-
 func trimPoly(p *Polynomial) *Polynomial {
 	coeffs := p.Coeffs
 	for coeffs[len(coeffs)-1] == 0 {
@@ -150,14 +135,4 @@ func (p *Polynomial) Copy() *Polynomial {
 
 func (p *Polynomial) lead() int32 {
 	return p.Coeffs[len(p.Coeffs)-1]
-}
-
-func Reverse(input []int32) []int32 {
-	var output []int32
-
-	for i := len(input) - 1; i >= 0; i-- {
-		output = append(output, input[i])
-	}
-
-	return output
 }
