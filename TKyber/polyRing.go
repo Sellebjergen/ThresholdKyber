@@ -98,7 +98,7 @@ func (r *polyRing) reduce(pol Polynomial) *Polynomial {
 	out := rem
 	// Compute mod q for each coeff
 	for i := 0; i < len(out.Coeffs); i++ {
-		out.Coeffs[i] = out.Coeffs[i] % int32(r.q) // TODO: NOT EUCLIDEAN MODULO
+		out.Coeffs[i] = mod(out.Coeffs[i], int32(r.q)) // TODO: NOT EUCLIDEAN MODULO
 	}
 	return trimPoly(out)
 }
@@ -124,6 +124,14 @@ func max(x, y int) int {
 		return y
 	}
 	return x
+}
+
+func mod(x, m int32) int32 {
+	res := x % m
+	if res < 0 {
+		res += m
+	}
+	return res
 }
 
 func trimPoly(p *Polynomial) *Polynomial {
