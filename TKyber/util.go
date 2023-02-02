@@ -5,15 +5,18 @@ func max(x, y int) int {
 	if x < y {
 		return y
 	}
+
 	return x
 }
 
 // Euclidean modulo function
 func euc_mod(x, m int32) int32 {
 	res := x % m
+
 	if res < 0 {
 		res += m
 	}
+
 	return res
 }
 

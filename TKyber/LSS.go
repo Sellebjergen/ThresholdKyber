@@ -18,8 +18,10 @@ func Share(params kyber.ParameterSet, sk *kyber.IndcpaSecretKey) []*share {
 
 func (r *polyRing) Rec(d_is []*share) *Polynomial {
 	out := d_is[0].poly
+
 	for i := 1; i < len(d_is); i++ {
 		out = r.add(out, d_is[i].poly)
 	}
+
 	return out
 }
