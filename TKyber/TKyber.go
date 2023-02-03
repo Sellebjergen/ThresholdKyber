@@ -27,7 +27,9 @@ func Setup(params kyber.ParameterSet, n int, t int) (*kyber.IndcpaPublicKey, [][
 }
 
 func PartDec() {
-
+	samplePolyGaussian(3329, 256, 100) // TODO: Fix params
+	// Inner prod
+	// Return d_i
 }
 
 func (rq *quotRing) Combine(ct []byte, d_is []*Polynomial) *kyber.Poly {

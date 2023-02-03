@@ -49,8 +49,8 @@ func (rq *quotRing) SharePolynomial(toShare *Polynomial, n int) []*Polynomial {
 }
 
 func SampleUnifPolynomial(q int, deg int) *Polynomial {
-	coeffs := make([]int, deg)
-	for i := 0; i < deg; i++ {
+	coeffs := make([]int, deg+1)
+	for i := 0; i < deg+1; i++ {
 		coeffs[i] = rand.Intn(q) // TODO: Kyber params
 	}
 	return &Polynomial{Coeffs: coeffs}

@@ -1,6 +1,11 @@
 package TKyber
 
-import "ThresholdKyber.com/m/kyber"
+import (
+	"math"
+	"math/rand"
+
+	"ThresholdKyber.com/m/kyber"
+)
 
 type Polynomial struct {
 	Coeffs []int
@@ -86,4 +91,18 @@ func fromKyberPoly(p *kyber.Poly) *Polynomial {
 		new_coeff[i] = int(coef)
 	}
 	return &Polynomial{Coeffs: new_coeff}
+}
+
+func samplePolyGaussian(q int, deg int, sigma_flood int) *Polynomial {
+	coeffs_unrounded := make([]float64, deg+1)
+	for i := 0; i < deg+1; i++ {
+		coeffs_unrounded[i] = rand.NormFloat64() * float64(sigma_flood)
+	}
+
+	coeffs := make([]int, deg+1)
+	for i := 0; i < deg+1; i++ {
+		coeffs[i] = int(math.Round(coeffs_unrounded[i]))
+	}
+
+	return &Polynomial{Coeffs: coeffs}
 }
