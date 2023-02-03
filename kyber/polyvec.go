@@ -8,13 +8,13 @@
 package kyber
 
 type PolyVec struct {
-	vec []*Poly
+	Vec []*Poly
 }
 
 // Compress and serialize vector of polynomials.
 func (v *PolyVec) compress(r []byte) {
 	var off int
-	for _, vec := range v.vec {
+	for _, vec := range v.Vec {
 		for j := 0; j < kyberN/8; j++ {
 			var t [8]uint16
 			for k := 0; k < 8; k++ {
@@ -41,7 +41,7 @@ func (v *PolyVec) compress(r []byte) {
 // polyVec.compress().
 func (v *PolyVec) decompress(a []byte) {
 	var off int
-	for _, vec := range v.vec {
+	for _, vec := range v.Vec {
 		for j := 0; j < kyberN/8; j++ {
 			vec.Coeffs[8*j+0] = uint16((((uint32(a[off+11*j+0]) | ((uint32(a[off+11*j+1]) & 0x07) << 8)) * kyberQ) + 1024) >> 11)
 			vec.Coeffs[8*j+1] = uint16(((((uint32(a[off+11*j+1]) >> 3) | ((uint32(a[off+11*j+2]) & 0x3f) << 5)) * kyberQ) + 1024) >> 11)
@@ -58,28 +58,28 @@ func (v *PolyVec) decompress(a []byte) {
 
 // Serialize vector of polynomials.
 func (v *PolyVec) toBytes(r []byte) {
-	for i, p := range v.vec {
+	for i, p := range v.Vec {
 		p.toBytes(r[i*polySize:])
 	}
 }
 
 // De-serialize vector of polynomials; inverse of polyVec.toBytes().
 func (v *PolyVec) fromBytes(a []byte) {
-	for i, p := range v.vec {
+	for i, p := range v.Vec {
 		p.fromBytes(a[i*polySize:])
 	}
 }
 
 // Apply forward NTT to all elements of a vector of polynomials.
 func (v *PolyVec) ntt() {
-	for _, p := range v.vec {
+	for _, p := range v.Vec {
 		p.ntt()
 	}
 }
 
 // Apply inverse NTT to all elements of a vector of polynomials.
 func (v *PolyVec) invntt() {
-	for _, p := range v.vec {
+	for _, p := range v.Vec {
 		p.invntt()
 	}
 }
@@ -91,30 +91,30 @@ func (p *Poly) pointwiseAcc(a, b *PolyVec) {
 
 // Add vectors of polynomials.
 func (v *PolyVec) Add(a, b *PolyVec) {
-	for i, p := range v.vec {
-		p.add(a.vec[i], b.vec[i])
+	for i, p := range v.Vec {
+		p.add(a.Vec[i], b.Vec[i])
 	}
 }
 
 // Sub vectors of polynomials.
 func (v *PolyVec) Sub(a, b *PolyVec) {
-	for i, p := range v.vec {
-		p.sub(a.vec[i], b.vec[i])
+	for i, p := range v.Vec {
+		p.sub(a.Vec[i], b.Vec[i])
 	}
 }
 
 // Get compressed and serialized size in bytes.
 func (v *PolyVec) compressedSize() int {
-	return len(v.vec) * compressedCoeffSize
+	return len(v.Vec) * compressedCoeffSize
 }
 
 func pointwiseAccRef(p *Poly, a, b *PolyVec) {
 	for j := 0; j < kyberN; j++ {
-		t := montgomeryReduce(4613 * uint32(b.vec[0].Coeffs[j])) // 4613 = 2^{2*18} % q
-		p.Coeffs[j] = montgomeryReduce(uint32(a.vec[0].Coeffs[j]) * uint32(t))
-		for i := 1; i < len(a.vec); i++ { // len(a.vec) == kyberK
-			t = montgomeryReduce(4613 * uint32(b.vec[i].Coeffs[j]))
-			p.Coeffs[j] += montgomeryReduce(uint32(a.vec[i].Coeffs[j]) * uint32(t))
+		t := montgomeryReduce(4613 * uint32(b.Vec[0].Coeffs[j])) // 4613 = 2^{2*18} % q
+		p.Coeffs[j] = montgomeryReduce(uint32(a.Vec[0].Coeffs[j]) * uint32(t))
+		for i := 1; i < len(a.Vec); i++ { // len(a.vec) == kyberK
+			t = montgomeryReduce(4613 * uint32(b.Vec[i].Coeffs[j]))
+			p.Coeffs[j] += montgomeryReduce(uint32(a.Vec[i].Coeffs[j]) * uint32(t))
 		}
 
 		p.Coeffs[j] = barrettReduce(p.Coeffs[j])

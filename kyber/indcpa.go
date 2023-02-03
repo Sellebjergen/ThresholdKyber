@@ -69,7 +69,7 @@ func genMatrix(a []PolyVec, seed []byte, transposed bool) {
 	xof := sha3.NewShake128()
 
 	for i, v := range a {
-		for j, p := range v.vec {
+		for j, p := range v.Vec {
 			if transposed {
 				extSeed[SymSize] = byte(i)
 				extSeed[SymSize+1] = byte(j)
@@ -162,7 +162,7 @@ func (p *ParameterSet) IndcpaKeyPair(rng io.Reader) (*IndcpaPublicKey, *IndcpaSe
 
 	var nonce byte
 	skpv := p.AllocPolyVec()
-	for _, pv := range skpv.vec {
+	for _, pv := range skpv.Vec {
 		pv.getNoise(noiseSeed, nonce, p.eta)
 		nonce++
 	}
@@ -170,14 +170,14 @@ func (p *ParameterSet) IndcpaKeyPair(rng io.Reader) (*IndcpaPublicKey, *IndcpaSe
 	skpv.ntt()
 
 	e := p.AllocPolyVec()
-	for _, pv := range e.vec {
+	for _, pv := range e.Vec {
 		pv.getNoise(noiseSeed, nonce, p.eta)
 		nonce++
 	}
 
 	// matrix-vector multiplication
 	pkpv := p.AllocPolyVec()
-	for i, pv := range pkpv.vec {
+	for i, pv := range pkpv.Vec {
 		pv.pointwiseAcc(&skpv, &a[i])
 	}
 
@@ -209,7 +209,7 @@ func (p *ParameterSet) IndcpaEncrypt(c, m []byte, pk *IndcpaPublicKey, coins []b
 
 	var nonce byte
 	sp := p.AllocPolyVec()
-	for _, pv := range sp.vec {
+	for _, pv := range sp.Vec {
 		pv.getNoise(coins, nonce, p.eta)
 		nonce++
 	}
@@ -217,14 +217,14 @@ func (p *ParameterSet) IndcpaEncrypt(c, m []byte, pk *IndcpaPublicKey, coins []b
 	sp.ntt()
 
 	ep := p.AllocPolyVec()
-	for _, pv := range ep.vec {
+	for _, pv := range ep.Vec {
 		pv.getNoise(coins, nonce, p.eta)
 		nonce++
 	}
 
 	// matrix-vector multiplication
 	bp := p.AllocPolyVec()
-	for i, pv := range bp.vec {
+	for i, pv := range bp.Vec {
 		pv.pointwiseAcc(&sp, &at[i])
 	}
 

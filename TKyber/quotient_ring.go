@@ -1,50 +1,48 @@
 package TKyber
 
-type polyRing struct {
+type quotRing struct {
 	q   int
 	mod *Polynomial
 }
 
-func (*polyRing) init() *polyRing {
-	rq := &polyRing{
-		q:   3329,
-		mod: getModulusPoly(),
-	}
+func (rq *quotRing) initKyberRing() *quotRing {
+	rq.q = 3329
+	rq.mod = getModulusPoly()
 
 	return rq
 }
 
-func (r *polyRing) add(a, b *Polynomial) *Polynomial {
+func (r *quotRing) add(a, b *Polynomial) *Polynomial {
 	pre_reduce := add(a, b)
 
 	return r.reduce(pre_reduce)
 }
 
-func (r *polyRing) sub(a, b *Polynomial) *Polynomial {
+func (r *quotRing) sub(a, b *Polynomial) *Polynomial {
 	pre_reduce := sub(a, b)
 
 	return r.reduce(pre_reduce)
 }
 
-func (r *polyRing) mult(a, b *Polynomial) *Polynomial {
+func (r *quotRing) mult(a, b *Polynomial) *Polynomial {
 	pre_reduce := mult(a, b)
 
 	return r.reduce(pre_reduce)
 }
 
-func (r *polyRing) mult_const(a *Polynomial, c int32) *Polynomial {
+func (r *quotRing) mult_const(a *Polynomial, c int) *Polynomial {
 	pre_reduce := mult_const(a, c)
 
 	return r.reduce(pre_reduce)
 }
 
-func (r *polyRing) polynomialLongDivision(pol Polynomial) {
+func (r *quotRing) polynomialLongDivision(pol Polynomial) {
 	// TODO
 }
 
-func (r *polyRing) syntheticLongDivison(pol Polynomial) (*Polynomial, *Polynomial) {
+func (r *quotRing) syntheticLongDivison(pol Polynomial) (*Polynomial, *Polynomial) {
 	if r.mod.getDeg() > pol.getDeg() {
-		return &Polynomial{Coeffs: []int32{0}}, &pol
+		return &Polynomial{Coeffs: []int{0}}, &pol
 	}
 
 	out := Reverse(pol.Coeffs)
@@ -65,20 +63,20 @@ func (r *polyRing) syntheticLongDivison(pol Polynomial) (*Polynomial, *Polynomia
 	return &Polynomial{Coeffs: final[len(divisor)-1:]}, &Polynomial{Coeffs: final[:len(divisor)-1]}
 }
 
-func (r *polyRing) reduce(pol *Polynomial) *Polynomial {
+func (r *quotRing) reduce(pol *Polynomial) *Polynomial {
 	_, rem := r.syntheticLongDivison(*pol)
 	out := rem
 
 	// Compute mod q for each coeff
 	for i := 0; i < len(out.Coeffs); i++ {
-		out.Coeffs[i] = euc_mod(out.Coeffs[i], int32(r.q))
+		out.Coeffs[i] = euc_mod(out.Coeffs[i], int(r.q))
 	}
 
 	return trimPoly(out)
 }
 
 func getModulusPoly() *Polynomial {
-	res := make([]int32, 256)
+	res := make([]int, 256)
 	res[0] = 1
 	res[255] = 1
 

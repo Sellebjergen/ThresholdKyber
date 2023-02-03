@@ -10,7 +10,7 @@ func max(x, y int) int {
 }
 
 // Euclidean modulo function
-func euc_mod(x, m int32) int32 {
+func euc_mod(x, m int) int {
 	res := x % m
 
 	if res < 0 {
@@ -20,9 +20,9 @@ func euc_mod(x, m int32) int32 {
 	return res
 }
 
-// Reverses slice of int32s
-func Reverse(input []int32) []int32 {
-	var output []int32
+// Reverses slice of ints
+func Reverse(input []int) []int {
+	var output []int
 
 	for i := len(input) - 1; i >= 0; i-- {
 		output = append(output, input[i])

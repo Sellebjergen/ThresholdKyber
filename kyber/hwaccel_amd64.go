@@ -225,12 +225,12 @@ func pointwiseAccYMM(p *Poly, a, b *PolyVec) {
 	// Kind of ugly, but it's the price to pay for flexibility...
 
 	var aVec, bVec [4]*uint16 // k is in {2,3,4}.
-	for i := range a.vec {
-		aVec[i] = &a.vec[i].Coeffs[0]
-		bVec[i] = &b.vec[i].Coeffs[0]
+	for i := range a.Vec {
+		aVec[i] = &a.Vec[i].Coeffs[0]
+		bVec[i] = &b.Vec[i].Coeffs[0]
 	}
 
-	switch len(a.vec) {
+	switch len(a.Vec) {
 	case 2:
 		pointwiseAccK2AVX2(&p.Coeffs[0], &aVec[0], &bVec[0])
 	case 3:

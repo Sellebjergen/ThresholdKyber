@@ -1,11 +1,13 @@
 package TKyber
 
+import "ThresholdKyber.com/m/kyber"
+
 type Polynomial struct {
-	Coeffs []int32
+	Coeffs []int
 }
 
 func add(a, b *Polynomial) *Polynomial {
-	out := make([]int32, max(len(a.Coeffs), len(b.Coeffs)))
+	out := make([]int, max(len(a.Coeffs), len(b.Coeffs)))
 	for i, coef := range a.Coeffs {
 		out[i] += coef
 	}
@@ -17,7 +19,7 @@ func add(a, b *Polynomial) *Polynomial {
 }
 
 func sub(a, b *Polynomial) *Polynomial {
-	out := make([]int32, max(len(a.Coeffs), len(b.Coeffs)))
+	out := make([]int, max(len(a.Coeffs), len(b.Coeffs)))
 	for i, coef := range a.Coeffs {
 		out[i] += coef
 	}
@@ -29,7 +31,7 @@ func sub(a, b *Polynomial) *Polynomial {
 }
 
 func mult(a, b *Polynomial) *Polynomial {
-	out := make([]int32, len(a.Coeffs)+len(b.Coeffs)-1)
+	out := make([]int, len(a.Coeffs)+len(b.Coeffs)-1)
 
 	for i := 0; i < len(a.Coeffs); i++ {
 		for j := 0; j < len(b.Coeffs); j++ {
@@ -40,8 +42,8 @@ func mult(a, b *Polynomial) *Polynomial {
 	return trimPoly(&Polynomial{Coeffs: out})
 }
 
-func mult_const(a *Polynomial, c int32) *Polynomial {
-	out := make([]int32, len(a.Coeffs))
+func mult_const(a *Polynomial, c int) *Polynomial {
+	out := make([]int, len(a.Coeffs))
 	for i := 0; i < len(a.Coeffs); i++ {
 		out[i] = a.Coeffs[i] * c
 	}
@@ -58,11 +60,30 @@ func trimPoly(p *Polynomial) *Polynomial {
 		coeffs = coeffs[:len(coeffs)-1]
 	}
 	if len(coeffs) == 0 {
-		return &Polynomial{Coeffs: []int32{0}}
+		return &Polynomial{Coeffs: []int{0}}
 	}
 	return &Polynomial{Coeffs: coeffs}
 }
 
-/* func (p *Polynomial) toKyberPoly() *kyber.Poly {
-	return &kyber.Poly{Coeffs: *(*[256]uint16)(p.Coeffs)}
-} */
+func (p *Polynomial) Copy() *Polynomial {
+	out_coef := make([]int, len(p.Coeffs))
+	copy(out_coef, p.Coeffs)
+	return &Polynomial{Coeffs: out_coef}
+}
+
+func (p *Polynomial) toKyberPoly() *kyber.Poly {
+	uint16_coeff := make([]uint16, len(p.Coeffs))
+	for i, coef := range p.Coeffs {
+		uint16_coeff[i] = uint16(coef)
+	}
+	return &kyber.Poly{Coeffs: *(*[256]uint16)(uint16_coeff)}
+}
+
+func fromKyberPoly(p *kyber.Poly) *Polynomial {
+	non_fixed_arr_coeff := p.Coeffs[:]
+	new_coeff := make([]int, len(p.Coeffs))
+	for i, coef := range non_fixed_arr_coeff {
+		new_coeff[i] = int(coef)
+	}
+	return &Polynomial{Coeffs: new_coeff}
+}

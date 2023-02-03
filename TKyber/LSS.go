@@ -1,27 +1,57 @@
 package TKyber
 
 import (
-	"ThresholdKyber.com/m/kyber"
+	"math/rand"
 )
 
-type share struct {
-	poly *Polynomial
-}
-
 // Represents additively secret sharing
-func Share(params kyber.ParameterSet, sk *kyber.IndcpaSecretKey) []*share {
-	polyVec_sk := params.AllocPolyVec()
-	kyber.UnpackSecretKey(&polyVec_sk, sk.Packed)
+func (rq *quotRing) Share(sk []*Polynomial, n int) [][]*Polynomial {
+	r := len(sk)
+	shares := make([][]*Polynomial, r)
+	for i, sk_poly := range sk {
+		shares[i] = rq.SharePolynomial(sk_poly, n)
+	}
 
-	return nil
+	return shares
 }
 
-func (r *polyRing) Rec(d_is []*share) *Polynomial {
-	out := d_is[0].poly
+func (rq *quotRing) Rec(d_is [][]*Polynomial, r int) []*Polynomial {
+	recombined := make([]*Polynomial, 0)
+	for _, d_i := range d_is {
+		recombined = append(recombined, rq.RecPolynomial(d_i))
+	}
+	return recombined
+}
+
+func (rq *quotRing) RecPolynomial(d_is []*Polynomial) *Polynomial {
+	out := d_is[0]
 
 	for i := 1; i < len(d_is); i++ {
-		out = r.add(out, d_is[i].poly)
+		out = rq.add(out, d_is[i])
 	}
 
 	return out
+}
+
+func (rq *quotRing) SharePolynomial(toShare *Polynomial, n int) []*Polynomial {
+	shares := make([]*Polynomial, n)
+
+	for i := 0; i <= n-2; i++ {
+		shares[i] = SampleUnifPolynomial(3329, 256) // TODO: Kyber params
+	}
+
+	shares[n-1] = toShare.Copy()
+	for i := 0; i <= n-2; i++ {
+		shares[n-1] = rq.sub(shares[n-1], shares[i])
+	}
+
+	return shares
+}
+
+func SampleUnifPolynomial(q int, deg int) *Polynomial {
+	coeffs := make([]int, deg)
+	for i := 0; i < deg; i++ {
+		coeffs[i] = rand.Intn(q) // TODO: Kyber params
+	}
+	return &Polynomial{Coeffs: coeffs}
 }
