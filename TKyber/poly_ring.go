@@ -55,6 +55,10 @@ func mult_const(a *Polynomial, c int) *Polynomial {
 	return trimPoly(&Polynomial{Coeffs: out})
 }
 
+func neg(a *Polynomial) *Polynomial {
+	return sub(&Polynomial{Coeffs: []int{0}}, a)
+}
+
 func (p *Polynomial) getDeg() int {
 	return len(p.Coeffs)
 }
@@ -81,7 +85,11 @@ func (p *Polynomial) toKyberPoly() *kyber.Poly {
 	for i, coef := range p.Coeffs {
 		uint16_coeff[i] = uint16(coef)
 	}
-	return &kyber.Poly{Coeffs: *(*[256]uint16)(uint16_coeff)}
+
+	var out_coeff [256]uint16
+
+	copy(out_coeff[:], uint16_coeff)
+	return &kyber.Poly{Coeffs: out_coeff}
 }
 
 func fromKyberPoly(p *kyber.Poly) *Polynomial {
@@ -90,7 +98,7 @@ func fromKyberPoly(p *kyber.Poly) *Polynomial {
 	for i, coef := range non_fixed_arr_coeff {
 		new_coeff[i] = int(coef)
 	}
-	return &Polynomial{Coeffs: new_coeff}
+	return trimPoly(&Polynomial{Coeffs: new_coeff})
 }
 
 func samplePolyGaussian(q int, deg int, sigma_flood int) *Polynomial {

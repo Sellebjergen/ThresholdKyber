@@ -16,7 +16,7 @@ type Poly struct {
 }
 
 // Compression and subsequent serialization of a polynomial.
-func (p *Poly) compress(r []byte) {
+func (p *Poly) Compress(r []byte) {
 	var t [8]uint32
 
 	for i, k := 0, 0; i < kyberN; i, k = i+8, k+3 {
@@ -46,7 +46,7 @@ func (p *Poly) decompress(a []byte) {
 }
 
 // Serialization of a polynomial.
-func (p *Poly) toBytes(r []byte) {
+func (p *Poly) ToBytes(r []byte) {
 	var t [8]uint16
 
 	for i := 0; i < kyberN/8; i++ {
@@ -95,7 +95,7 @@ func (p *Poly) fromMsg(msg []byte) {
 }
 
 // Convert polynomial to 32-byte message.
-func (p *Poly) toMsg(msg []byte) {
+func (p *Poly) ToMsg(msg []byte) {
 	for i := 0; i < SymSize; i++ {
 		msg[i] = 0
 		for j := 0; j < 8; j++ {

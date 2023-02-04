@@ -14,25 +14,26 @@ func (rq *quotRing) initKyberRing() *quotRing {
 
 func (r *quotRing) add(a, b *Polynomial) *Polynomial {
 	pre_reduce := add(a, b)
-
 	return r.reduce(pre_reduce)
 }
 
 func (r *quotRing) sub(a, b *Polynomial) *Polynomial {
 	pre_reduce := sub(a, b)
-
 	return r.reduce(pre_reduce)
 }
 
 func (r *quotRing) mult(a, b *Polynomial) *Polynomial {
 	pre_reduce := mult(a, b)
-
 	return r.reduce(pre_reduce)
 }
 
 func (r *quotRing) mult_const(a *Polynomial, c int) *Polynomial {
 	pre_reduce := mult_const(a, c)
+	return r.reduce(pre_reduce)
+}
 
+func (r *quotRing) neg(a *Polynomial) *Polynomial {
+	pre_reduce := neg(a)
 	return r.reduce(pre_reduce)
 }
 

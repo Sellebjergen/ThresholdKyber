@@ -59,7 +59,7 @@ func (v *PolyVec) decompress(a []byte) {
 // Serialize vector of polynomials.
 func (v *PolyVec) toBytes(r []byte) {
 	for i, p := range v.Vec {
-		p.toBytes(r[i*polySize:])
+		p.ToBytes(r[i*polySize:])
 	}
 }
 

@@ -33,12 +33,12 @@ func unpackPublicKey(pk *PolyVec, seed, packedPk []byte) {
 // vector of polynomials b and the compressed and serialized polynomial v.
 func packCiphertext(r []byte, b *PolyVec, v *Poly) {
 	b.compress(r)
-	v.compress(r[b.compressedSize():])
+	v.Compress(r[b.compressedSize():])
 }
 
 // De-serialize and decompress ciphertext from a byte array; approximate
 // inverse of packCiphertext.
-func unpackCiphertext(b *PolyVec, v *Poly, c []byte) {
+func UnpackCiphertext(b *PolyVec, v *Poly, c []byte) {
 	b.decompress(c)
 	v.decompress(c[b.compressedSize():])
 }
@@ -248,7 +248,7 @@ func (p *ParameterSet) IndcpaDecrypt(m, c []byte, sk *IndcpaSecretKey) {
 	var v, mp Poly
 
 	skpv, bp := p.AllocPolyVec(), p.AllocPolyVec()
-	unpackCiphertext(&bp, &v, c)
+	UnpackCiphertext(&bp, &v, c)
 	UnpackSecretKey(&skpv, sk.Packed)
 
 	bp.ntt()
@@ -258,7 +258,7 @@ func (p *ParameterSet) IndcpaDecrypt(m, c []byte, sk *IndcpaSecretKey) {
 
 	mp.sub(&mp, &v)
 
-	mp.toMsg(m)
+	mp.ToMsg(m)
 }
 
 func (p *ParameterSet) allocMatrix() []PolyVec {

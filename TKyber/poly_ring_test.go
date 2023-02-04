@@ -1,6 +1,7 @@
 package TKyber
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -93,5 +94,19 @@ func TestMultConst(t *testing.T) {
 
 	if !reflect.DeepEqual(res.Coeffs, []int{42 * rhs, 10 * rhs, 30 * rhs}) {
 		t.Errorf("Add failed!")
+	}
+}
+
+// ================= Convert kyber poly tests =================
+func TestConvertPoly(t *testing.T) {
+	initial := &Polynomial{Coeffs: []int{42, 10, 30}}
+
+	kPoly := initial.toKyberPoly()
+	result := fromKyberPoly(kPoly)
+
+	fmt.Println(result.Coeffs)
+
+	if !reflect.DeepEqual(initial, result) {
+		t.Errorf("Polynomials not identical!")
 	}
 }

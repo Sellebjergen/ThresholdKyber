@@ -7,9 +7,15 @@ import (
 // Represents additively secret sharing
 func (rq *quotRing) Share(sk []*Polynomial, n int) [][]*Polynomial {
 	r := len(sk)
-	shares := make([][]*Polynomial, r)
-	for i, sk_poly := range sk {
-		shares[i] = rq.SharePolynomial(sk_poly, n)
+	shares := make([][]*Polynomial, n)
+	for i := range shares {
+		shares[i] = make([]*Polynomial, r)
+	}
+	for poly, sk_poly := range sk {
+		poly_shares := rq.SharePolynomial(sk_poly, n)
+		for i := 0; i < n; i++ {
+			shares[i][poly] = poly_shares[i]
+		}
 	}
 
 	return shares
