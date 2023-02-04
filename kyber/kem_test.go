@@ -60,7 +60,7 @@ func doTestKEMKeys(t *testing.T, p *ParameterSet) {
 
 	t.Logf("PrivateKeySize(): %v", p.PrivateKeySize())
 	t.Logf("PublicKeySize(): %v", p.PublicKeySize())
-	t.Logf("CipherTextSize(): %v", p.CipherTextSize())
+	t.Logf("cipherTextSize(): %v", p.CipherTextSize())
 
 	for i := 0; i < nTests; i++ {
 		// Generate a key pair.

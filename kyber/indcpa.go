@@ -44,11 +44,11 @@ func UnpackCiphertext(b *PolyVec, v *Poly, c []byte) {
 }
 
 // Serialize the secret key.
-func packSecretKey(r []byte, sk *PolyVec) {
+func PackSecretKey(r []byte, sk *PolyVec) {
 	sk.toBytes(r)
 }
 
-// De-serialize the secret key; inverse of packSecretKey.
+// De-serialize the secret key; inverse of PackSecretKey.
 func UnpackSecretKey(sk *PolyVec, packedSk []byte) {
 	sk.fromBytes(packedSk)
 }
@@ -126,7 +126,7 @@ type IndcpaSecretKey struct {
 }
 
 func (sk *IndcpaSecretKey) fromBytes(p *ParameterSet, b []byte) error {
-	if len(b) != p.indcpaSecretKeySize {
+	if len(b) != p.IndcpaSecretKeySize {
 		return ErrInvalidKeySize
 	}
 
@@ -145,7 +145,7 @@ func (p *ParameterSet) IndcpaKeyPair(rng io.Reader) (*IndcpaPublicKey, *IndcpaSe
 	}
 
 	sk := &IndcpaSecretKey{
-		Packed: make([]byte, p.indcpaSecretKeySize),
+		Packed: make([]byte, p.IndcpaSecretKeySize),
 	}
 	pk := &IndcpaPublicKey{
 		packed: make([]byte, p.indcpaPublicKeySize),
@@ -184,7 +184,7 @@ func (p *ParameterSet) IndcpaKeyPair(rng io.Reader) (*IndcpaPublicKey, *IndcpaSe
 	pkpv.invntt()
 	pkpv.Add(&pkpv, &e)
 
-	packSecretKey(sk.Packed, &skpv)
+	PackSecretKey(sk.Packed, &skpv)
 	packPublicKey(pk.packed, &pkpv, publicSeed)
 	pk.h = sha3.Sum256(pk.packed)
 
@@ -200,7 +200,7 @@ func (p *ParameterSet) IndcpaEncrypt(c, m []byte, pk *IndcpaPublicKey, coins []b
 	pkpv := p.AllocPolyVec()
 	unpackPublicKey(&pkpv, seed[:], pk.packed)
 
-	k.fromMsg(m)
+	k.FromMsg(m)
 
 	pkpv.ntt()
 

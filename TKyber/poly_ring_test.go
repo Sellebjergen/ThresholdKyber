@@ -1,7 +1,6 @@
 package TKyber
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -103,8 +102,6 @@ func TestConvertPoly(t *testing.T) {
 
 	kPoly := initial.toKyberPoly()
 	result := fromKyberPoly(kPoly)
-
-	fmt.Println(result.Coeffs)
 
 	if !reflect.DeepEqual(initial, result) {
 		t.Errorf("Polynomials not identical!")

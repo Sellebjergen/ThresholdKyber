@@ -63,7 +63,7 @@ func (p *ParameterSet) PrivateKeyFromBytes(b []byte) (*PrivateKey, error) {
 	sk.PublicKey.p = p
 
 	// De-serialize the public key first.
-	off := p.indcpaSecretKeySize
+	off := p.IndcpaSecretKeySize
 	if err := sk.PublicKey.pk.fromBytes(p, b[off:off+p.publicKeySize]); err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (p *ParameterSet) PrivateKeyFromBytes(b []byte) (*PrivateKey, error) {
 	copy(sk.z, b[off:])
 
 	// Then go back to de-serialize the private key.
-	if err := sk.sk.fromBytes(p, b[:p.indcpaSecretKeySize]); err != nil {
+	if err := sk.sk.fromBytes(p, b[:p.IndcpaSecretKeySize]); err != nil {
 		return nil, err
 	}
 

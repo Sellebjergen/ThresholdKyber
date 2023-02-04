@@ -23,14 +23,14 @@ func Setup(params kyber.ParameterSet, n int, t int) (*kyber.IndcpaPublicKey, [][
 	// Perform secret sharing
 	rq := new(quotRing).initKyberRing()
 	sk_shares := rq.Share(sk_internal, n)
-	return pk, sk_shares
 
+	return pk, sk_shares
 }
 
 func (rq *quotRing) PartDec(params kyber.ParameterSet, sk_i []*Polynomial, ct []byte, party int) *Polynomial {
 
 	// Sample noise
-	e_i := samplePolyGaussian(3329, 256, 100) // TODO: Fix params
+	e_i := samplePolyGaussian(3329, 255, 0) // TODO: Fix params
 
 	// Convert bytes from ct to list of polynomials (internal type)
 	b := params.AllocPolyVec()

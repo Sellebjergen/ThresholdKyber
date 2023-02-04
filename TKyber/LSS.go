@@ -4,13 +4,15 @@ import (
 	"math/rand"
 )
 
-// Represents additively secret sharing
+// Currently additively secret sharing is hardcoded, would be nice to extract.
 func (rq *quotRing) Share(sk []*Polynomial, n int) [][]*Polynomial {
 	r := len(sk)
 	shares := make([][]*Polynomial, n)
+
 	for i := range shares {
 		shares[i] = make([]*Polynomial, r)
 	}
+
 	for poly, sk_poly := range sk {
 		poly_shares := rq.SharePolynomial(sk_poly, n)
 		for i := 0; i < n; i++ {
@@ -43,7 +45,7 @@ func (rq *quotRing) SharePolynomial(toShare *Polynomial, n int) []*Polynomial {
 	shares := make([]*Polynomial, n)
 
 	for i := 0; i <= n-2; i++ {
-		shares[i] = SampleUnifPolynomial(3329, 256) // TODO: Kyber params
+		shares[i] = SampleUnifPolynomial(3329, 255) // TODO: Kyber params
 	}
 
 	shares[n-1] = toShare.Copy()

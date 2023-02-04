@@ -56,7 +56,7 @@ type ParameterSet struct {
 
 	indcpaMsgSize       int
 	indcpaPublicKeySize int
-	indcpaSecretKeySize int
+	IndcpaSecretKeySize int
 	indcpaSize          int
 
 	publicKeySize  int
@@ -79,7 +79,7 @@ func (p *ParameterSet) PrivateKeySize() int {
 	return p.secretKeySize
 }
 
-// CipherTextSize returns the size of a cipher text in bytes.
+// cipherTextSize returns the size of a cipher text in bytes.
 func (p *ParameterSet) CipherTextSize() int {
 	return p.cipherTextSize
 }
@@ -105,11 +105,11 @@ func newParameterSet(name string, k int) *ParameterSet {
 
 	p.indcpaMsgSize = SymSize
 	p.indcpaPublicKeySize = p.polyVecCompressedSize + SymSize
-	p.indcpaSecretKeySize = p.polyVecSize
+	p.IndcpaSecretKeySize = p.polyVecSize
 	p.indcpaSize = p.polyVecCompressedSize + polyCompressedSize
 
 	p.publicKeySize = p.indcpaPublicKeySize
-	p.secretKeySize = p.indcpaSecretKeySize + p.indcpaPublicKeySize + 2*SymSize // 32 bytes of additional space to save H(pk)
+	p.secretKeySize = p.IndcpaSecretKeySize + p.indcpaPublicKeySize + 2*SymSize // 32 bytes of additional space to save H(pk)
 	p.cipherTextSize = p.indcpaSize
 
 	return &p

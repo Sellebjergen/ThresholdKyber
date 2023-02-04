@@ -85,7 +85,7 @@ func (p *Poly) fromBytes(a []byte) {
 }
 
 // Convert 32-byte message to polynomial.
-func (p *Poly) fromMsg(msg []byte) {
+func (p *Poly) FromMsg(msg []byte) {
 	for i, v := range msg[:SymSize] {
 		for j := 0; j < 8; j++ {
 			mask := -((uint16(v) >> uint(j)) & 1)
