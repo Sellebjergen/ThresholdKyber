@@ -2,7 +2,6 @@ package TKyber
 
 import (
 	"crypto/rand"
-	"fmt"
 	"math"
 
 	"ThresholdKyber.com/m/kyber"
@@ -35,8 +34,8 @@ func (rq *quotRing) PartDec(params kyber.ParameterSet, sk_i []*Polynomial, ct []
 	// Convert bytes from ct to list of polynomials (internal type)
 	b := params.AllocPolyVec()
 	v := new(kyber.Poly)
-	v_internal := fromKyberPoly(v)
 	kyber.UnpackCiphertext(&b, v, ct)
+	v_internal := fromKyberPoly(v)
 	ct_as_internal := make([]*Polynomial, len(b.Vec))
 	for i := 0; i < len(b.Vec); i++ {
 		ct_as_internal[i] = fromKyberPoly(b.Vec[i])
@@ -44,8 +43,6 @@ func (rq *quotRing) PartDec(params kyber.ParameterSet, sk_i []*Polynomial, ct []
 
 	// Inner prod
 	d_i := &Polynomial{Coeffs: []int{0}}
-	fmt.Println(len(ct_as_internal))
-	fmt.Println(len(sk_i))
 	for poly := 0; poly < len(b.Vec); poly++ {
 		inner_prod_part := rq.mult(ct_as_internal[poly], sk_i[poly])
 		d_i = rq.add(d_i, inner_prod_part)
