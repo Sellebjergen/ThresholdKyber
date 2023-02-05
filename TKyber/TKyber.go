@@ -68,7 +68,7 @@ func (rq *quotRing) Combine(ct []byte, d_is ...*Polynomial) *kyber.Poly {
 	y := rq.RecPolynomial(d_is) // Can't use return value at the moment
 	unrounded := make([]float64, len(y.Coeffs))
 	for i := 0; i < len(unrounded); i++ {
-		unrounded[i] = float64(p) / float64(rq.q) * float64(y.Coeffs[i])
+		unrounded[i] = (float64(p) / float64(rq.q)) * float64(y.Coeffs[i])
 	}
 
 	res := make([]int, len(y.Coeffs))

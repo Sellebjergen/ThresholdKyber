@@ -77,6 +77,15 @@ func (r *quotRing) reduce(pol *Polynomial) *Polynomial {
 	return trimPoly(out)
 }
 
+func (r *quotRing) reduce_coefficients(pol *Polynomial) *Polynomial {
+	out := pol.Copy()
+	for i := 0; i < len(pol.Coeffs); i++ {
+		out.Coeffs[i] = euc_mod(pol.Coeffs[i], int(r.q))
+	}
+
+	return trimPoly(out)
+}
+
 // TODO: Har jeg lavet en korrekt ændring?
 func getModulusPoly() *Polynomial {
 	res := make([]int, 257)

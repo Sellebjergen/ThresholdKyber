@@ -16,6 +16,7 @@ func TestAddQuotRing(t *testing.T) {
 	rhs := &Polynomial{Coeffs: []int{-17, 38, -12, 1}}
 
 	res := quot_ring.add(lhs, rhs)
+	res = quot_ring.reduce_coefficients(res)
 
 	if !reflect.DeepEqual(res.Coeffs, []int{27, 9}) {
 		t.Errorf("Add failed!")
@@ -33,6 +34,7 @@ func TestMultQuotRing(t *testing.T) {
 	rhs := &Polynomial{Coeffs: []int{1, 1, 5}}
 
 	res := quot_ring.mult(lhs, rhs)
+	res = quot_ring.reduce_coefficients(res)
 
 	if !reflect.DeepEqual(res.Coeffs, []int{23, 15}) {
 		t.Errorf("Mult failed!")
@@ -50,6 +52,7 @@ func TestMultConstQuotRing(t *testing.T) {
 	rhs := 3
 
 	res := quot_ring.mult_const(lhs, rhs)
+	res = quot_ring.reduce_coefficients(res)
 
 	if !reflect.DeepEqual(res.Coeffs, []int{21, 28}) {
 		t.Errorf("Mult const failed!")
@@ -75,7 +78,9 @@ func TestReduceNegativeNumb(t *testing.T) {
 	quot_ring.q = 32
 	quot_ring.mod = fx
 	to_reduce := &Polynomial{Coeffs: []int{-17, 38, -12, 1}}
-	if !reflect.DeepEqual(quot_ring.reduce(to_reduce).Coeffs, []int{27, 5}) {
+	res := quot_ring.reduce(to_reduce)
+	res = quot_ring.reduce_coefficients(res)
+	if !reflect.DeepEqual(res.Coeffs, []int{27, 5}) {
 		t.Errorf("Reduce failed for negative numbers!")
 	}
 }
@@ -86,7 +91,9 @@ func TestReduceComplex(t *testing.T) {
 	quot_ring.q = 32
 	quot_ring.mod = fx
 	to_reduce := &Polynomial{Coeffs: []int{13, 2, 5, -1}}
-	if !reflect.DeepEqual(quot_ring.reduce(to_reduce).Coeffs, []int{13, 2, 5, 31}) {
+	res := quot_ring.reduce(to_reduce)
+	res = quot_ring.reduce_coefficients(res)
+	if !reflect.DeepEqual(res.Coeffs, []int{13, 2, 5, 31}) {
 		t.Errorf("Reduce failed for complex case!")
 	}
 }
