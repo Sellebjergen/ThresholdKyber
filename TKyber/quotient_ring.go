@@ -68,18 +68,20 @@ func (r *quotRing) reduce(pol *Polynomial) *Polynomial {
 	_, rem := r.syntheticLongDivison(*pol)
 	out := rem
 
+	// TODO: Husk at det her er udkommenteret
 	// Compute mod q for each coeff
-	for i := 0; i < len(out.Coeffs); i++ {
+	/* for i := 0; i < len(out.Coeffs); i++ {
 		out.Coeffs[i] = euc_mod(out.Coeffs[i], int(r.q))
-	}
+	} */
 
 	return trimPoly(out)
 }
 
+// TODO: Har jeg lavet en korrekt ændring?
 func getModulusPoly() *Polynomial {
-	res := make([]int, 256)
+	res := make([]int, 257)
 	res[0] = 1
-	res[255] = 1
+	res[256] = 1
 
 	return &Polynomial{Coeffs: res}
 }
