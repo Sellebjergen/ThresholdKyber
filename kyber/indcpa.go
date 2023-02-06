@@ -204,9 +204,11 @@ func (p *ParameterSet) IndcpaEncrypt(c, m []byte, pk *IndcpaPublicKey, coins []b
 
 	pkpv.ntt()
 
+	// A
 	at := p.allocMatrix()
 	genMatrix(at, seed[:], true)
 
+	// s
 	var nonce byte
 	sp := p.AllocPolyVec()
 	for _, pv := range sp.Vec {
@@ -216,6 +218,7 @@ func (p *ParameterSet) IndcpaEncrypt(c, m []byte, pk *IndcpaPublicKey, coins []b
 
 	sp.ntt()
 
+	// e
 	ep := p.AllocPolyVec()
 	for _, pv := range ep.Vec {
 		pv.getNoise(coins, nonce, p.eta)
@@ -223,16 +226,18 @@ func (p *ParameterSet) IndcpaEncrypt(c, m []byte, pk *IndcpaPublicKey, coins []b
 	}
 
 	// matrix-vector multiplication
+	// A * s
 	bp := p.AllocPolyVec()
 	for i, pv := range bp.Vec {
 		pv.pointwiseAcc(&sp, &at[i])
 	}
 
 	bp.invntt()
+	// (A*s) + e
 	bp.Add(&bp, &ep)
 
 	v.pointwiseAcc(&pkpv, &sp)
-	v.invntt()
+	v.Invntt()
 
 	epp.getNoise(coins, nonce, p.eta) // Don't need to increment nonce.
 
@@ -254,7 +259,7 @@ func (p *ParameterSet) IndcpaDecrypt(m, c []byte, sk *IndcpaSecretKey) {
 	bp.ntt()
 
 	mp.pointwiseAcc(&skpv, &bp)
-	mp.invntt()
+	mp.Invntt()
 
 	mp.sub(&mp, &v)
 

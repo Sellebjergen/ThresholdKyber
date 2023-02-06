@@ -1,4 +1,4 @@
-// ntt.go - Number-Theoretic Transform.
+// Ntt.go - Number-Theoretic Transform.
 //
 // To the extent possible under law, Yawning Angel has waived all copyright
 // and related or neighboring rights to the software, using the Creative

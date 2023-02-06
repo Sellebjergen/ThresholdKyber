@@ -70,9 +70,9 @@ func (r *quotRing) reduce(pol *Polynomial) *Polynomial {
 
 	// TODO: Husk at det her er udkommenteret
 	// Compute mod q for each coeff
-	/* for i := 0; i < len(out.Coeffs); i++ {
-		out.Coeffs[i] = euc_mod(out.Coeffs[i], int(r.q))
-	} */
+	//for i := 0; i < len(out.Coeffs); i++ {
+	//	out.Coeffs[i] = euc_mod(out.Coeffs[i], int(r.q))
+	//}
 
 	return trimPoly(out)
 }

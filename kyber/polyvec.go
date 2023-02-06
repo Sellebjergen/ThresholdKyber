@@ -73,14 +73,14 @@ func (v *PolyVec) fromBytes(a []byte) {
 // Apply forward NTT to all elements of a vector of polynomials.
 func (v *PolyVec) ntt() {
 	for _, p := range v.Vec {
-		p.ntt()
+		p.Ntt()
 	}
 }
 
 // Apply inverse NTT to all elements of a vector of polynomials.
 func (v *PolyVec) invntt() {
 	for _, p := range v.Vec {
-		p.invntt()
+		p.Invntt()
 	}
 }
 

@@ -27,14 +27,13 @@ func Setup(params kyber.ParameterSet, n int, t int) (*kyber.IndcpaPublicKey, [][
 }
 
 func (rq *quotRing) PartDec(params kyber.ParameterSet, sk_i []*Polynomial, ct []byte, party int) *Polynomial {
-
 	// Sample noise
 	e_i := samplePolyGaussian(3329, 255, 0) // TODO: Fix params
 
 	// Convert bytes from ct to list of polynomials (internal type)
 	b := params.AllocPolyVec()
 	v := new(kyber.Poly)
-	kyber.UnpackCiphertext(&b, v, ct)
+	kyber.UnpackCiphertext(&b, v, ct) // This will be NTT form.
 	v_internal := fromKyberPoly(v)
 	ct_as_internal := make([]*Polynomial, len(b.Vec))
 	for i := 0; i < len(b.Vec); i++ {
@@ -56,14 +55,14 @@ func (rq *quotRing) PartDec(params kyber.ParameterSet, sk_i []*Polynomial, ct []
 	// Add noise
 	d_i = rq.add(d_i, e_i)
 
-	// Return d_i
 	return d_i
 }
 
 func (rq *quotRing) Combine(ct []byte, d_is ...*Polynomial) *kyber.Poly {
-	p := 2                      // WAT?
-	y := rq.RecPolynomial(d_is) // Can't use return value at the moment
+	p := 2
+	y := rq.RecPolynomial(d_is)
 	unrounded := make([]float64, len(y.Coeffs))
+
 	for i := 0; i < len(unrounded); i++ {
 		unrounded[i] = (float64(p) / float64(rq.q)) * float64(y.Coeffs[i])
 	}
@@ -74,5 +73,5 @@ func (rq *quotRing) Combine(ct []byte, d_is ...*Polynomial) *kyber.Poly {
 	}
 	internal_poly := &Polynomial{Coeffs: res}
 
-	return internal_poly.toKyberPoly()
+	return rq.reduce_coefficients(internal_poly).toKyberPoly()
 }
