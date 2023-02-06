@@ -9,7 +9,6 @@ import (
 )
 
 func TestCPAEncryptDecrypt(t *testing.T) {
-	// Encrypt
 	ct := make([]byte, kyber.Kyber512.CipherTextSize())
 	msg := make([]byte, 32)
 	rand.Read(msg)

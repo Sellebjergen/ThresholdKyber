@@ -78,6 +78,29 @@ func TestSimpleCase(t *testing.T) {
 	}
 }
 
+func TestSetupUsing1PlayerGivesBackSecretKey(t *testing.T) {
+	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	pk, skShares := Setup(*kyber.Kyber512, 1, 1)
+	polyVec := kyber.Kyber512.AllocPolyVec()
+	polyVec.Vec[0] = skShares[0][0].toKyberPoly()
+	polyVec.Vec[1] = skShares[0][1].toKyberPoly()
+
+	m := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	coins := make([]byte, 32)
+	c := make([]byte, kyber.Kyber512.CipherTextSize())
+	kyber.Kyber512.IndcpaEncrypt(c, m, pk, coins)
+
+	out := make([]byte, 32)
+	r := make([]byte, kyber.Kyber512.IndcpaSecretKeySize)
+	kyber.PackSecretKey(r, &polyVec)
+	sk := kyber.IndcpaSecretKey{Packed: r}
+	kyber.Kyber512.IndcpaDecrypt(out, c, &sk)
+
+	if !reflect.DeepEqual(msg, out) {
+		t.Errorf("Error")
+	}
+}
+
 func TestFullWithN1(t *testing.T) {
 	rq := new(quotRing).initKyberRing()
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
@@ -93,13 +116,9 @@ func TestFullWithN1(t *testing.T) {
 	d_1 := rq.PartDec(*kyber.Kyber512, sk_shares[0], ct, 0)
 
 	combined := rq.Combine(ct, d_1)
-	fmt.Println(combined)
 
 	output_msg := make([]byte, 32)
 	combined.ToMsg(output_msg)
-
-	fmt.Println(msg)
-	fmt.Println(output_msg)
 
 	if !reflect.DeepEqual(msg, output_msg) {
 		t.Errorf("Error")
