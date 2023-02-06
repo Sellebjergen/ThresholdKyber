@@ -2,7 +2,6 @@ package TKyber
 
 import (
 	"crypto/rand"
-	"math"
 
 	"ThresholdKyber.com/m/kyber"
 )
@@ -46,9 +45,9 @@ func PartDec(params kyber.ParameterSet, sk_i kyber.PolyVec, ct []byte, party int
 }
 
 func (rq *quotRing) Combine(ct []byte, d_is ...*kyber.Poly) *kyber.Poly {
-	p := 2
+	/* p := 2 */
 	y := RecPolynomial(d_is)
-	unrounded := make([]float64, len(y.Coeffs))
+	/* unrounded := make([]float64, len(y.Coeffs))
 
 	for i := 0; i < len(unrounded); i++ {
 		unrounded[i] = (float64(p) / float64(rq.q)) * float64(y.Coeffs[i])
@@ -63,7 +62,7 @@ func (rq *quotRing) Combine(ct []byte, d_is ...*kyber.Poly) *kyber.Poly {
 
 	for i := 0; i < len(out.Coeffs); i++ {
 		out.Coeffs[i] = kyber.Freeze(out.Coeffs[i])
-	}
+	} */
 
-	return out
+	return y
 }

@@ -25,6 +25,10 @@ func TestSharePolynomial(t *testing.T) {
 		recombined.Add(&recombined, share)
 	}
 
+	for i := 0; i < len(recombined.Coeffs); i++ {
+		recombined.Coeffs[i] = kyber.Freeze(recombined.Coeffs[i])
+	}
+
 	if !reflect.DeepEqual(recombined.Coeffs, toShare.Coeffs) {
 		t.Errorf("Recombined is not equal the original shared polynomial!")
 	}

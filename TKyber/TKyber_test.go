@@ -63,6 +63,8 @@ func TestSimpleCase(t *testing.T) {
 	d_2 := PartDec(*kyber.Kyber512, sk_shares[1], ct, 1)
 	d_3 := PartDec(*kyber.Kyber512, sk_shares[2], ct, 2)
 
+	fmt.Println(d_1)
+
 	combined := rq.Combine(ct, d_1, d_2, d_3)
 	fmt.Println(combined)
 
@@ -113,6 +115,11 @@ func TestFullWithN1(t *testing.T) {
 
 	output_msg := make([]byte, 32)
 	combined.ToMsg(output_msg)
+
+	fmt.Println(combined)
+
+	fmt.Println(msg)
+	fmt.Println(output_msg)
 
 	if !reflect.DeepEqual(msg, output_msg) {
 		t.Errorf("Error")
