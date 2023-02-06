@@ -167,7 +167,7 @@ func (p *ParameterSet) IndcpaKeyPair(rng io.Reader) (*IndcpaPublicKey, *IndcpaSe
 		nonce++
 	}
 
-	skpv.ntt()
+	skpv.Ntt()
 
 	e := p.AllocPolyVec()
 	for _, pv := range e.Vec {
@@ -178,10 +178,10 @@ func (p *ParameterSet) IndcpaKeyPair(rng io.Reader) (*IndcpaPublicKey, *IndcpaSe
 	// matrix-vector multiplication
 	pkpv := p.AllocPolyVec()
 	for i, pv := range pkpv.Vec {
-		pv.pointwiseAcc(&skpv, &a[i])
+		pv.PointwiseAcc(&skpv, &a[i])
 	}
 
-	pkpv.invntt()
+	pkpv.Invntt()
 	pkpv.Add(&pkpv, &e)
 
 	PackSecretKey(sk.Packed, &skpv)
@@ -202,7 +202,7 @@ func (p *ParameterSet) IndcpaEncrypt(c, m []byte, pk *IndcpaPublicKey, coins []b
 
 	k.FromMsg(m)
 
-	pkpv.ntt()
+	pkpv.Ntt()
 
 	// A
 	at := p.allocMatrix()
@@ -216,7 +216,7 @@ func (p *ParameterSet) IndcpaEncrypt(c, m []byte, pk *IndcpaPublicKey, coins []b
 		nonce++
 	}
 
-	sp.ntt()
+	sp.Ntt()
 
 	// e
 	ep := p.AllocPolyVec()
@@ -229,20 +229,20 @@ func (p *ParameterSet) IndcpaEncrypt(c, m []byte, pk *IndcpaPublicKey, coins []b
 	// A * s
 	bp := p.AllocPolyVec()
 	for i, pv := range bp.Vec {
-		pv.pointwiseAcc(&sp, &at[i])
+		pv.PointwiseAcc(&sp, &at[i])
 	}
 
-	bp.invntt()
+	bp.Invntt()
 	// (A*s) + e
 	bp.Add(&bp, &ep)
 
-	v.pointwiseAcc(&pkpv, &sp)
+	v.PointwiseAcc(&pkpv, &sp)
 	v.Invntt()
 
 	epp.getNoise(coins, nonce, p.eta) // Don't need to increment nonce.
 
-	v.add(&v, &epp)
-	v.add(&v, &k)
+	v.Add(&v, &epp)
+	v.Add(&v, &k)
 
 	packCiphertext(c, &bp, &v)
 }
@@ -256,12 +256,12 @@ func (p *ParameterSet) IndcpaDecrypt(m, c []byte, sk *IndcpaSecretKey) {
 	UnpackCiphertext(&bp, &v, c)
 	UnpackSecretKey(&skpv, sk.Packed)
 
-	bp.ntt()
+	bp.Ntt()
 
-	mp.pointwiseAcc(&skpv, &bp)
+	mp.PointwiseAcc(&skpv, &bp)
 	mp.Invntt()
 
-	mp.sub(&mp, &v)
+	mp.Sub(&mp, &v)
 
 	mp.ToMsg(m)
 }

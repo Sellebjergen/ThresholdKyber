@@ -18,7 +18,7 @@ func (v *PolyVec) compress(r []byte) {
 		for j := 0; j < kyberN/8; j++ {
 			var t [8]uint16
 			for k := 0; k < 8; k++ {
-				t[k] = uint16((((uint32(freeze(vec.Coeffs[8*j+k])) << 11) + kyberQ/2) / kyberQ) & 0x7ff)
+				t[k] = uint16((((uint32(Freeze(vec.Coeffs[8*j+k])) << 11) + kyberQ/2) / kyberQ) & 0x7ff)
 			}
 
 			r[off+11*j+0] = byte(t[0] & 0xff)
@@ -71,35 +71,35 @@ func (v *PolyVec) fromBytes(a []byte) {
 }
 
 // Apply forward NTT to all elements of a vector of polynomials.
-func (v *PolyVec) ntt() {
+func (v *PolyVec) Ntt() {
 	for _, p := range v.Vec {
 		p.Ntt()
 	}
 }
 
 // Apply inverse NTT to all elements of a vector of polynomials.
-func (v *PolyVec) invntt() {
+func (v *PolyVec) Invntt() {
 	for _, p := range v.Vec {
 		p.Invntt()
 	}
 }
 
 // Pointwise multiply elements of a and b and accumulate into p.
-func (p *Poly) pointwiseAcc(a, b *PolyVec) {
+func (p *Poly) PointwiseAcc(a, b *PolyVec) {
 	hardwareAccelImpl.pointwiseAccFn(p, a, b)
 }
 
 // Add vectors of polynomials.
 func (v *PolyVec) Add(a, b *PolyVec) {
 	for i, p := range v.Vec {
-		p.add(a.Vec[i], b.Vec[i])
+		p.Add(a.Vec[i], b.Vec[i])
 	}
 }
 
 // Sub vectors of polynomials.
 func (v *PolyVec) Sub(a, b *PolyVec) {
 	for i, p := range v.Vec {
-		p.sub(a.Vec[i], b.Vec[i])
+		p.Sub(a.Vec[i], b.Vec[i])
 	}
 }
 

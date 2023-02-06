@@ -32,7 +32,7 @@ func barrettReduce(a uint16) uint16 {
 }
 
 // Full reduction; given a 16-bit integer a, computes unsigned integer a mod q.
-func freeze(x uint16) uint16 {
+func Freeze(x uint16) uint16 {
 	r := barrettReduce(x)
 
 	m := r - kyberQ

@@ -7,71 +7,63 @@ import (
 	"ThresholdKyber.com/m/kyber"
 )
 
-func Setup(params kyber.ParameterSet, n int, t int) (*kyber.IndcpaPublicKey, [][]*Polynomial) {
+func Setup(params kyber.ParameterSet, n int, t int) (*kyber.IndcpaPublicKey, []kyber.PolyVec) {
 	// Run setup to get Kyber KeyPair
 	pk, sk, _ := params.IndcpaKeyPair(rand.Reader)
 	polyVec_sk := params.AllocPolyVec()
 	kyber.UnpackSecretKey(&polyVec_sk, sk.Packed)
 
-	// Covert from Kyber poly to internal Polynomial type
-	sk_internal := make([]*Polynomial, len(polyVec_sk.Vec))
-	for i, poly := range polyVec_sk.Vec {
-		sk_internal[i] = fromKyberPoly(poly)
-	}
-
 	// Perform secret sharing
-	rq := new(quotRing).initKyberRing()
-	sk_shares := rq.Share(sk_internal, n)
+	sk_shares := Share(polyVec_sk, n)
 
 	return pk, sk_shares
 }
 
-func (rq *quotRing) PartDec(params kyber.ParameterSet, sk_i []*Polynomial, ct []byte, party int) *Polynomial {
+func PartDec(params kyber.ParameterSet, sk_i kyber.PolyVec, ct []byte, party int) *kyber.Poly {
+	var v, d_i, zero kyber.Poly
 	// Sample noise
-	e_i := samplePolyGaussian(3329, 255, 0) // TODO: Fix params
+	//e_i := samplePolyGaussian(3329, 255, 0) // TODO: Fix params
 
 	// Convert bytes from ct to list of polynomials (internal type)
-	b := params.AllocPolyVec()
-	v := new(kyber.Poly)
-	kyber.UnpackCiphertext(&b, v, ct) // This will be NTT form.
-	v_internal := fromKyberPoly(v)
-	ct_as_internal := make([]*Polynomial, len(b.Vec))
-	for i := 0; i < len(b.Vec); i++ {
-		ct_as_internal[i] = fromKyberPoly(b.Vec[i])
-	}
+	bp := params.AllocPolyVec()
+	kyber.UnpackCiphertext(&bp, &v, ct) // This will be NTT form.
 
 	// Inner prod
-	d_i := &Polynomial{Coeffs: []int{0}}
-	for poly := 0; poly < len(b.Vec); poly++ {
-		inner_prod_part := rq.mult(ct_as_internal[poly], sk_i[poly])
-		d_i = rq.add(d_i, inner_prod_part)
-	}
+	bp.Ntt()
+	d_i.PointwiseAcc(&sk_i, &bp)
+	d_i.Invntt()
+
 	if party == 0 {
-		d_i = rq.sub(v_internal, d_i)
+		d_i.Sub(&v, &d_i)
 	} else {
-		d_i = rq.neg(d_i)
+		d_i.Sub(&zero, &d_i)
 	}
 
 	// Add noise
-	d_i = rq.add(d_i, e_i)
+	//d_i = rq.add(d_i, e_i)
 
-	return d_i
+	return &d_i
 }
 
-func (rq *quotRing) Combine(ct []byte, d_is ...*Polynomial) *kyber.Poly {
+func (rq *quotRing) Combine(ct []byte, d_is ...*kyber.Poly) *kyber.Poly {
 	p := 2
-	y := rq.RecPolynomial(d_is)
+	y := RecPolynomial(d_is)
 	unrounded := make([]float64, len(y.Coeffs))
 
 	for i := 0; i < len(unrounded); i++ {
 		unrounded[i] = (float64(p) / float64(rq.q)) * float64(y.Coeffs[i])
 	}
 
-	res := make([]int, len(y.Coeffs))
+	res := make([]uint16, len(y.Coeffs))
 	for i := 0; i < len(unrounded); i++ {
-		res[i] = int(math.Round(unrounded[i]))
+		res[i] = uint16(math.Round(unrounded[i]))
 	}
-	internal_poly := &Polynomial{Coeffs: res}
+	out := new(kyber.Poly)
+	copy(out.Coeffs[:], res)
 
-	return rq.reduce_coefficients(internal_poly).toKyberPoly()
+	for i := 0; i < len(out.Coeffs); i++ {
+		out.Coeffs[i] = kyber.Freeze(out.Coeffs[i])
+	}
+
+	return out
 }

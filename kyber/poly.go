@@ -21,7 +21,7 @@ func (p *Poly) Compress(r []byte) {
 
 	for i, k := 0, 0; i < kyberN; i, k = i+8, k+3 {
 		for j := 0; j < 8; j++ {
-			t[j] = uint32((((freeze(p.Coeffs[i+j]) << 3) + kyberQ/2) / kyberQ) & 7)
+			t[j] = uint32((((Freeze(p.Coeffs[i+j]) << 3) + kyberQ/2) / kyberQ) & 7)
 		}
 
 		r[k] = byte(t[0] | (t[1] << 3) | (t[2] << 6))
@@ -51,7 +51,7 @@ func (p *Poly) ToBytes(r []byte) {
 
 	for i := 0; i < kyberN/8; i++ {
 		for j := 0; j < 8; j++ {
-			t[j] = freeze(p.Coeffs[8*i+j])
+			t[j] = Freeze(p.Coeffs[8*i+j])
 		}
 
 		r[13*i+0] = byte(t[0] & 0xff)
@@ -99,7 +99,7 @@ func (p *Poly) ToMsg(msg []byte) {
 	for i := 0; i < SymSize; i++ {
 		msg[i] = 0
 		for j := 0; j < 8; j++ {
-			t := (((freeze(p.Coeffs[8*i+j]) << 1) + kyberQ/2) / kyberQ) & 1
+			t := (((Freeze(p.Coeffs[8*i+j]) << 1) + kyberQ/2) / kyberQ) & 1
 			msg[i] |= byte(t << uint(j))
 		}
 	}
@@ -132,14 +132,14 @@ func (p *Poly) Invntt() {
 }
 
 // Add two polynomials.
-func (p *Poly) add(a, b *Poly) {
+func (p *Poly) Add(a, b *Poly) {
 	for i := range p.Coeffs {
 		p.Coeffs[i] = barrettReduce(a.Coeffs[i] + b.Coeffs[i])
 	}
 }
 
 // Subtract two polynomials.
-func (p *Poly) sub(a, b *Poly) {
+func (p *Poly) Sub(a, b *Poly) {
 	for i := range p.Coeffs {
 		p.Coeffs[i] = barrettReduce(a.Coeffs[i] + 3*kyberQ - b.Coeffs[i])
 	}
