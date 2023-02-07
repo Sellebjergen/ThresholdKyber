@@ -18,6 +18,16 @@ func Setup(params *OwcpaParams, n int, t int) (*kyber.IndcpaPublicKey, []kyber.P
 	return pk, sk_shares
 }
 
+func Enc(params *OwcpaParams, msg []byte, pk *kyber.IndcpaPublicKey) []byte {
+	coins := make([]byte, 32)
+	rand.Read(coins)
+
+	ct := make([]byte, params.KyberParams.CipherTextSize())
+	kyber.Kyber512.IndcpaEncrypt(ct, msg, pk, coins)
+
+	return ct
+}
+
 func PartDec(params *OwcpaParams, sk_i kyber.PolyVec, ct []byte, party int) *kyber.Poly {
 	var v, d_i, zero kyber.Poly
 	// Sample noise
@@ -65,14 +75,4 @@ func Combine(params *OwcpaParams, ct []byte, d_is []*kyber.Poly) *kyber.Poly {
 	} */
 
 	return y
-}
-
-func Enc(params *OwcpaParams, msg []byte, pk *kyber.IndcpaPublicKey) []byte {
-	coins := make([]byte, 32)
-	rand.Read(coins)
-
-	ct := make([]byte, params.KyberParams.CipherTextSize())
-	kyber.Kyber512.IndcpaEncrypt(ct, msg, pk, coins)
-
-	return ct
 }

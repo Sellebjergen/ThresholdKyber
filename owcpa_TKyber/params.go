@@ -27,24 +27,28 @@ func newParameterSet(name string) *OwcpaParams {
 		p.KyberParams = kyber.Kyber1024
 		p.Ell = 1
 		p.Sigma = 947 // This correct?
+		p.Q = 3329 * 5
 		p.D_flood_dist = &GaussianNoiseDist{}
 		p.LSS_scheme = &LSSAdditive{}
 	case "TKyber1024-Q33290":
 		p.KyberParams = kyber.Kyber1024
 		p.Ell = 2
 		p.Sigma = 1994
+		p.Q = 3329 * 10
 		p.D_flood_dist = &GaussianNoiseDist{}
 		p.LSS_scheme = &LSSAdditive{}
 	case "TKyber1024-Q29961":
 		p.KyberParams = kyber.Kyber1024
 		p.Ell = 1
 		p.Sigma = 1197
+		p.Q = 3329 * 9
 		p.D_flood_dist = &GaussianNoiseDist{}
 		p.LSS_scheme = &LSSAdditive{}
 	case "TKyber-Test":
 		p.KyberParams = kyber.Kyber512
 		p.Ell = 1
 		p.Sigma = 100
+		p.Q = 7681
 		p.D_flood_dist = &GaussianNoiseDist{}
 		p.LSS_scheme = &LSSAdditive{}
 	default:
