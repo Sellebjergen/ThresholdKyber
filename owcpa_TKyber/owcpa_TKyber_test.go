@@ -100,10 +100,13 @@ func TestSimpleCase(t *testing.T) {
 	}
 }
 
-/* func TestSetupUsing1PlayerGivesBackSecretKey(t *testing.T) {
+func TestSetupUsing1PlayerGivesBackSecretKey(t *testing.T) {
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	pk, skShares := Setup(*kyber.Kyber512, 1, 1)
+	params := newParameterSet("TKyber-Test")
+	pk, skShares := Setup(params, 1, 1)
 	polyVec := kyber.Kyber512.AllocPolyVec()
+	polyVec.Vec[0] = skShares[0].Vec[0]
+	polyVec.Vec[1] = skShares[0].Vec[1]
 
 	m := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	coins := make([]byte, 32)
@@ -119,7 +122,7 @@ func TestSimpleCase(t *testing.T) {
 	if !reflect.DeepEqual(msg, out) {
 		t.Errorf("Error")
 	}
-} */
+}
 
 func TestFullWithN1(t *testing.T) {
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
