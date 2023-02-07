@@ -6,10 +6,10 @@ import (
 	"ThresholdKyber.com/m/kyber"
 )
 
-func Setup(params kyber.ParameterSet, n int, t int) (*kyber.IndcpaPublicKey, []kyber.PolyVec) {
+func Setup(params *OwcpaParams, n int, t int) (*kyber.IndcpaPublicKey, []kyber.PolyVec) {
 	// Run setup to get Kyber KeyPair
-	pk, sk, _ := params.IndcpaKeyPair(rand.Reader)
-	polyVec_sk := params.AllocPolyVec()
+	pk, sk, _ := params.KyberParams.IndcpaKeyPair(rand.Reader)
+	polyVec_sk := params.KyberParams.AllocPolyVec()
 	kyber.UnpackSecretKey(&polyVec_sk, sk.Packed)
 
 	// Perform secret sharing
@@ -18,12 +18,12 @@ func Setup(params kyber.ParameterSet, n int, t int) (*kyber.IndcpaPublicKey, []k
 	return pk, sk_shares
 }
 
-func PartDec(params kyber.ParameterSet, sk_i kyber.PolyVec, ct []byte, party int) *kyber.Poly {
+func PartDec(params *OwcpaParams, sk_i kyber.PolyVec, ct []byte, party int) *kyber.Poly {
 	var v, d_i, zero kyber.Poly
 	// Sample noise
-	e_i := sampleRoundedGaussianPoly(3329, 255, 100) // TODO: Fix params
+	e_i := params.D_flood_dist.SampleNoise(params.Q, 255, params.Sigma) // TODO: Fix params
 
-	bp := params.AllocPolyVec()
+	bp := params.KyberParams.AllocPolyVec()
 	kyber.UnpackCiphertext(&bp, &v, ct) // This will be NTT form.
 
 	// Inner prod
@@ -66,11 +66,11 @@ func Combine(ct []byte, d_is []*kyber.Poly) *kyber.Poly {
 	return y
 }
 
-func Enc(params kyber.ParameterSet, msg []byte, pk *kyber.IndcpaPublicKey) []byte {
+func Enc(params *OwcpaParams, msg []byte, pk *kyber.IndcpaPublicKey) []byte {
 	coins := make([]byte, 32)
 	rand.Read(coins)
 
-	ct := make([]byte, kyber.Kyber512.CipherTextSize())
+	ct := make([]byte, params.KyberParams.CipherTextSize())
 	kyber.Kyber512.IndcpaEncrypt(ct, msg, pk, coins)
 
 	return ct

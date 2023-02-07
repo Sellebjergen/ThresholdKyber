@@ -5,7 +5,7 @@ import (
 	owcpa "ThresholdKyber.com/m/owcpa_TKyber"
 )
 
-func Setup(params kyber.ParameterSet, n int, t int) (*kyber.IndcpaPublicKey, []kyber.PolyVec) {
+func Setup(params *owcpa.OwcpaParams, n int, t int) (*kyber.IndcpaPublicKey, []kyber.PolyVec) {
 	return owcpa.Setup(params, n, t)
 }
 

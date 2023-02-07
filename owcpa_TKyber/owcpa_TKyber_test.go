@@ -10,8 +10,8 @@ import (
 // ================= Setup tests =================
 
 func TestSetupWorksInCaseNis3(t *testing.T) {
-	// TODO: sk_shares has a wrong coefficient on the very first index - the rest of the polynomial seem correct
-	pk, sk_shares := Setup(*kyber.Kyber512, 3, 3)
+	params := newParameterSet("TKyber-Test")
+	pk, sk_shares := Setup(params, 3, 3)
 
 	// total of first share
 	var sk1 kyber.Poly
@@ -50,16 +50,17 @@ func TestSetupWorksInCaseNis3(t *testing.T) {
 
 func TestAdvancedCase(t *testing.T) {
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	params := newParameterSet("TKyber-Test")
 	n := 20
 	t_param := 20
-	pk, sk_shares := Setup(*kyber.Kyber512, n, t_param)
+	pk, sk_shares := Setup(params, n, t_param)
 
-	ct := Enc(*kyber.Kyber512, msg, pk)
+	ct := Enc(params, msg, pk)
 
 	// Decrypt
 	d_is := make([]*kyber.Poly, n)
 	for i := 0; i < n; i++ {
-		d_is[i] = PartDec(*kyber.Kyber512, sk_shares[i], ct, i)
+		d_is[i] = PartDec(params, sk_shares[i], ct, i)
 	}
 
 	combined := Combine(ct, d_is)
@@ -74,7 +75,8 @@ func TestAdvancedCase(t *testing.T) {
 
 func TestSimpleCase(t *testing.T) {
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	pk, sk_shares := Setup(*kyber.Kyber512, 3, 3)
+	params := newParameterSet("TKyber-Test")
+	pk, sk_shares := Setup(params, 3, 3)
 
 	coins := make([]byte, 32)
 	// rand.Read(coins)
@@ -84,9 +86,9 @@ func TestSimpleCase(t *testing.T) {
 
 	// Decrypt
 	d_is := make([]*kyber.Poly, 3)
-	d_is[0] = PartDec(*kyber.Kyber512, sk_shares[0], ct, 0)
-	d_is[1] = PartDec(*kyber.Kyber512, sk_shares[1], ct, 1)
-	d_is[2] = PartDec(*kyber.Kyber512, sk_shares[2], ct, 2)
+	d_is[0] = PartDec(params, sk_shares[0], ct, 0)
+	d_is[1] = PartDec(params, sk_shares[1], ct, 1)
+	d_is[2] = PartDec(params, sk_shares[2], ct, 2)
 
 	combined := Combine(ct, d_is)
 
@@ -121,7 +123,8 @@ func TestSimpleCase(t *testing.T) {
 
 func TestFullWithN1(t *testing.T) {
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	pk, skShares := Setup(*kyber.Kyber512, 1, 1)
+	params := newParameterSet("TKyber-Test")
+	pk, skShares := Setup(params, 1, 1)
 
 	coins := make([]byte, 32)
 
@@ -129,7 +132,7 @@ func TestFullWithN1(t *testing.T) {
 	kyber.Kyber512.IndcpaEncrypt(ct, msg, pk, coins)
 
 	d_is := make([]*kyber.Poly, 1)
-	d_is[0] = PartDec(*kyber.Kyber512, skShares[0], ct, 0)
+	d_is[0] = PartDec(params, skShares[0], ct, 0)
 
 	combined := Combine(ct, d_is)
 
