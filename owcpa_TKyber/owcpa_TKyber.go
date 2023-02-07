@@ -13,7 +13,7 @@ func Setup(params *OwcpaParams, n int, t int) (*kyber.IndcpaPublicKey, []kyber.P
 	kyber.UnpackSecretKey(&polyVec_sk, sk.Packed)
 
 	// Perform secret sharing
-	sk_shares := Share(polyVec_sk, n)
+	sk_shares := params.LSS_scheme.Share(polyVec_sk, n)
 
 	return pk, sk_shares
 }
@@ -43,9 +43,10 @@ func PartDec(params *OwcpaParams, sk_i kyber.PolyVec, ct []byte, party int) *kyb
 	return &d_i
 }
 
-func Combine(ct []byte, d_is []*kyber.Poly) *kyber.Poly {
+func Combine(params *OwcpaParams, ct []byte, d_is []*kyber.Poly) *kyber.Poly {
 	/* p := 2 */
-	y := RecPolynomial(d_is)
+
+	y := params.LSS_scheme.Rec(d_is)
 	/* unrounded := make([]float64, len(y.Coeffs))
 
 	for i := 0; i < len(unrounded); i++ {

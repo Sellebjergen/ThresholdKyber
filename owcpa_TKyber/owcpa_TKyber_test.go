@@ -63,7 +63,7 @@ func TestAdvancedCase(t *testing.T) {
 		d_is[i] = PartDec(params, sk_shares[i], ct, i)
 	}
 
-	combined := Combine(ct, d_is)
+	combined := Combine(params, ct, d_is)
 
 	output_msg := make([]byte, 32)
 	combined.ToMsg(output_msg)
@@ -90,7 +90,7 @@ func TestSimpleCase(t *testing.T) {
 	d_is[1] = PartDec(params, sk_shares[1], ct, 1)
 	d_is[2] = PartDec(params, sk_shares[2], ct, 2)
 
-	combined := Combine(ct, d_is)
+	combined := Combine(params, ct, d_is)
 
 	output_msg := make([]byte, 32)
 	combined.ToMsg(output_msg)
@@ -134,7 +134,7 @@ func TestFullWithN1(t *testing.T) {
 	d_is := make([]*kyber.Poly, 1)
 	d_is[0] = PartDec(params, skShares[0], ct, 0)
 
-	combined := Combine(ct, d_is)
+	combined := Combine(params, ct, d_is)
 
 	output_msg := make([]byte, 32)
 	combined.ToMsg(output_msg)

@@ -36,6 +36,7 @@ func TestSharePolynomial(t *testing.T) {
 
 // ================= Share then Rec polynomial test =================
 func TestShareThenRecPolynomial(t *testing.T) {
+	lss := &LSSAdditive{}
 	var toShare kyber.Poly
 	toShare.Coeffs[0] = 1
 	toShare.Coeffs[1] = 2
@@ -46,7 +47,7 @@ func TestShareThenRecPolynomial(t *testing.T) {
 
 	shares := SharePolynomial(&toShare, 10)
 
-	recombined := RecPolynomial(shares)
+	recombined := lss.Rec(shares)
 
 	if !reflect.DeepEqual(recombined.Coeffs, toShare.Coeffs) {
 		t.Errorf("Recombined is not equal the original shared polynomial!")
@@ -56,13 +57,14 @@ func TestShareThenRecPolynomial(t *testing.T) {
 // ================= Testing that Share on polynomial ring ====
 func TestShare(t *testing.T) {
 	sk := kyber.Kyber512.AllocPolyVec()
+	lss := &LSSAdditive{}
 	sk.Vec[0] = new(kyber.Poly)
 	sk.Vec[0].Coeffs[0] = 42
 	sk.Vec[0].Coeffs[1] = 73
 	sk.Vec[1] = new(kyber.Poly)
 	sk.Vec[1].Coeffs[0] = 0
 	sk.Vec[1].Coeffs[1] = 27
-	shares := Share(sk, 3)
+	shares := lss.Share(sk, 3)
 
 	// combine the first polynomial
 	var sk1 kyber.Poly

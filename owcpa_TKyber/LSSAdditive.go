@@ -6,8 +6,10 @@ import (
 	"ThresholdKyber.com/m/kyber"
 )
 
+type LSSAdditive struct{}
+
 // Currently additively secret sharing is hardcoded, would be nice to extract.
-func Share(sk kyber.PolyVec, n int) []kyber.PolyVec {
+func (s *LSSAdditive) Share(sk kyber.PolyVec, n int) []kyber.PolyVec {
 	shares := make([]kyber.PolyVec, n)
 
 	for i := range shares {
@@ -24,15 +26,7 @@ func Share(sk kyber.PolyVec, n int) []kyber.PolyVec {
 	return shares
 }
 
-func Rec(d_is [][]*kyber.Poly, r int) kyber.PolyVec {
-	recombined := kyber.Kyber512.AllocPolyVec()
-	for _, d_i := range d_is {
-		recombined.Vec = append(recombined.Vec, RecPolynomial(d_i))
-	}
-	return recombined
-}
-
-func RecPolynomial(d_is []*kyber.Poly) *kyber.Poly {
+func (s *LSSAdditive) Rec(d_is []*kyber.Poly) *kyber.Poly {
 	var out kyber.Poly
 
 	for i := 0; i < len(d_is); i++ {
