@@ -48,7 +48,6 @@ func TestSetupWorksInCaseNis3(t *testing.T) {
 // ================= Integration tests =================
 
 func TestSimpleCase(t *testing.T) {
-	rq := new(quotRing).initKyberRing()
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	pk, sk_shares := Setup(*kyber.Kyber512, 3, 3)
 
@@ -65,7 +64,7 @@ func TestSimpleCase(t *testing.T) {
 
 	fmt.Println(d_1)
 
-	combined := rq.Combine(ct, d_1, d_2, d_3)
+	combined := Combine(ct, d_1, d_2, d_3)
 	fmt.Println(combined)
 
 	output_msg := make([]byte, 32)
@@ -101,7 +100,6 @@ func TestSimpleCase(t *testing.T) {
 } */
 
 func TestFullWithN1(t *testing.T) {
-	rq := new(quotRing).initKyberRing()
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	pk, skShares := Setup(*kyber.Kyber512, 1, 1)
 
@@ -111,7 +109,7 @@ func TestFullWithN1(t *testing.T) {
 	kyber.Kyber512.IndcpaEncrypt(ct, msg, pk, coins)
 
 	d1 := PartDec(*kyber.Kyber512, skShares[0], ct, 0)
-	combined := rq.Combine(ct, d1)
+	combined := Combine(ct, d1)
 
 	output_msg := make([]byte, 32)
 	combined.ToMsg(output_msg)

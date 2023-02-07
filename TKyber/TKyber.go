@@ -21,7 +21,7 @@ func Setup(params kyber.ParameterSet, n int, t int) (*kyber.IndcpaPublicKey, []k
 func PartDec(params kyber.ParameterSet, sk_i kyber.PolyVec, ct []byte, party int) *kyber.Poly {
 	var v, d_i, zero kyber.Poly
 	// Sample noise
-	//e_i := samplePolyGaussian(3329, 255, 0) // TODO: Fix params
+	e_i := sampleRoundedGaussianPoly(3329, 255, 100) // TODO: Fix params
 
 	// Convert bytes from ct to list of polynomials (internal type)
 	bp := params.AllocPolyVec()
@@ -39,12 +39,12 @@ func PartDec(params kyber.ParameterSet, sk_i kyber.PolyVec, ct []byte, party int
 	}
 
 	// Add noise
-	//d_i = rq.add(d_i, e_i)
+	d_i.Add(&d_i, e_i)
 
 	return &d_i
 }
 
-func (rq *quotRing) Combine(ct []byte, d_is ...*kyber.Poly) *kyber.Poly {
+func Combine(ct []byte, d_is ...*kyber.Poly) *kyber.Poly {
 	/* p := 2 */
 	y := RecPolynomial(d_is)
 	/* unrounded := make([]float64, len(y.Coeffs))
@@ -65,4 +65,14 @@ func (rq *quotRing) Combine(ct []byte, d_is ...*kyber.Poly) *kyber.Poly {
 	} */
 
 	return y
+}
+
+func Enc(params kyber.ParameterSet, msg []byte, pk *kyber.IndcpaPublicKey) []byte {
+	coins := make([]byte, 32)
+	rand.Read(coins)
+
+	ct := make([]byte, kyber.Kyber512.CipherTextSize())
+	kyber.Kyber512.IndcpaEncrypt(ct, msg, pk, coins)
+
+	return ct
 }
