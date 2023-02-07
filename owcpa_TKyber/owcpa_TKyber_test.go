@@ -10,7 +10,7 @@ import (
 // ================= Setup tests =================
 
 func TestSetupWorksInCaseNis3(t *testing.T) {
-	params := newParameterSet("TKyber-Test")
+	params := NewParameterSet("TKyber-Test")
 	pk, sk_shares := Setup(params, 3, 3)
 
 	// total of first share
@@ -50,7 +50,7 @@ func TestSetupWorksInCaseNis3(t *testing.T) {
 
 func TestAdvancedCase(t *testing.T) {
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	params := newParameterSet("TKyber-Test")
+	params := NewParameterSet("TKyber-Test")
 	n := 20
 	t_param := 20
 	pk, sk_shares := Setup(params, n, t_param)
@@ -75,7 +75,7 @@ func TestAdvancedCase(t *testing.T) {
 
 func TestSimpleCase(t *testing.T) {
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	params := newParameterSet("TKyber-Test")
+	params := NewParameterSet("TKyber-Test")
 	pk, sk_shares := Setup(params, 3, 3)
 
 	coins := make([]byte, 32)
@@ -102,7 +102,7 @@ func TestSimpleCase(t *testing.T) {
 
 func TestSetupUsing1PlayerGivesBackSecretKey(t *testing.T) {
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	params := newParameterSet("TKyber-Test")
+	params := NewParameterSet("TKyber-Test")
 	pk, skShares := Setup(params, 1, 1)
 	polyVec := kyber.Kyber512.AllocPolyVec()
 	polyVec.Vec[0] = skShares[0].Vec[0]
@@ -126,7 +126,7 @@ func TestSetupUsing1PlayerGivesBackSecretKey(t *testing.T) {
 
 func TestFullWithN1(t *testing.T) {
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	params := newParameterSet("TKyber-Test")
+	params := NewParameterSet("TKyber-Test")
 	pk, skShares := Setup(params, 1, 1)
 
 	coins := make([]byte, 32)

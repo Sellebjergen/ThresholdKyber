@@ -71,7 +71,7 @@ func (p *Poly) ToBytes(r []byte) {
 }
 
 // De-serialization of a polynomial; inverse of Poly.toBytes().
-func (p *Poly) fromBytes(a []byte) {
+func (p *Poly) FromBytes(a []byte) {
 	for i := 0; i < kyberN/8; i++ {
 		p.Coeffs[8*i+0] = uint16(a[13*i+0]) | ((uint16(a[13*i+1]) & 0x1f) << 8)
 		p.Coeffs[8*i+1] = (uint16(a[13*i+1]) >> 5) | (uint16(a[13*i+2]) << 3) | ((uint16(a[13*i+3]) & 0x03) << 11)

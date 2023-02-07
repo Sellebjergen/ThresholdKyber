@@ -20,7 +20,7 @@ type LSSScheme interface {
 	Rec(d_is []*kyber.Poly) *kyber.Poly
 }
 
-func newParameterSet(name string) *OwcpaParams {
+func NewParameterSet(name string) *OwcpaParams {
 	var p OwcpaParams
 	switch name {
 	case "TKyber1024-Q16645":

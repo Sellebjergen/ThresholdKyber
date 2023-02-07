@@ -66,7 +66,7 @@ func (v *PolyVec) toBytes(r []byte) {
 // De-serialize vector of polynomials; inverse of polyVec.toBytes().
 func (v *PolyVec) fromBytes(a []byte) {
 	for i, p := range v.Vec {
-		p.fromBytes(a[i*polySize:])
+		p.FromBytes(a[i*polySize:])
 	}
 }
 
