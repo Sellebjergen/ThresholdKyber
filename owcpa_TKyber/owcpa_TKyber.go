@@ -52,23 +52,24 @@ func PartDec(params *OwcpaParams, sk_i kyberk2so.PolyVec, ct []byte, party int) 
 }
 
 func Combine(params *OwcpaParams, ct []byte, d_is []kyberk2so.Poly) kyberk2so.Poly {
-	p := 2
-
 	y := params.LSS_scheme.Rec(d_is)
-	unrounded := make([]float64, len(y))
+	return y
+}
+
+func ScaleRound(in kyberk2so.Poly, p int, q int) kyberk2so.Poly {
+	y := kyberk2so.PolyReduce(in)
+	unrounded := make([]float64, len(in))
 
 	for i := 0; i < len(unrounded); i++ {
-		unrounded[i] = (float64(p) / float64(params.Q)) * float64(y[i])
+		unrounded[i] = (float64(p) / float64(q)) * float64(y[i])
 	}
 
-	res := make([]int16, len(y))
+	res := make([]int16, len(in))
 	for i := 0; i < len(unrounded); i++ {
 		res[i] = int16(math.Round(unrounded[i]))
 	}
 
 	var out kyberk2so.Poly
 	copy(out[:], res)
-
-	out = kyberk2so.PolyReduce(out)
-	return y
+	return out
 }
