@@ -1,116 +1,57 @@
-// params.go - Kyber parameterization.
-//
-// To the extent possible under law, Yawning Angel has waived all copyright
-// and related or neighboring rights to the software, using the Creative
-// Commons "CC0" public domain dedication. See LICENSE or
-// <http://creativecommons.org/publicdomain/zero/1.0/> for full details.
+/* SPDX-FileCopyrightText: © 2020-2021 Nadim Kobeissi <nadim@symbolic.software>
+ * SPDX-License-Identifier: MIT */
 
-package kyber
+package kyberk2so
 
-const (
-	// SymSize is the size of the shared key (and certain internal parameters
-	// such as hashes and seeds) in bytes.
-	SymSize = 32
+const paramsN int = 256
+const paramsQ int = 3329
+const paramsQinv int = 62209
+const paramsSymBytes int = 32
+const paramsPolyBytes int = 384
+const paramsETAK512 int = 3
+const paramsETAK768K1024 int = 2
+const paramsPolyvecBytesK512 int = 2 * paramsPolyBytes
+const paramsPolyvecBytesK768 int = 3 * paramsPolyBytes
+const paramsPolyvecBytesK1024 int = 4 * paramsPolyBytes
+const paramsPolyCompressedBytesK512 int = 128
+const paramsPolyCompressedBytesK768 int = 128
+const paramsPolyCompressedBytesK1024 int = 160
+const paramsPolyvecCompressedBytesK512 int = 2 * 320
+const paramsPolyvecCompressedBytesK768 int = 3 * 320
+const paramsPolyvecCompressedBytesK1024 int = 4 * 352
+const paramsIndcpaPublicKeyBytesK512 int = paramsPolyvecBytesK512 + paramsSymBytes
+const paramsIndcpaPublicKeyBytesK768 int = paramsPolyvecBytesK768 + paramsSymBytes
+const paramsIndcpaPublicKeyBytesK1024 int = paramsPolyvecBytesK1024 + paramsSymBytes
+const paramsIndcpaSecretKeyBytesK512 int = 2 * paramsPolyBytes
+const paramsIndcpaSecretKeyBytesK768 int = 3 * paramsPolyBytes
+const paramsIndcpaSecretKeyBytesK1024 int = 4 * paramsPolyBytes
 
-	kyberN = 256
-	kyberQ = 7681
+// Kyber512SKBytes is a constant representing the byte length of private keys in Kyber-512.
+const Kyber512SKBytes int = paramsPolyvecBytesK512 + ((paramsPolyvecBytesK512 + paramsSymBytes) + 2*paramsSymBytes)
 
-	polySize           = 416
-	polyCompressedSize = 96
+// Kyber768SKBytes is a constant representing the byte length of private keys in Kyber-768.
+const Kyber768SKBytes int = paramsPolyvecBytesK768 + ((paramsPolyvecBytesK768 + paramsSymBytes) + 2*paramsSymBytes)
 
-	compressedCoeffSize = 352
-)
+// Kyber1024SKBytes is a constant representing the byte length of private keys in Kyber-1024.
+const Kyber1024SKBytes int = paramsPolyvecBytesK1024 + ((paramsPolyvecBytesK1024 + paramsSymBytes) + 2*paramsSymBytes)
 
-var (
-	// Kyber512 is the Kyber-512 parameter set, which aims to provide security
-	// equivalent to AES-128.
-	//
-	// This parameter set has a 1632 byte private key, 736 byte public key,
-	// and a 800 byte cipher text.
-	Kyber512 = newParameterSet("Kyber-512", 2)
+// Kyber512PKBytes is a constant representing the byte length of public keys in Kyber-512.
+const Kyber512PKBytes int = paramsPolyvecBytesK512 + paramsSymBytes
 
-	// Kyber768 is the Kyber-768 parameter set, which aims to provide security
-	// equivalent to AES-192.
-	//
-	// This parameter set has a 2400 byte private key, 1088 byte public key,
-	// and a 1152 byte cipher text.
-	Kyber768 = newParameterSet("Kyber-768", 3)
+// Kyber768PKBytes is a constant representing the byte length of public keys in Kyber-768.
+const Kyber768PKBytes int = paramsPolyvecBytesK768 + paramsSymBytes
 
-	// Kyber1024 is the Kyber-1024 parameter set, which aims to provide
-	// security equivalent to AES-256.
-	//
-	// This parameter set has a 3168 byte private key, 1440 byte public key,
-	// and a 1504 byte cipher text.
-	Kyber1024 = newParameterSet("Kyber-1024", 4)
-)
+// Kyber1024PKBytes is a constant representing the byte length of public keys in Kyber-1024.
+const Kyber1024PKBytes int = paramsPolyvecBytesK1024 + paramsSymBytes
 
-// ParameterSet is a Kyber parameter set.
-type ParameterSet struct {
-	name string
+// Kyber512CTBytes is a constant representing the byte length of ciphertexts in Kyber-512.
+const Kyber512CTBytes int = paramsPolyvecCompressedBytesK512 + paramsPolyCompressedBytesK512
 
-	k   int
-	eta int
+// Kyber768CTBytes is a constant representing the byte length of ciphertexts in Kyber-768.
+const Kyber768CTBytes int = paramsPolyvecCompressedBytesK768 + paramsPolyCompressedBytesK768
 
-	polyVecSize           int
-	polyVecCompressedSize int
+// Kyber1024CTBytes is a constant representing the byte length of ciphertexts in Kyber-1024.
+const Kyber1024CTBytes int = paramsPolyvecCompressedBytesK1024 + paramsPolyCompressedBytesK1024
 
-	indcpaMsgSize       int
-	indcpaPublicKeySize int
-	IndcpaSecretKeySize int
-	indcpaSize          int
-
-	publicKeySize  int
-	secretKeySize  int
-	cipherTextSize int
-}
-
-// Name returns the name of a given ParameterSet.
-func (p *ParameterSet) Name() string {
-	return p.name
-}
-
-// PublicKeySize returns the size of a public key in bytes.
-func (p *ParameterSet) PublicKeySize() int {
-	return p.publicKeySize
-}
-
-// PrivateKeySize returns the size of a private key in bytes.
-func (p *ParameterSet) PrivateKeySize() int {
-	return p.secretKeySize
-}
-
-// cipherTextSize returns the size of a cipher text in bytes.
-func (p *ParameterSet) CipherTextSize() int {
-	return p.cipherTextSize
-}
-
-func newParameterSet(name string, k int) *ParameterSet {
-	var p ParameterSet
-
-	p.name = name
-	p.k = k
-	switch k {
-	case 2:
-		p.eta = 5
-	case 3:
-		p.eta = 4
-	case 4:
-		p.eta = 3
-	default:
-		panic("kyber: k must be in {2,3,4}")
-	}
-
-	p.polyVecSize = k * polySize
-	p.polyVecCompressedSize = k * compressedCoeffSize
-
-	p.indcpaMsgSize = SymSize
-	p.indcpaPublicKeySize = p.polyVecCompressedSize + SymSize
-	p.IndcpaSecretKeySize = p.polyVecSize
-	p.indcpaSize = p.polyVecCompressedSize + polyCompressedSize
-
-	p.publicKeySize = p.indcpaPublicKeySize
-	p.secretKeySize = p.IndcpaSecretKeySize + p.indcpaPublicKeySize + 2*SymSize // 32 bytes of additional space to save H(pk)
-	p.cipherTextSize = p.indcpaSize
-
-	return &p
-}
+// KyberSSBytes is a constant representing the byte length of shared secrets in Kyber.
+const KyberSSBytes int = 32

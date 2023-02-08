@@ -1,220 +1,341 @@
-// kem_test.go - Kyber KEM tests.
-//
-// To the extent possible under law, Yawning Angel has waived all copyright
-// and related or neighboring rights to the software, using the Creative
-// Commons "CC0" public domain dedication. See LICENSE or
-// <http://creativecommons.org/publicdomain/zero/1.0/> for full details.
+/* SPDX-FileCopyrightText: © 2020-2021 Nadim Kobeissi <nadim@symbolic.software>
+ * SPDX-License-Identifier: MIT */
 
-package kyber
+package kyberk2so
 
 import (
-	"bytes"
-	"crypto/rand"
+	"crypto/subtle"
+	"encoding/hex"
+	"io/ioutil"
+	"log"
+	"path/filepath"
+	"regexp"
+	"strings"
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
-const nTests = 100
+type kemTest512 struct {
+	privateKey   [Kyber512SKBytes]byte
+	publicKey    [Kyber512PKBytes]byte
+	ciphertext   [Kyber512CTBytes]byte
+	sharedSecret [KyberSSBytes]byte
+}
 
-var (
-	allParams = []*ParameterSet{
-		Kyber512,
-		Kyber768,
-		Kyber1024,
+type kemTest768 struct {
+	privateKey   [Kyber768SKBytes]byte
+	publicKey    [Kyber768PKBytes]byte
+	ciphertext   [Kyber768CTBytes]byte
+	sharedSecret [KyberSSBytes]byte
+}
+
+type kemTest1024 struct {
+	privateKey   [Kyber1024SKBytes]byte
+	publicKey    [Kyber1024PKBytes]byte
+	ciphertext   [Kyber1024CTBytes]byte
+	sharedSecret [KyberSSBytes]byte
+}
+
+var kemTests512, kemTests768, kemTests1024 = func() ([100]kemTest512, [100]kemTest768, [100]kemTest1024) {
+	var kt512 [100]kemTest512
+	var kt768 [100]kemTest768
+	var kt1024 [100]kemTest1024
+	rsps := [3]string{
+		"PQCkemKAT_1632.rsp",
+		"PQCkemKAT_2400.rsp",
+		"PQCkemKAT_3168.rsp",
 	}
-
-	canAccelerate bool
-)
-
-func mustInitHardwareAcceleration() {
-	initHardwareAcceleration()
-	if !IsHardwareAccelerated() {
-		panic("initHardwareAcceleration() failed")
-	}
-}
-
-func TestKEM(t *testing.T) {
-	forceDisableHardwareAcceleration()
-	doTestKEM(t)
-
-	if !canAccelerate {
-		t.Log("Hardware acceleration not supported on this host.")
-		return
-	}
-	mustInitHardwareAcceleration()
-	doTestKEM(t)
-}
-
-func doTestKEM(t *testing.T) {
-	impl := "_" + hardwareAccelImpl.name
-	for _, p := range allParams {
-		t.Run(p.Name()+"_Keys"+impl, func(t *testing.T) { doTestKEMKeys(t, p) })
-		t.Run(p.Name()+"_Invalid_SecretKey_A"+impl, func(t *testing.T) { doTestKEMInvalidSkA(t, p) })
-		t.Run(p.Name()+"_Invalid_CipherText"+impl, func(t *testing.T) { doTestKEMInvalidCipherText(t, p) })
-	}
-}
-
-func doTestKEMKeys(t *testing.T, p *ParameterSet) {
-	require := require.New(t)
-
-	t.Logf("PrivateKeySize(): %v", p.PrivateKeySize())
-	t.Logf("PublicKeySize(): %v", p.PublicKeySize())
-	t.Logf("cipherTextSize(): %v", p.CipherTextSize())
-
-	for i := 0; i < nTests; i++ {
-		// Generate a key pair.
-		pk, sk, err := p.GenerateKeyPair(rand.Reader)
-		require.NoError(err, "GenerateKeyPair()")
-
-		// Test serialization.
-		b := sk.Bytes()
-		require.Len(b, p.PrivateKeySize(), "sk.Bytes(): Length")
-		sk2, err := p.PrivateKeyFromBytes(b)
-		require.NoError(err, "PrivateKeyFromBytes(b)")
-		requirePrivateKeyEqual(require, sk, sk2)
-
-		b = pk.Bytes()
-		require.Len(b, p.PublicKeySize(), "pk.Bytes(): Length")
-		pk2, err := p.PublicKeyFromBytes(b)
-		require.NoError(err, "PublicKeyFromBytes(b)")
-		requirePublicKeyEqual(require, pk, pk2)
-
-		// Test encrypt/decrypt.
-		ct, ss, err := pk.KEMEncrypt(rand.Reader)
-		require.NoError(err, "KEMEncrypt()")
-		require.Len(ct, p.CipherTextSize(), "KEMEncrypt(): ct Length")
-		require.Len(ss, SymSize, "KEMEncrypt(): ss Length")
-
-		ss2 := sk.KEMDecrypt(ct)
-		require.Equal(ss, ss2, "KEMDecrypt(): ss")
-	}
-}
-
-func doTestKEMInvalidSkA(t *testing.T, p *ParameterSet) {
-	require := require.New(t)
-
-	for i := 0; i < nTests; i++ {
-		// Alice generates a public key.
-		pk, skA, err := p.GenerateKeyPair(rand.Reader)
-		require.NoError(err, "GenerateKeyPair()")
-
-		// Bob derives a secret key and creates a response.
-		sendB, keyB, err := pk.KEMEncrypt(rand.Reader)
-		require.NoError(err, "KEMEncrypt()")
-
-		// Replace secret key with random values.
-		_, err = rand.Read(skA.sk.Packed)
-		require.NoError(err, "rand.Read()")
-
-		// Alice uses Bob's response to get her secret key.
-		keyA := skA.KEMDecrypt(sendB)
-		require.NotEqual(keyA, keyB, "KEMDecrypt(): ss")
-	}
-}
-
-func doTestKEMInvalidCipherText(t *testing.T, p *ParameterSet) {
-	require := require.New(t)
-	var rawPos [2]byte
-
-	ciphertextSize := p.CipherTextSize()
-
-	for i := 0; i < nTests; i++ {
-		_, err := rand.Read(rawPos[:])
-		require.NoError(err, "rand.Read()")
-		pos := (int(rawPos[0]) << 8) | int(rawPos[1])
-
-		// Alice generates a public key.
-		pk, skA, err := p.GenerateKeyPair(rand.Reader)
-		require.NoError(err, "GenerateKeyPair()")
-
-		// Bob derives a secret key and creates a response.
-		sendB, keyB, err := pk.KEMEncrypt(rand.Reader)
-		require.NoError(err, "KEMEncrypt()")
-
-		// Change some byte in the ciphertext (i.e., encapsulated key).
-		sendB[pos%ciphertextSize] ^= 23
-
-		// Alice uses Bob's response to get her secret key.
-		keyA := skA.KEMDecrypt(sendB)
-		require.NotEqual(keyA, keyB, "KEMDecrypt(): ss")
-	}
-}
-
-func requirePrivateKeyEqual(require *require.Assertions, a, b *PrivateKey) {
-	require.EqualValues(a.sk, b.sk, "sk (indcpaSecretKey)")
-	require.Equal(a.z, b.z, "z (random bytes)")
-	requirePublicKeyEqual(require, &a.PublicKey, &b.PublicKey)
-}
-
-func requirePublicKeyEqual(require *require.Assertions, a, b *PublicKey) {
-	require.EqualValues(a.pk, b.pk, "pk (indcpaPublicKey)")
-	require.Equal(a.p, b.p, "p (ParameterSet)")
-}
-
-func BenchmarkKEM(b *testing.B) {
-	forceDisableHardwareAcceleration()
-	doBenchmarkKEM(b)
-
-	if !canAccelerate {
-		b.Log("Hardware acceleration not supported on this host.")
-		return
-	}
-	mustInitHardwareAcceleration()
-	doBenchmarkKEM(b)
-}
-
-func doBenchmarkKEM(b *testing.B) {
-	impl := "_" + hardwareAccelImpl.name
-	for _, p := range allParams {
-		b.Run(p.Name()+"_GenerateKeyPair"+impl, func(b *testing.B) { doBenchKEMGenerateKeyPair(b, p) })
-		b.Run(p.Name()+"_KEMEncrypt"+impl, func(b *testing.B) { doBenchKEMEncDec(b, p, true) })
-		b.Run(p.Name()+"_KEMDecrypt"+impl, func(b *testing.B) { doBenchKEMEncDec(b, p, false) })
-	}
-}
-
-func doBenchKEMGenerateKeyPair(b *testing.B, p *ParameterSet) {
-	for i := 0; i < b.N; i++ {
-		_, _, err := p.GenerateKeyPair(rand.Reader)
+	for r, rsp := range rsps {
+		katPath := filepath.Join("assets", rsp)
+		katBytes, err := ioutil.ReadFile(katPath)
 		if err != nil {
-			b.Fatalf("GenerateKeyPair(): %v", err)
+			log.Fatal(err)
+		}
+		kat := string(katBytes)
+		rPk := regexp.MustCompile(`pk = [A-F0-9]+\n`)
+		rSk := regexp.MustCompile(`sk = [A-F0-9]+\n`)
+		rCt := regexp.MustCompile(`ct = [A-F0-9]+\n`)
+		rSs := regexp.MustCompile(`ss = [A-F0-9]+\n`)
+		allPk := rPk.FindAllString(kat, -1)
+		allSk := rSk.FindAllString(kat, -1)
+		allCt := rCt.FindAllString(kat, -1)
+		allSs := rSs.FindAllString(kat, -1)
+		if len(allPk) != 100 {
+			log.Fatal("not all public key test vectors were read")
+		}
+		if len(allSk) != 100 {
+			log.Fatal("not all private key test vectors were read")
+		}
+		if len(allCt) != 100 {
+			log.Fatal("not all ciphertext test vectors were read")
+		}
+		if len(allSs) != 100 {
+			log.Fatal("not all shared secret test vectors were read")
+		}
+		for i := 0; i < len(allPk); i++ {
+			switch r {
+			case 0:
+				var privateKey [Kyber512SKBytes]byte
+				var publicKey [Kyber512PKBytes]byte
+				var ciphertext [Kyber512CTBytes]byte
+				var sharedSecret [KyberSSBytes]byte
+				sk, err := hex.DecodeString(strings.TrimSuffix(allSk[i][5:], "\n"))
+				if err != nil {
+					log.Fatal(err)
+				}
+				pk, err := hex.DecodeString(strings.TrimSuffix(allPk[i][5:], "\n"))
+				if err != nil {
+					log.Fatal(err)
+				}
+				ct, err := hex.DecodeString(strings.TrimSuffix(allCt[i][5:], "\n"))
+				if err != nil {
+					log.Fatal(err)
+				}
+				ss, err := hex.DecodeString(strings.TrimSuffix(allSs[i][5:], "\n"))
+				if err != nil {
+					log.Fatal(err)
+				}
+				copy(privateKey[:], sk)
+				copy(publicKey[:], pk)
+				copy(ciphertext[:], ct)
+				copy(sharedSecret[:], ss)
+				kt512[i] = kemTest512{
+					privateKey:   privateKey,
+					publicKey:    publicKey,
+					ciphertext:   ciphertext,
+					sharedSecret: sharedSecret,
+				}
+			case 1:
+				var privateKey [Kyber768SKBytes]byte
+				var publicKey [Kyber768PKBytes]byte
+				var ciphertext [Kyber768CTBytes]byte
+				var sharedSecret [KyberSSBytes]byte
+				sk, err := hex.DecodeString(strings.TrimSuffix(allSk[i][5:], "\n"))
+				if err != nil {
+					log.Fatal(err)
+				}
+				pk, err := hex.DecodeString(strings.TrimSuffix(allPk[i][5:], "\n"))
+				if err != nil {
+					log.Fatal(err)
+				}
+				ct, err := hex.DecodeString(strings.TrimSuffix(allCt[i][5:], "\n"))
+				if err != nil {
+					log.Fatal(err)
+				}
+				ss, err := hex.DecodeString(strings.TrimSuffix(allSs[i][5:], "\n"))
+				if err != nil {
+					log.Fatal(err)
+				}
+				copy(privateKey[:], sk)
+				copy(publicKey[:], pk)
+				copy(ciphertext[:], ct)
+				copy(sharedSecret[:], ss)
+				kt768[i] = kemTest768{
+					privateKey:   privateKey,
+					publicKey:    publicKey,
+					ciphertext:   ciphertext,
+					sharedSecret: sharedSecret,
+				}
+			case 2:
+				var privateKey [Kyber1024SKBytes]byte
+				var publicKey [Kyber1024PKBytes]byte
+				var ciphertext [Kyber1024CTBytes]byte
+				var sharedSecret [KyberSSBytes]byte
+				sk, err := hex.DecodeString(strings.TrimSuffix(allSk[i][5:], "\n"))
+				if err != nil {
+					log.Fatal(err)
+				}
+				pk, err := hex.DecodeString(strings.TrimSuffix(allPk[i][5:], "\n"))
+				if err != nil {
+					log.Fatal(err)
+				}
+				ct, err := hex.DecodeString(strings.TrimSuffix(allCt[i][5:], "\n"))
+				if err != nil {
+					log.Fatal(err)
+				}
+				ss, err := hex.DecodeString(strings.TrimSuffix(allSs[i][5:], "\n"))
+				if err != nil {
+					log.Fatal(err)
+				}
+				copy(privateKey[:], sk)
+				copy(publicKey[:], pk)
+				copy(ciphertext[:], ct)
+				copy(sharedSecret[:], ss)
+				kt1024[i] = kemTest1024{
+					privateKey:   privateKey,
+					publicKey:    publicKey,
+					ciphertext:   ciphertext,
+					sharedSecret: sharedSecret,
+				}
+			}
+		}
+	}
+	return kt512, kt768, kt1024
+}()
+
+func TestVectors512(t *testing.T) {
+	for i, test := range kemTests512 {
+		ssB, err := KemDecrypt512(test.ciphertext, test.privateKey)
+		if err != nil {
+			t.Error(err)
+		}
+		if subtle.ConstantTimeCompare(test.sharedSecret[:], ssB[:]) == 0 {
+			t.Errorf("kyber-512 test vector %d failed", i)
 		}
 	}
 }
 
-func doBenchKEMEncDec(b *testing.B, p *ParameterSet, isEnc bool) {
-	b.StopTimer()
-	for i := 0; i < b.N; i++ {
-		pk, skA, err := p.GenerateKeyPair(rand.Reader)
+func TestVectors768(t *testing.T) {
+	for i, test := range kemTests768 {
+		ssB, err := KemDecrypt768(test.ciphertext, test.privateKey)
 		if err != nil {
-			b.Fatalf("GenerateKeyPair(): %v", err)
+			t.Error(err)
 		}
-
-		if isEnc {
-			b.StartTimer()
-		}
-
-		sendB, keyB, err := pk.KEMEncrypt(rand.Reader)
-		if err != nil {
-			b.Fatalf("KEMEncrypt(): %v", err)
-		}
-		if isEnc {
-			b.StopTimer()
-		} else {
-			b.StartTimer()
-		}
-
-		keyA := skA.KEMDecrypt(sendB)
-		if !isEnc {
-			b.StopTimer()
-		}
-
-		if !bytes.Equal(keyA, keyB) {
-			b.Fatalf("KEMDecrypt(): key mismatch")
+		if subtle.ConstantTimeCompare(test.sharedSecret[:], ssB[:]) == 0 {
+			t.Errorf("kyber-768 test vector %d failed", i)
 		}
 	}
 }
 
-func init() {
-	canAccelerate = IsHardwareAccelerated()
+func TestVectors1024(t *testing.T) {
+	for i, test := range kemTests1024 {
+		ssB, err := KemDecrypt1024(test.ciphertext, test.privateKey)
+		if err != nil {
+			t.Error(err)
+		}
+		if subtle.ConstantTimeCompare(test.sharedSecret[:], ssB[:]) == 0 {
+			t.Errorf("kyber-1024 test vector %d failed", i)
+		}
+	}
+}
+
+func TestSelf512(t *testing.T) {
+	for i := 0; i < 1000; i++ {
+		privateKey, publicKey, err := KemKeypair512()
+		if err != nil {
+			t.Error(err)
+		}
+		ciphertext, ssA, err := KemEncrypt512(publicKey)
+		if err != nil {
+			t.Error(err)
+		}
+		ssB, err := KemDecrypt512(ciphertext, privateKey)
+		if err != nil {
+			t.Error(err)
+		}
+		if subtle.ConstantTimeCompare(ssA[:], ssB[:]) == 0 {
+			t.Errorf("kyber-512 self-test failed at iteration %d", i)
+		}
+	}
+}
+
+func TestSelf768(t *testing.T) {
+	for i := 0; i < 1000; i++ {
+		privateKey, publicKey, err := KemKeypair768()
+		if err != nil {
+			t.Error(err)
+		}
+		ciphertext, ssA, err := KemEncrypt768(publicKey)
+		if err != nil {
+			t.Error(err)
+		}
+		ssB, err := KemDecrypt768(ciphertext, privateKey)
+		if err != nil {
+			t.Error(err)
+		}
+		if subtle.ConstantTimeCompare(ssA[:], ssB[:]) == 0 {
+			t.Errorf("kyber-768 self-test failed at iteration %d", i)
+		}
+	}
+}
+
+func TestSelf1024(t *testing.T) {
+	for i := 0; i < 1000; i++ {
+		privateKey, publicKey, err := KemKeypair1024()
+		if err != nil {
+			t.Error(err)
+		}
+		ciphertext, ssA, err := KemEncrypt1024(publicKey)
+		if err != nil {
+			t.Error(err)
+		}
+		ssB, err := KemDecrypt1024(ciphertext, privateKey)
+		if err != nil {
+			t.Error(err)
+		}
+		if subtle.ConstantTimeCompare(ssA[:], ssB[:]) == 0 {
+			t.Errorf("kyber-1024 self-test failed at iteration %d", i)
+		}
+	}
+}
+
+func BenchmarkKemKeypair512(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		_, _, err := KemKeypair512()
+		if err != nil {
+			b.Error(err)
+		}
+	}
+}
+
+func BenchmarkKemKeypair768(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		_, _, err := KemKeypair768()
+		if err != nil {
+			b.Error(err)
+		}
+	}
+}
+
+func BenchmarkKemKeypair1024(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		_, _, err := KemKeypair1024()
+		if err != nil {
+			b.Error(err)
+		}
+	}
+}
+
+func BenchmarkKemEncrypt512(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		KemEncrypt512(kemTests512[n%99].publicKey)
+	}
+}
+
+func BenchmarkKemEncrypt768(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		KemEncrypt768(kemTests768[n%99].publicKey)
+	}
+}
+
+func BenchmarkKemEncrypt1024(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		KemEncrypt1024(kemTests1024[n%99].publicKey)
+	}
+}
+
+func BenchmarkKemDecrypt512(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		KemDecrypt512(
+			kemTests512[n%99].ciphertext,
+			kemTests512[n%99].privateKey,
+		)
+	}
+}
+
+func BenchmarkKemDecrypt768(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		KemDecrypt768(
+			kemTests768[n%99].ciphertext,
+			kemTests768[n%99].privateKey,
+		)
+	}
+}
+
+func BenchmarkKemDecrypt1024(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		KemDecrypt1024(
+			kemTests1024[n%99].ciphertext,
+			kemTests1024[n%99].privateKey,
+		)
+	}
 }
