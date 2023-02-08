@@ -58,7 +58,6 @@ func Combine(params *owcpa.OwcpaParams, ct *indcpaCiphertext, d_is [][]*kyber.Po
 	x_prime := make([]*kyber.Poly, delta)
 	for j := 0; j < delta; j++ {
 		x_prime[j] = owcpa.Combine(params, ct.encyptions[j], d_is[j])
-
 	}
 	fmt.Println("x_1'")
 	fmt.Println(x_prime[0])

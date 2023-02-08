@@ -1,6 +1,7 @@
 package owcpa_TKyber
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -67,6 +68,7 @@ func TestAdvancedCase(t *testing.T) {
 
 	output_msg := make([]byte, 32)
 	combined.ToMsg(output_msg)
+	fmt.Println(combined)
 
 	if !reflect.DeepEqual(msg, output_msg) {
 		t.Errorf("Error")

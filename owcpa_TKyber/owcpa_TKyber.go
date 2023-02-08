@@ -2,6 +2,7 @@ package owcpa_TKyber
 
 import (
 	"crypto/rand"
+	"math"
 
 	"ThresholdKyber.com/m/kyber"
 )
@@ -54,13 +55,13 @@ func PartDec(params *OwcpaParams, sk_i kyber.PolyVec, ct []byte, party int) *kyb
 }
 
 func Combine(params *OwcpaParams, ct []byte, d_is []*kyber.Poly) *kyber.Poly {
-	/* p := 2 */
+	p := 2
 
 	y := params.LSS_scheme.Rec(d_is)
-	/* unrounded := make([]float64, len(y.Coeffs))
+	unrounded := make([]float64, len(y.Coeffs))
 
 	for i := 0; i < len(unrounded); i++ {
-		unrounded[i] = (float64(p) / float64(rq.q)) * float64(y.Coeffs[i])
+		unrounded[i] = (float64(p) / float64(params.Q)) * float64(y.Coeffs[i])
 	}
 
 	res := make([]uint16, len(y.Coeffs))
@@ -72,7 +73,7 @@ func Combine(params *OwcpaParams, ct []byte, d_is []*kyber.Poly) *kyber.Poly {
 
 	for i := 0; i < len(out.Coeffs); i++ {
 		out.Coeffs[i] = kyber.Freeze(out.Coeffs[i])
-	} */
+	}
 
 	return y
 }

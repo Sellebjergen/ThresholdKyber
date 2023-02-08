@@ -43,7 +43,7 @@ func SharePolynomial(toShare *kyber.Poly, n int) []*kyber.Poly {
 	shares := make([]*kyber.Poly, n)
 
 	for i := 0; i <= n-2; i++ {
-		shares[i] = SampleUnifPolynomial(3329) // TODO: Kyber params
+		shares[i] = SampleUnifPolynomial(7681) // TODO: Kyber params
 	}
 
 	shares[n-1] = Copy(toShare)
