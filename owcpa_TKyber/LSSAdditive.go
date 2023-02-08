@@ -3,23 +3,24 @@ package owcpa_TKyber
 import (
 	"math/rand"
 
-	"ThresholdKyber.com/m/kyber"
+	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
 )
 
 type LSSAdditive struct{}
 
 // Currently additively secret sharing is hardcoded, would be nice to extract.
-func (s *LSSAdditive) Share(sk kyber.PolyVec, n int) []kyber.PolyVec {
-	shares := make([]kyber.PolyVec, n)
+func (s *LSSAdditive) Share(sk kyberk2so.PolyVec, n int) []kyberk2so.PolyVec {
+	shares := make([]kyberk2so.PolyVec, n)
+	paramsK := 2
 
 	for i := range shares {
-		shares[i] = kyber.Kyber512.AllocPolyVec()
+		shares[i] = kyberk2so.PolyvecNew(paramsK)
 	}
 
-	for poly, sk_poly := range sk.Vec {
+	for poly, sk_poly := range sk {
 		poly_shares := SharePolynomial(sk_poly, n)
 		for i := 0; i < n; i++ {
-			shares[i].Vec[poly] = poly_shares[i]
+			shares[i][poly] = poly_shares[i]
 		}
 	}
 
@@ -27,7 +28,7 @@ func (s *LSSAdditive) Share(sk kyber.PolyVec, n int) []kyber.PolyVec {
 }
 
 func (s *LSSAdditive) Rec(d_is []*kyber.Poly) *kyber.Poly {
-	var out kyber.Poly
+	var out kyberk2so.Poly
 
 	for i := 0; i < len(d_is); i++ {
 		out.Add(&out, d_is[i])
