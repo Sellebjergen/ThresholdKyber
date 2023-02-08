@@ -3,16 +3,17 @@
 
 package kyberk2so
 
-const paramsN int = 256
-const paramsQ int = 3329
+const ParamsN int = 256
+const ParamsQ int = 3329
+const ParamsK int = 2
 const paramsQinv int = 62209
 const paramsSymBytes int = 32
-const paramsPolyBytes int = 384
+const ParamsPolyBytes int = 384
 const paramsETAK512 int = 3
 const paramsETAK768K1024 int = 2
-const paramsPolyvecBytesK512 int = 2 * paramsPolyBytes
-const paramsPolyvecBytesK768 int = 3 * paramsPolyBytes
-const paramsPolyvecBytesK1024 int = 4 * paramsPolyBytes
+const paramsPolyvecBytesK512 int = 2 * ParamsPolyBytes
+const paramsPolyvecBytesK768 int = 3 * ParamsPolyBytes
+const paramsPolyvecBytesK1024 int = 4 * ParamsPolyBytes
 const paramsPolyCompressedBytesK512 int = 128
 const paramsPolyCompressedBytesK768 int = 128
 const paramsPolyCompressedBytesK1024 int = 160
@@ -22,9 +23,9 @@ const paramsPolyvecCompressedBytesK1024 int = 4 * 352
 const paramsIndcpaPublicKeyBytesK512 int = paramsPolyvecBytesK512 + paramsSymBytes
 const paramsIndcpaPublicKeyBytesK768 int = paramsPolyvecBytesK768 + paramsSymBytes
 const paramsIndcpaPublicKeyBytesK1024 int = paramsPolyvecBytesK1024 + paramsSymBytes
-const paramsIndcpaSecretKeyBytesK512 int = 2 * paramsPolyBytes
-const paramsIndcpaSecretKeyBytesK768 int = 3 * paramsPolyBytes
-const paramsIndcpaSecretKeyBytesK1024 int = 4 * paramsPolyBytes
+const paramsIndcpaSecretKeyBytesK512 int = 2 * ParamsPolyBytes
+const paramsIndcpaSecretKeyBytesK768 int = 3 * ParamsPolyBytes
+const paramsIndcpaSecretKeyBytesK1024 int = 4 * ParamsPolyBytes
 
 // Kyber512SKBytes is a constant representing the byte length of private keys in Kyber-512.
 const Kyber512SKBytes int = paramsPolyvecBytesK512 + ((paramsPolyvecBytesK512 + paramsSymBytes) + 2*paramsSymBytes)

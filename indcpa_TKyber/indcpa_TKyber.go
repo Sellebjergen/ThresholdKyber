@@ -6,24 +6,23 @@ import (
 
 	"golang.org/x/crypto/sha3"
 
-	"ThresholdKyber.com/m/kyber"
+	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
 	owcpa "ThresholdKyber.com/m/owcpa_TKyber"
 )
 
 type indcpaCiphertext struct {
-	cF         *kyber.Poly
+	cF         kyberk2so.Poly
 	encyptions [][]byte
 	cG         []byte
 }
 
-func Setup(params *owcpa.OwcpaParams, n int, t int) (*kyber.IndcpaPublicKey, []kyber.PolyVec) {
+func Setup(params *owcpa.OwcpaParams, n int, t int) ([]byte, []kyberk2so.PolyVec) {
 	return owcpa.Setup(params, n, t)
 }
 
-func Enc(params *owcpa.OwcpaParams, msg []byte, pk *kyber.IndcpaPublicKey, delta int) *indcpaCiphertext {
-	var mp kyber.Poly
-	mp.FromMsg(msg)
-	x := make([]*kyber.Poly, delta)
+func Enc(params *owcpa.OwcpaParams, msg []byte, pk []byte, delta int) *indcpaCiphertext {
+	mp := kyberk2so.PolyFromMsg(msg)
+	x := make([]kyberk2so.Poly, delta)
 	for i := 0; i < delta; i++ {
 		x[i] = owcpa.SampleUnifPolynomial(2)
 	}
@@ -32,11 +31,10 @@ func Enc(params *owcpa.OwcpaParams, msg []byte, pk *kyber.IndcpaPublicKey, delta
 	c := new(indcpaCiphertext)
 	c.encyptions = make([][]byte, delta)
 
-	mp.Add(&mp, F(x))
-	c.cF = &mp
+	mp = kyberk2so.PolyAdd(mp, F(x))
+	c.cF = mp
 	for i := 0; i < delta; i++ {
-		xi_bytes := make([]byte, 32)
-		x[i].ToMsg(xi_bytes)
+		xi_bytes := kyberk2so.PolyToMsg(x[i])
 		c.encyptions[i] = owcpa.Enc(params, xi_bytes, pk)
 	}
 	c.cG = G(x)
@@ -44,53 +42,48 @@ func Enc(params *owcpa.OwcpaParams, msg []byte, pk *kyber.IndcpaPublicKey, delta
 	return c
 }
 
-func PartDec(params *owcpa.OwcpaParams, sk_i kyber.PolyVec, ct *indcpaCiphertext, party int, delta int) []*kyber.Poly {
-	d_i := make([]*kyber.Poly, delta)
+func PartDec(params *owcpa.OwcpaParams, sk_i kyberk2so.PolyVec, ct *indcpaCiphertext, party int, delta int) []kyberk2so.Poly {
+	d_i := make([]kyberk2so.Poly, delta)
 	for j := 0; j < delta; j++ {
 		d_i[j] = owcpa.PartDec(params, sk_i, ct.encyptions[j], party)
 	}
 	return d_i
 }
 
-func Combine(params *owcpa.OwcpaParams, ct *indcpaCiphertext, d_is [][]*kyber.Poly) *kyber.Poly {
+func Combine(params *owcpa.OwcpaParams, ct *indcpaCiphertext, d_is [][]kyberk2so.Poly) kyberk2so.Poly {
 	delta := len(ct.encyptions)
-	var mp kyber.Poly
-	x_prime := make([]*kyber.Poly, delta)
+
+	x_prime := make([]kyberk2so.Poly, delta)
 	for j := 0; j < delta; j++ {
 		x_prime[j] = owcpa.Combine(params, ct.encyptions[j], d_is[j])
 	}
 	fmt.Println("x_1'")
 	fmt.Println(x_prime[0])
-	mp.Sub(ct.cF, F(x_prime))
+	mp := kyberk2so.PolySub(ct.cF, F(x_prime))
 
 	if !reflect.DeepEqual(ct.cG, G(x_prime)) {
 		panic("Error: c_(delta + 1) != G(x')")
 	}
 
-	return &mp
+	return mp
 }
 
-func F(x []*kyber.Poly) *kyber.Poly {
+func F(x []kyberk2so.Poly) kyberk2so.Poly {
 	hash := sha3.NewShake256()
-	output := make([]byte, 13*(7681/8)+12) // TODO: Ved ikke om længden er korrekt
+	output := make([]byte, 13*(7681/8)+12)
 	for i := 0; i < len(x); i++ {
-		poly_bytes := make([]byte, 13*(7681/8)+12)
-		x[i].ToBytes(poly_bytes)
+		poly_bytes := kyberk2so.PolyToBytes(x[i])
 		hash.Write(poly_bytes)
 	}
 	hash.Read(output)
-
-	p := new(kyber.Poly)
-	p.FromBytes(output)
-	return p
+	return kyberk2so.PolyFromBytes(output) // TODO: Er message space R_2 for IND-CPA fint?
 }
 
-func G(x []*kyber.Poly) []byte {
+func G(x []kyberk2so.Poly) []byte {
 	hash := sha3.NewShake256()
 	output := make([]byte, 2*100) // TODO: 100 er midlertidig, gider ikke på parameter safari lige nu
 	for i := 0; i < len(x); i++ {
-		poly_bytes := make([]byte, 13*(7681/8)+12)
-		x[i].ToBytes(poly_bytes)
+		poly_bytes := kyberk2so.PolyToBytes(x[i])
 		hash.Write(poly_bytes)
 	}
 	hash.Read(output)

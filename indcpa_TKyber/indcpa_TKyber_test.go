@@ -1,11 +1,10 @@
 package indcpa_TKyber
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
-	"ThresholdKyber.com/m/kyber"
+	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
 	owcpa "ThresholdKyber.com/m/owcpa_TKyber"
 	"ThresholdKyber.com/m/util"
 )
@@ -27,16 +26,13 @@ func TestSimpleCase(t *testing.T) {
 	d_2 := PartDec(params, sk_shares[1], ct, 1, delta)
 	d_3 := PartDec(params, sk_shares[2], ct, 2, delta)
 
-	d_is := [][]*kyber.Poly{d_1, d_2, d_3}
+	d_is := [][]kyberk2so.Poly{d_1, d_2, d_3}
 
 	d_is_transp := util.Transpose(d_is)
 
-	fmt.Println(d_is_transp)
-
 	combined := Combine(params, ct, d_is_transp)
 
-	output_msg := make([]byte, 32)
-	combined.ToMsg(output_msg)
+	output_msg := kyberk2so.PolyToMsg(combined)
 
 	if !reflect.DeepEqual(msg, output_msg) {
 		t.Errorf("Error")

@@ -27,21 +27,19 @@ func (s *LSSAdditive) Share(sk kyberk2so.PolyVec, n int) []kyberk2so.PolyVec {
 	return shares
 }
 
-func (s *LSSAdditive) Rec(d_is []*kyber.Poly) *kyber.Poly {
+func (s *LSSAdditive) Rec(d_is []kyberk2so.Poly) kyberk2so.Poly {
 	var out kyberk2so.Poly
 
 	for i := 0; i < len(d_is); i++ {
-		out.Add(&out, d_is[i])
+		out = kyberk2so.PolyAdd(out, d_is[i])
 	}
-	for i := 0; i < len(out.Coeffs); i++ {
-		out.Coeffs[i] = kyber.Freeze(out.Coeffs[i])
-	}
+	out = kyberk2so.PolyReduce(out)
 
-	return &out
+	return out
 }
 
-func SharePolynomial(toShare *kyber.Poly, n int) []*kyber.Poly {
-	shares := make([]*kyber.Poly, n)
+func SharePolynomial(toShare kyberk2so.Poly, n int) []kyberk2so.Poly {
+	shares := make([]kyberk2so.Poly, n)
 
 	for i := 0; i <= n-2; i++ {
 		shares[i] = SampleUnifPolynomial(7681) // TODO: Kyber params
@@ -49,24 +47,24 @@ func SharePolynomial(toShare *kyber.Poly, n int) []*kyber.Poly {
 
 	shares[n-1] = Copy(toShare)
 	for i := 0; i <= n-2; i++ {
-		shares[n-1].Sub(shares[n-1], shares[i])
+		shares[n-1] = kyberk2so.PolySub(shares[n-1], shares[i])
 	}
 
 	return shares
 }
 
-func SampleUnifPolynomial(q int) *kyber.Poly {
-	var out_coeff [256]uint16
+func SampleUnifPolynomial(q int) kyberk2so.Poly {
+	var out_coeff [kyberk2so.ParamsPolyBytes]int16
 	for i := 0; i < 256; i++ {
-		out_coeff[i] = uint16(rand.Intn(q)) // TODO: Kyber params
+		out_coeff[i] = int16(rand.Intn(q)) // TODO: Kyber params
 	}
-	return &kyber.Poly{Coeffs: out_coeff}
+	return kyberk2so.Poly(out_coeff)
 }
 
-func Copy(toCopy *kyber.Poly) *kyber.Poly {
-	var out kyber.Poly
-	coeff := toCopy.Coeffs
-	copy(out.Coeffs[:], coeff[:])
+func Copy(toCopy kyberk2so.Poly) kyberk2so.Poly {
+	var out kyberk2so.Poly
+	coeff := toCopy
+	copy(out[:], coeff[:])
 
-	return &out
+	return out
 }

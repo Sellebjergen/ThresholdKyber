@@ -5,23 +5,20 @@ import (
 	"reflect"
 	"testing"
 
-	"ThresholdKyber.com/m/kyber"
+	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
 )
 
 func TestCPAEncryptDecrypt(t *testing.T) {
-	ct := make([]byte, kyber.Kyber512.CipherTextSize())
 	msg := make([]byte, 32)
 	rand.Read(msg)
-	pk, sk, _ := kyber.Kyber512.IndcpaKeyPair(rand.Reader)
+
+	sk, pk, _ := kyberk2so.IndcpaKeypair(kyberk2so.ParamsK)
 
 	coins := make([]byte, 32)
 	rand.Read(coins)
+	ct, _ := kyberk2so.IndcpaEncrypt(msg, pk, coins, kyberk2so.ParamsK)
 
-	kyber.Kyber512.IndcpaEncrypt(ct, msg, pk, coins)
-
-	// Decrypt
-	output_msg := make([]byte, 32)
-	kyber.Kyber512.IndcpaDecrypt(output_msg, ct, sk)
+	output_msg := kyberk2so.IndcpaDecrypt(ct, sk, kyberk2so.ParamsK)
 
 	if !reflect.DeepEqual(msg, output_msg) {
 		t.Errorf("Error: Decrypt(Encrypt(M)) != M")

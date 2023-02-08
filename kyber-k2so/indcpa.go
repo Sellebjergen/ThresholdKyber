@@ -9,16 +9,16 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-// indcpaPackPublicKey serializes the public key as a concatenation of the
+// IndcpaPackPublicKey serializes the public key as a concatenation of the
 // serialized vector of polynomials of the public key, and the public seed
 // used to generate the matrix `A`.
-func indcpaPackPublicKey(publicKey polyvec, seed []byte, paramsK int) []byte {
+func IndcpaPackPublicKey(publicKey PolyVec, seed []byte, paramsK int) []byte {
 	return append(polyvecToBytes(publicKey, paramsK), seed...)
 }
 
-// indcpaUnpackPublicKey de-serializes the public key from a byte array
+// IndcpaUnpackPublicKey de-serializes the public key from a byte array
 // and represents the approximate inverse of indcpaPackPublicKey.
-func indcpaUnpackPublicKey(packedPublicKey []byte, paramsK int) (polyvec, []byte) {
+func IndcpaUnpackPublicKey(packedPublicKey []byte, paramsK int) (PolyVec, []byte) {
 	switch paramsK {
 	case 2:
 		publicKeyPolyvec := polyvecFromBytes(packedPublicKey[:paramsPolyvecBytesK512], paramsK)
@@ -35,28 +35,28 @@ func indcpaUnpackPublicKey(packedPublicKey []byte, paramsK int) (polyvec, []byte
 	}
 }
 
-// indcpaPackPrivateKey serializes the private key.
-func indcpaPackPrivateKey(privateKey polyvec, paramsK int) []byte {
+// IndcpaPackPrivateKey serializes the private key.
+func IndcpaPackPrivateKey(privateKey PolyVec, paramsK int) []byte {
 	return polyvecToBytes(privateKey, paramsK)
 }
 
-// indcpaUnpackPrivateKey de-serializes the private key and represents
+// IndcpaUnpackPrivateKey de-serializes the private key and represents
 // the inverse of indcpaPackPrivateKey.
-func indcpaUnpackPrivateKey(packedPrivateKey []byte, paramsK int) polyvec {
+func IndcpaUnpackPrivateKey(packedPrivateKey []byte, paramsK int) PolyVec {
 	return polyvecFromBytes(packedPrivateKey, paramsK)
 }
 
-// indcpaPackCiphertext serializes the ciphertext as a concatenation of
+// IndcpaPackCiphertext serializes the ciphertext as a concatenation of
 // the compressed and serialized vector of polynomials `b` and the
 // compressed and serialized polynomial `v`.
-func indcpaPackCiphertext(b polyvec, v poly, paramsK int) []byte {
+func IndcpaPackCiphertext(b PolyVec, v Poly, paramsK int) []byte {
 	return append(polyvecCompress(b, paramsK), polyCompress(v, paramsK)...)
 }
 
-// indcpaUnpackCiphertext de-serializes and decompresses the ciphertext
+// IndcpaUnpackCiphertext de-serializes and decompresses the ciphertext
 // from a byte array, and represents the approximate inverse of
 // indcpaPackCiphertext.
-func indcpaUnpackCiphertext(c []byte, paramsK int) (polyvec, poly) {
+func IndcpaUnpackCiphertext(c []byte, paramsK int) (PolyVec, Poly) {
 	switch paramsK {
 	case 2:
 		b := polyvecDecompress(c[:paramsPolyvecCompressedBytesK512], paramsK)
@@ -75,8 +75,8 @@ func indcpaUnpackCiphertext(c []byte, paramsK int) (polyvec, poly) {
 
 // indcpaRejUniform runs rejection sampling on uniform random bytes
 // to generate uniform random integers modulo `Q`.
-func indcpaRejUniform(buf []byte, bufl int, l int) (poly, int) {
-	var r poly
+func indcpaRejUniform(buf []byte, bufl int, l int) (Poly, int) {
+	var r Poly
 	var d1 uint16
 	var d2 uint16
 	i := 0
@@ -85,11 +85,11 @@ func indcpaRejUniform(buf []byte, bufl int, l int) (poly, int) {
 		d1 = (uint16((buf[j])>>0) | (uint16(buf[j+1]) << 8)) & 0xFFF
 		d2 = (uint16((buf[j+1])>>4) | (uint16(buf[j+2]) << 4)) & 0xFFF
 		j = j + 3
-		if d1 < uint16(paramsQ) {
+		if d1 < uint16(ParamsQ) {
 			r[i] = int16(d1)
 			i = i + 1
 		}
-		if i < l && d2 < uint16(paramsQ) {
+		if i < l && d2 < uint16(ParamsQ) {
 			r[i] = int16(d2)
 			i = i + 1
 		}
@@ -100,13 +100,13 @@ func indcpaRejUniform(buf []byte, bufl int, l int) (poly, int) {
 // indcpaGenMatrix deterministically generates a matrix `A` (or the transpose of `A`)
 // from a seed. Entries of the matrix are polynomials that look uniformly random.
 // Performs rejection sampling on the output of an extendable-output function (XOF).
-func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, error) {
-	r := make([]polyvec, paramsK)
+func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]PolyVec, error) {
+	r := make([]PolyVec, paramsK)
 	buf := make([]byte, 672)
 	xof := sha3.NewShake128()
 	ctr := 0
 	for i := 0; i < paramsK; i++ {
-		r[i] = polyvecNew(paramsK)
+		r[i] = PolyvecNew(paramsK)
 		for j := 0; j < paramsK; j++ {
 			xof.Reset()
 			var err error
@@ -116,16 +116,16 @@ func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]polyvec, erro
 				_, err = xof.Write(append(seed, []byte{byte(j), byte(i)}...))
 			}
 			if err != nil {
-				return []polyvec{}, err
+				return []PolyVec{}, err
 			}
 			_, err = xof.Read(buf)
 			if err != nil {
-				return []polyvec{}, err
+				return []PolyVec{}, err
 			}
-			r[i][j], ctr = indcpaRejUniform(buf[:504], 504, paramsN)
-			for ctr < paramsN {
-				missing, ctrn := indcpaRejUniform(buf[504:672], 168, paramsN-ctr)
-				for k := ctr; k < paramsN; k++ {
+			r[i][j], ctr = indcpaRejUniform(buf[:504], 504, ParamsN)
+			for ctr < ParamsN {
+				missing, ctrn := indcpaRejUniform(buf[504:672], 168, ParamsN-ctr)
+				for k := ctr; k < ParamsN; k++ {
 					r[i][j][k] = missing[k-ctr]
 				}
 				ctr = ctr + ctrn
@@ -144,12 +144,12 @@ func indcpaPrf(l int, key []byte, nonce byte) []byte {
 	return hash
 }
 
-// indcpaKeypair generates public and private keys for the CPA-secure
+// IndcpaKeypair generates public and private keys for the CPA-secure
 // public-key encryption scheme underlying Kyber.
-func indcpaKeypair(paramsK int) ([]byte, []byte, error) {
-	skpv := polyvecNew(paramsK)
-	pkpv := polyvecNew(paramsK)
-	e := polyvecNew(paramsK)
+func IndcpaKeypair(paramsK int) ([]byte, []byte, error) {
+	skpv := PolyvecNew(paramsK)
+	pkpv := PolyvecNew(paramsK)
+	e := PolyvecNew(paramsK)
 	buf := make([]byte, 2*paramsSymBytes)
 	h := sha3.New512()
 	_, err := rand.Read(buf[:paramsSymBytes])
@@ -176,25 +176,25 @@ func indcpaKeypair(paramsK int) ([]byte, []byte, error) {
 		e[i] = polyGetNoise(noiseSeed, nonce, paramsK)
 		nonce = nonce + 1
 	}
-	polyvecNtt(skpv, paramsK)
+	PolyvecNtt(skpv, paramsK)
 	polyvecReduce(skpv, paramsK)
-	polyvecNtt(e, paramsK)
+	PolyvecNtt(e, paramsK)
 	for i := 0; i < paramsK; i++ {
-		pkpv[i] = polyToMont(polyvecPointWiseAccMontgomery(a[i], skpv, paramsK))
+		pkpv[i] = polyToMont(PolyvecPointWiseAccMontgomery(a[i], skpv, paramsK))
 	}
 	polyvecAdd(pkpv, e, paramsK)
 	polyvecReduce(pkpv, paramsK)
-	return indcpaPackPrivateKey(skpv, paramsK), indcpaPackPublicKey(pkpv, publicSeed, paramsK), nil
+	return IndcpaPackPrivateKey(skpv, paramsK), IndcpaPackPublicKey(pkpv, publicSeed, paramsK), nil
 }
 
-// indcpaEncrypt is the encryption function of the CPA-secure
+// IndcpaEncrypt is the encryption function of the CPA-secure
 // public-key encryption scheme underlying Kyber.
-func indcpaEncrypt(m []byte, publicKey []byte, coins []byte, paramsK int) ([]byte, error) {
-	sp := polyvecNew(paramsK)
-	ep := polyvecNew(paramsK)
-	bp := polyvecNew(paramsK)
-	publicKeyPolyvec, seed := indcpaUnpackPublicKey(publicKey, paramsK)
-	k := polyFromMsg(m)
+func IndcpaEncrypt(m []byte, publicKey []byte, coins []byte, paramsK int) ([]byte, error) {
+	sp := PolyvecNew(paramsK)
+	ep := PolyvecNew(paramsK)
+	bp := PolyvecNew(paramsK)
+	publicKeyPolyvec, seed := IndcpaUnpackPublicKey(publicKey, paramsK)
+	k := PolyFromMsg(m)
 	at, err := indcpaGenMatrix(seed[:paramsSymBytes], true, paramsK)
 	if err != nil {
 		return []byte{}, err
@@ -204,29 +204,29 @@ func indcpaEncrypt(m []byte, publicKey []byte, coins []byte, paramsK int) ([]byt
 		ep[i] = polyGetNoise(coins, byte(i+paramsK), 3)
 	}
 	epp := polyGetNoise(coins, byte(paramsK*2), 3)
-	polyvecNtt(sp, paramsK)
+	PolyvecNtt(sp, paramsK)
 	polyvecReduce(sp, paramsK)
 	for i := 0; i < paramsK; i++ {
-		bp[i] = polyvecPointWiseAccMontgomery(at[i], sp, paramsK)
+		bp[i] = PolyvecPointWiseAccMontgomery(at[i], sp, paramsK)
 	}
-	v := polyvecPointWiseAccMontgomery(publicKeyPolyvec, sp, paramsK)
-	polyvecInvNttToMont(bp, paramsK)
-	v = polyInvNttToMont(v)
+	v := PolyvecPointWiseAccMontgomery(publicKeyPolyvec, sp, paramsK)
+	PolyvecInvNttToMont(bp, paramsK)
+	v = PolyInvNttToMont(v)
 	polyvecAdd(bp, ep, paramsK)
-	v = polyAdd(polyAdd(v, epp), k)
+	v = PolyAdd(PolyAdd(v, epp), k)
 	polyvecReduce(bp, paramsK)
-	return indcpaPackCiphertext(bp, polyReduce(v), paramsK), nil
+	return IndcpaPackCiphertext(bp, PolyReduce(v), paramsK), nil
 }
 
-// indcpaDecrypt is the decryption function of the CPA-secure
+// IndcpaDecrypt is the decryption function of the CPA-secure
 // public-key encryption scheme underlying Kyber.
-func indcpaDecrypt(c []byte, privateKey []byte, paramsK int) []byte {
-	bp, v := indcpaUnpackCiphertext(c, paramsK)
-	privateKeyPolyvec := indcpaUnpackPrivateKey(privateKey, paramsK)
-	polyvecNtt(bp, paramsK)
-	mp := polyvecPointWiseAccMontgomery(privateKeyPolyvec, bp, paramsK)
-	mp = polyInvNttToMont(mp)
-	mp = polySub(v, mp)
-	mp = polyReduce(mp)
-	return polyToMsg(mp)
+func IndcpaDecrypt(c []byte, privateKey []byte, paramsK int) []byte {
+	bp, v := IndcpaUnpackCiphertext(c, paramsK)
+	privateKeyPolyvec := IndcpaUnpackPrivateKey(privateKey, paramsK)
+	PolyvecNtt(bp, paramsK)
+	mp := PolyvecPointWiseAccMontgomery(privateKeyPolyvec, bp, paramsK)
+	mp = PolyInvNttToMont(mp)
+	mp = PolySub(v, mp)
+	mp = PolyReduce(mp)
+	return PolyToMsg(mp)
 }

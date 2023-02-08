@@ -25,13 +25,13 @@ func byteopsLoad24(x []byte) uint32 {
 // byteopsCbd computers a polynomial with coefficients distributed
 // according to a centered binomial distribution with parameter eta,
 // given an array of uniformly random bytes.
-func byteopsCbd(buf []byte, paramsK int) poly {
+func byteopsCbd(buf []byte, paramsK int) Poly {
 	var t, d uint32
 	var a, b int16
-	var r poly
+	var r Poly
 	switch paramsK {
 	case 2:
-		for i := 0; i < paramsN/4; i++ {
+		for i := 0; i < ParamsN/4; i++ {
 			t = byteopsLoad24(buf[3*i:])
 			d = t & 0x00249249
 			d = d + ((t >> 1) & 0x00249249)
@@ -43,7 +43,7 @@ func byteopsCbd(buf []byte, paramsK int) poly {
 			}
 		}
 	default:
-		for i := 0; i < paramsN/8; i++ {
+		for i := 0; i < ParamsN/8; i++ {
 			t = byteopsLoad32(buf[4*i:])
 			d = t & 0x55555555
 			d = d + ((t >> 1) & 0x55555555)
@@ -61,7 +61,7 @@ func byteopsCbd(buf []byte, paramsK int) poly {
 // a 32-bit integer `a`, returns `a * R^-1 mod Q` where `R=2^16`.
 func byteopsMontgomeryReduce(a int32) int16 {
 	u := int16(a * int32(paramsQinv))
-	t := int32(u) * int32(paramsQ)
+	t := int32(u) * int32(ParamsQ)
 	t = a - t
 	t >>= 16
 	return int16(t)
@@ -72,15 +72,15 @@ func byteopsMontgomeryReduce(a int32) int16 {
 // `a mod Q` in {0,...,Q}.
 func byteopsBarrettReduce(a int16) int16 {
 	var t int16
-	var v int16 = int16(((uint32(1) << 26) + uint32(paramsQ/2)) / uint32(paramsQ))
+	var v int16 = int16(((uint32(1) << 26) + uint32(ParamsQ/2)) / uint32(ParamsQ))
 	t = int16(int32(v) * int32(a) >> 26)
-	t = t * int16(paramsQ)
+	t = t * int16(ParamsQ)
 	return a - t
 }
 
 // byteopsCSubQ conditionally subtracts Q from a.
 func byteopsCSubQ(a int16) int16 {
-	a = a - int16(paramsQ)
-	a = a + ((a >> 15) & int16(paramsQ))
+	a = a - int16(ParamsQ)
+	a = a + ((a >> 15) & int16(ParamsQ))
 	return a
 }

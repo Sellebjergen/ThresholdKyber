@@ -1,6 +1,8 @@
 package util
 
-import "ThresholdKyber.com/m/kyber"
+import (
+	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
+)
 
 // Regular max function for ints
 func max(x, y int) int {
@@ -33,12 +35,12 @@ func Reverse(input []int) []int {
 	return output
 }
 
-func Transpose(slice [][]*kyber.Poly) [][]*kyber.Poly {
+func Transpose(slice [][]kyberk2so.Poly) [][]kyberk2so.Poly {
 	xl := len(slice[0])
 	yl := len(slice)
-	result := make([][]*kyber.Poly, xl)
+	result := make([][]kyberk2so.Poly, xl)
 	for i := range result {
-		result[i] = make([]*kyber.Poly, yl)
+		result[i] = make([]kyberk2so.Poly, yl)
 	}
 	for i := 0; i < xl; i++ {
 		for j := 0; j < yl; j++ {

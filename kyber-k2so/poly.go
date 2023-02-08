@@ -3,20 +3,20 @@
 
 package kyberk2so
 
-type poly [paramsPolyBytes]int16
-type polyvec []poly
+type Poly [ParamsPolyBytes]int16
+type PolyVec []Poly
 
 // polyCompress lossily compresses and subsequently serializes a polynomial.
-func polyCompress(a poly, paramsK int) []byte {
+func polyCompress(a Poly, paramsK int) []byte {
 	t := make([]byte, 8)
 	a = polyCSubQ(a)
 	rr := 0
 	switch paramsK {
 	case 2, 3:
 		r := make([]byte, paramsPolyCompressedBytesK768) // 128
-		for i := 0; i < paramsN/8; i++ {
+		for i := 0; i < ParamsN/8; i++ {
 			for j := 0; j < 8; j++ {
-				t[j] = byte(((uint16(a[8*i+j])<<4)+uint16(paramsQ/2))/uint16(paramsQ)) & 15
+				t[j] = byte(((uint16(a[8*i+j])<<4)+uint16(ParamsQ/2))/uint16(ParamsQ)) & 15
 			}
 			r[rr+0] = t[0] | (t[1] << 4)
 			r[rr+1] = t[2] | (t[3] << 4)
@@ -27,9 +27,9 @@ func polyCompress(a poly, paramsK int) []byte {
 		return r
 	default:
 		r := make([]byte, paramsPolyCompressedBytesK1024) // 160
-		for i := 0; i < paramsN/8; i++ {
+		for i := 0; i < ParamsN/8; i++ {
 			for j := 0; j < 8; j++ {
-				t[j] = byte(((uint32(a[8*i+j])<<5)+uint32(paramsQ/2))/uint32(paramsQ)) & 31
+				t[j] = byte(((uint32(a[8*i+j])<<5)+uint32(ParamsQ/2))/uint32(ParamsQ)) & 31
 			}
 			r[rr+0] = (t[0] >> 0) | (t[1] << 5)
 			r[rr+1] = (t[1] >> 3) | (t[2] << 2) | (t[3] << 7)
@@ -46,19 +46,19 @@ func polyCompress(a poly, paramsK int) []byte {
 // representing the approximate inverse of polyCompress.
 // Note that compression is lossy, and thus decompression will not match the
 // original input.
-func polyDecompress(a []byte, paramsK int) poly {
-	var r poly
+func polyDecompress(a []byte, paramsK int) Poly {
+	var r Poly
 	t := make([]byte, 8)
 	aa := 0
 	switch paramsK {
 	case 2, 3:
-		for i := 0; i < paramsN/2; i++ {
-			r[2*i+0] = int16(((uint16(a[aa]&15) * uint16(paramsQ)) + 8) >> 4)
-			r[2*i+1] = int16(((uint16(a[aa]>>4) * uint16(paramsQ)) + 8) >> 4)
+		for i := 0; i < ParamsN/2; i++ {
+			r[2*i+0] = int16(((uint16(a[aa]&15) * uint16(ParamsQ)) + 8) >> 4)
+			r[2*i+1] = int16(((uint16(a[aa]>>4) * uint16(ParamsQ)) + 8) >> 4)
 			aa = aa + 1
 		}
 	case 4:
-		for i := 0; i < paramsN/8; i++ {
+		for i := 0; i < ParamsN/8; i++ {
 			t[0] = (a[aa+0] >> 0)
 			t[1] = (a[aa+0] >> 5) | (a[aa+1] << 3)
 			t[2] = (a[aa+1] >> 2)
@@ -69,19 +69,19 @@ func polyDecompress(a []byte, paramsK int) poly {
 			t[7] = (a[aa+4] >> 3)
 			aa = aa + 5
 			for j := 0; j < 8; j++ {
-				r[8*i+j] = int16(((uint32(t[j]&31) * uint32(paramsQ)) + 16) >> 5)
+				r[8*i+j] = int16(((uint32(t[j]&31) * uint32(ParamsQ)) + 16) >> 5)
 			}
 		}
 	}
 	return r
 }
 
-// polyToBytes serializes a polynomial into an array of bytes.
-func polyToBytes(a poly) []byte {
+// PolyToBytes serializes a polynomial into an array of bytes.
+func PolyToBytes(a Poly) []byte {
 	var t0, t1 uint16
-	r := make([]byte, paramsPolyBytes)
+	r := make([]byte, ParamsPolyBytes)
 	a = polyCSubQ(a)
-	for i := 0; i < paramsN/2; i++ {
+	for i := 0; i < ParamsN/2; i++ {
 		t0 = uint16(a[2*i])
 		t1 = uint16(a[2*i+1])
 		r[3*i+0] = byte(t0 >> 0)
@@ -91,40 +91,40 @@ func polyToBytes(a poly) []byte {
 	return r
 }
 
-// polyFromBytes de-serialises an array of bytes into a polynomial,
+// PolyFromBytes de-serialises an array of bytes into a polynomial,
 // and represents the inverse of polyToBytes.
-func polyFromBytes(a []byte) poly {
-	var r poly
-	for i := 0; i < paramsN/2; i++ {
+func PolyFromBytes(a []byte) Poly {
+	var r Poly
+	for i := 0; i < ParamsN/2; i++ {
 		r[2*i] = int16(((uint16(a[3*i+0]) >> 0) | (uint16(a[3*i+1]) << 8)) & 0xFFF)
 		r[2*i+1] = int16(((uint16(a[3*i+1]) >> 4) | (uint16(a[3*i+2]) << 4)) & 0xFFF)
 	}
 	return r
 }
 
-// polyFromMsg converts a 32-byte message to a polynomial.
-func polyFromMsg(msg []byte) poly {
-	var r poly
+// PolyFromMsg converts a 32-byte message to a polynomial.
+func PolyFromMsg(msg []byte) Poly {
+	var r Poly
 	var mask int16
-	for i := 0; i < paramsN/8; i++ {
+	for i := 0; i < ParamsN/8; i++ {
 		for j := 0; j < 8; j++ {
 			mask = -int16((msg[i] >> j) & 1)
-			r[8*i+j] = mask & int16((paramsQ+1)/2)
+			r[8*i+j] = mask & int16((ParamsQ+1)/2)
 		}
 	}
 	return r
 }
 
-// polyToMsg converts a polynomial to a 32-byte message
+// PolyToMsg converts a polynomial to a 32-byte message
 // and represents the inverse of polyFromMsg.
-func polyToMsg(a poly) []byte {
+func PolyToMsg(a Poly) []byte {
 	msg := make([]byte, paramsSymBytes)
 	var t uint16
 	a = polyCSubQ(a)
-	for i := 0; i < paramsN/8; i++ {
+	for i := 0; i < ParamsN/8; i++ {
 		msg[i] = 0
 		for j := 0; j < 8; j++ {
-			t = (((uint16(a[8*i+j]) << 1) + uint16(paramsQ/2)) / uint16(paramsQ)) & 1
+			t = (((uint16(a[8*i+j]) << 1) + uint16(ParamsQ/2)) / uint16(ParamsQ)) & 1
 			msg[i] |= byte(t << j)
 		}
 	}
@@ -134,37 +134,37 @@ func polyToMsg(a poly) []byte {
 // polyGetNoise samples a polynomial deterministically from a seed
 // and nonce, with the output polynomial being close to a centered
 // binomial distribution.
-func polyGetNoise(seed []byte, nonce byte, paramsK int) poly {
+func polyGetNoise(seed []byte, nonce byte, paramsK int) Poly {
 	switch paramsK {
 	case 2:
-		l := paramsETAK512 * paramsN / 4
+		l := paramsETAK512 * ParamsN / 4
 		p := indcpaPrf(l, seed, nonce)
 		return byteopsCbd(p, paramsK)
 	default:
-		l := paramsETAK768K1024 * paramsN / 4
+		l := paramsETAK768K1024 * ParamsN / 4
 		p := indcpaPrf(l, seed, nonce)
 		return byteopsCbd(p, paramsK)
 	}
 }
 
-// polyNtt computes a negacyclic number-theoretic transform (NTT) of
+// PolyNtt computes a negacyclic number-theoretic transform (NTT) of
 // a polynomial in-place; the input is assumed to be in normal order,
 // while the output is in bit-reversed order.
-func polyNtt(r poly) poly {
+func PolyNtt(r Poly) Poly {
 	return ntt(r)
 }
 
-// polyInvNttToMont computes the inverse of a negacyclic number-theoretic
+// PolyInvNttToMont computes the inverse of a negacyclic number-theoretic
 // transform (NTT) of a polynomial in-place; the input is assumed to be in
 // bit-reversed order, while the output is in normal order.
-func polyInvNttToMont(r poly) poly {
+func PolyInvNttToMont(r Poly) Poly {
 	return nttInv(r)
 }
 
 // polyBaseMulMontgomery performs the multiplication of two polynomials
 // in the number-theoretic transform (NTT) domain.
-func polyBaseMulMontgomery(a poly, b poly) poly {
-	for i := 0; i < paramsN/4; i++ {
+func polyBaseMulMontgomery(a Poly, b Poly) Poly {
+	for i := 0; i < ParamsN/4; i++ {
 		rx := nttBaseMul(
 			a[4*i+0], a[4*i+1],
 			b[4*i+0], b[4*i+1],
@@ -185,17 +185,17 @@ func polyBaseMulMontgomery(a poly, b poly) poly {
 
 // polyToMont performs the in-place conversion of all coefficients
 // of a polynomial from the normal domain to the Montgomery domain.
-func polyToMont(r poly) poly {
-	var f int16 = int16((uint64(1) << 32) % uint64(paramsQ))
-	for i := 0; i < paramsN; i++ {
+func polyToMont(r Poly) Poly {
+	var f int16 = int16((uint64(1) << 32) % uint64(ParamsQ))
+	for i := 0; i < ParamsN; i++ {
 		r[i] = byteopsMontgomeryReduce(int32(r[i]) * int32(f))
 	}
 	return r
 }
 
-// polyReduce applies Barrett reduction to all coefficients of a polynomial.
-func polyReduce(r poly) poly {
-	for i := 0; i < paramsN; i++ {
+// PolyReduce applies Barrett reduction to all coefficients of a polynomial.
+func PolyReduce(r Poly) Poly {
+	for i := 0; i < ParamsN; i++ {
 		r[i] = byteopsBarrettReduce(r[i])
 	}
 	return r
@@ -203,37 +203,37 @@ func polyReduce(r poly) poly {
 
 // polyCSubQ applies the conditional subtraction of `Q` to each coefficient
 // of a polynomial.
-func polyCSubQ(r poly) poly {
-	for i := 0; i < paramsN; i++ {
+func polyCSubQ(r Poly) Poly {
+	for i := 0; i < ParamsN; i++ {
 		r[i] = byteopsCSubQ(r[i])
 	}
 	return r
 }
 
-// polyAdd adds two polynomials.
-func polyAdd(a poly, b poly) poly {
-	for i := 0; i < paramsN; i++ {
+// PolyAdd adds two polynomials.
+func PolyAdd(a Poly, b Poly) Poly {
+	for i := 0; i < ParamsN; i++ {
 		a[i] = a[i] + b[i]
 	}
 	return a
 }
 
-// polySub subtracts two polynomials.
-func polySub(a poly, b poly) poly {
-	for i := 0; i < paramsN; i++ {
+// PolySub subtracts two polynomials.
+func PolySub(a Poly, b Poly) Poly {
+	for i := 0; i < ParamsN; i++ {
 		a[i] = a[i] - b[i]
 	}
 	return a
 }
 
-// polyvecNew instantiates a new vector of polynomials.
-func polyvecNew(paramsK int) polyvec {
-	var pv polyvec = make([]poly, paramsK)
+// PolyvecNew instantiates a new vector of polynomials.
+func PolyvecNew(paramsK int) PolyVec {
+	var pv PolyVec = make([]Poly, paramsK)
 	return pv
 }
 
 // polyvecCompress lossily compresses and serializes a vector of polynomials.
-func polyvecCompress(a polyvec, paramsK int) []byte {
+func polyvecCompress(a PolyVec, paramsK int) []byte {
 	var r []byte
 	polyvecCSubQ(a, paramsK)
 	rr := 0
@@ -249,9 +249,9 @@ func polyvecCompress(a polyvec, paramsK int) []byte {
 	case 2, 3:
 		t := make([]uint16, 4)
 		for i := 0; i < paramsK; i++ {
-			for j := 0; j < paramsN/4; j++ {
+			for j := 0; j < ParamsN/4; j++ {
 				for k := 0; k < 4; k++ {
-					t[k] = uint16((((uint32(a[i][4*j+k]) << 10) + uint32(paramsQ/2)) / uint32(paramsQ)) & 0x3ff)
+					t[k] = uint16((((uint32(a[i][4*j+k]) << 10) + uint32(ParamsQ/2)) / uint32(ParamsQ)) & 0x3ff)
 				}
 				r[rr+0] = byte(t[0] >> 0)
 				r[rr+1] = byte((t[0] >> 8) | (t[1] << 2))
@@ -265,9 +265,9 @@ func polyvecCompress(a polyvec, paramsK int) []byte {
 	default:
 		t := make([]uint16, 8)
 		for i := 0; i < paramsK; i++ {
-			for j := 0; j < paramsN/8; j++ {
+			for j := 0; j < ParamsN/8; j++ {
 				for k := 0; k < 8; k++ {
-					t[k] = uint16((((uint32(a[i][8*j+k]) << 11) + uint32(paramsQ/2)) / uint32(paramsQ)) & 0x7ff)
+					t[k] = uint16((((uint32(a[i][8*j+k]) << 11) + uint32(ParamsQ/2)) / uint32(ParamsQ)) & 0x7ff)
 				}
 				r[rr+0] = byte((t[0] >> 0))
 				r[rr+1] = byte((t[0] >> 8) | (t[1] << 3))
@@ -290,28 +290,28 @@ func polyvecCompress(a polyvec, paramsK int) []byte {
 // polyvecDecompress de-serializes and decompresses a vector of polynomials and
 // represents the approximate inverse of polyvecCompress. Since compression is lossy,
 // the results of decompression will may not match the original vector of polynomials.
-func polyvecDecompress(a []byte, paramsK int) polyvec {
-	r := polyvecNew(paramsK)
+func polyvecDecompress(a []byte, paramsK int) PolyVec {
+	r := PolyvecNew(paramsK)
 	aa := 0
 	switch paramsK {
 	case 2, 3:
 		t := make([]uint16, 4)
 		for i := 0; i < paramsK; i++ {
-			for j := 0; j < paramsN/4; j++ {
+			for j := 0; j < ParamsN/4; j++ {
 				t[0] = (uint16(a[aa+0]) >> 0) | (uint16(a[aa+1]) << 8)
 				t[1] = (uint16(a[aa+1]) >> 2) | (uint16(a[aa+2]) << 6)
 				t[2] = (uint16(a[aa+2]) >> 4) | (uint16(a[aa+3]) << 4)
 				t[3] = (uint16(a[aa+3]) >> 6) | (uint16(a[aa+4]) << 2)
 				aa = aa + 5
 				for k := 0; k < 4; k++ {
-					r[i][4*j+k] = int16((uint32(t[k]&0x3FF)*uint32(paramsQ) + 512) >> 10)
+					r[i][4*j+k] = int16((uint32(t[k]&0x3FF)*uint32(ParamsQ) + 512) >> 10)
 				}
 			}
 		}
 	case 4:
 		t := make([]uint16, 8)
 		for i := 0; i < paramsK; i++ {
-			for j := 0; j < paramsN/8; j++ {
+			for j := 0; j < ParamsN/8; j++ {
 				t[0] = (uint16(a[aa+0]) >> 0) | (uint16(a[aa+1]) << 8)
 				t[1] = (uint16(a[aa+1]) >> 3) | (uint16(a[aa+2]) << 5)
 				t[2] = (uint16(a[aa+2]) >> 6) | (uint16(a[aa+3]) << 2) | (uint16(a[aa+4]) << 10)
@@ -322,7 +322,7 @@ func polyvecDecompress(a []byte, paramsK int) polyvec {
 				t[7] = (uint16(a[aa+9]) >> 5) | (uint16(a[aa+10]) << 3)
 				aa = aa + 11
 				for k := 0; k < 8; k++ {
-					r[i][8*j+k] = int16((uint32(t[k]&0x7FF)*uint32(paramsQ) + 1024) >> 11)
+					r[i][8*j+k] = int16((uint32(t[k]&0x7FF)*uint32(ParamsQ) + 1024) >> 11)
 				}
 			}
 		}
@@ -331,72 +331,72 @@ func polyvecDecompress(a []byte, paramsK int) polyvec {
 }
 
 // polyvecToBytes serializes a vector of polynomials.
-func polyvecToBytes(a polyvec, paramsK int) []byte {
+func polyvecToBytes(a PolyVec, paramsK int) []byte {
 	r := []byte{}
 	for i := 0; i < paramsK; i++ {
-		r = append(r, polyToBytes(a[i])...)
+		r = append(r, PolyToBytes(a[i])...)
 	}
 	return r
 }
 
 // polyvecFromBytes deserializes a vector of polynomials.
-func polyvecFromBytes(a []byte, paramsK int) polyvec {
-	r := polyvecNew(paramsK)
+func polyvecFromBytes(a []byte, paramsK int) PolyVec {
+	r := PolyvecNew(paramsK)
 	for i := 0; i < paramsK; i++ {
-		start := (i * paramsPolyBytes)
-		end := (i + 1) * paramsPolyBytes
-		r[i] = polyFromBytes(a[start:end])
+		start := (i * ParamsPolyBytes)
+		end := (i + 1) * ParamsPolyBytes
+		r[i] = PolyFromBytes(a[start:end])
 	}
 	return r
 }
 
-// polyvecNtt applies forward number-theoretic transforms (NTT)
+// PolyvecNtt applies forward number-theoretic transforms (NTT)
 // to all elements of a vector of polynomials.
-func polyvecNtt(r polyvec, paramsK int) {
+func PolyvecNtt(r PolyVec, paramsK int) {
 	for i := 0; i < paramsK; i++ {
-		r[i] = polyNtt(r[i])
+		r[i] = PolyNtt(r[i])
 	}
 }
 
-// polyvecInvNttToMont applies the inverse number-theoretic transform (NTT)
+// PolyvecInvNttToMont applies the inverse number-theoretic transform (NTT)
 // to all elements of a vector of polynomials and multiplies by Montgomery
 // factor `2^16`.
-func polyvecInvNttToMont(r polyvec, paramsK int) {
+func PolyvecInvNttToMont(r PolyVec, paramsK int) {
 	for i := 0; i < paramsK; i++ {
-		r[i] = polyInvNttToMont(r[i])
+		r[i] = PolyInvNttToMont(r[i])
 	}
 }
 
-// polyvecPointWiseAccMontgomery pointwise-multiplies elements of polynomial-vectors
+// PolyvecPointWiseAccMontgomery pointwise-multiplies elements of polynomial-vectors
 // `a` and `b`, accumulates the results into `r`, and then multiplies by `2^-16`.
-func polyvecPointWiseAccMontgomery(a polyvec, b polyvec, paramsK int) poly {
+func PolyvecPointWiseAccMontgomery(a PolyVec, b PolyVec, paramsK int) Poly {
 	r := polyBaseMulMontgomery(a[0], b[0])
 	for i := 1; i < paramsK; i++ {
 		t := polyBaseMulMontgomery(a[i], b[i])
-		r = polyAdd(r, t)
+		r = PolyAdd(r, t)
 	}
-	return polyReduce(r)
+	return PolyReduce(r)
 }
 
 // polyvecReduce applies Barrett reduction to each coefficient of each element
 // of a vector of polynomials.
-func polyvecReduce(r polyvec, paramsK int) {
+func polyvecReduce(r PolyVec, paramsK int) {
 	for i := 0; i < paramsK; i++ {
-		r[i] = polyReduce(r[i])
+		r[i] = PolyReduce(r[i])
 	}
 }
 
 // polyvecCSubQ applies the conditional subtraction of `Q` to each coefficient
 // of each element of a vector of polynomials.
-func polyvecCSubQ(r polyvec, paramsK int) {
+func polyvecCSubQ(r PolyVec, paramsK int) {
 	for i := 0; i < paramsK; i++ {
 		r[i] = polyCSubQ(r[i])
 	}
 }
 
 // polyvecAdd adds two vectors of polynomials.
-func polyvecAdd(a polyvec, b polyvec, paramsK int) {
+func polyvecAdd(a PolyVec, b PolyVec, paramsK int) {
 	for i := 0; i < paramsK; i++ {
-		a[i] = polyAdd(a[i], b[i])
+		a[i] = PolyAdd(a[i], b[i])
 	}
 }

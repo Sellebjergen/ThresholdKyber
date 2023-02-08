@@ -4,26 +4,26 @@ import (
 	"math"
 	"math/rand"
 
-	"ThresholdKyber.com/m/kyber"
+	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
 )
 
 type GaussianNoiseDist struct{}
 
 type BinomialNoiseDist struct{}
 
-func (d *GaussianNoiseDist) SampleNoise(q int, deg int, sigma_flood int) *kyber.Poly {
+func (d *GaussianNoiseDist) SampleNoise(q int, deg int, sigma_flood int) kyberk2so.Poly {
 	coeffs_unrounded := make([]float64, deg+1)
 	for i := 0; i < deg+1; i++ {
 		coeffs_unrounded[i] = rand.NormFloat64() * float64(sigma_flood)
 	}
 
-	coeffs := make([]uint16, deg+1)
+	coeffs := make([]int16, deg+1)
 	for i := 0; i < deg+1; i++ {
-		coeffs[i] = uint16(math.Round(coeffs_unrounded[i]))
+		coeffs[i] = int16(math.Round(coeffs_unrounded[i]))
 	}
 
-	out := new(kyber.Poly)
-	copy(out.Coeffs[:], coeffs)
+	var out kyberk2so.Poly
+	copy(out[:], coeffs)
 
 	return out
 }
