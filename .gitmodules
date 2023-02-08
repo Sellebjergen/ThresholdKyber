@@ -1,0 +1,3 @@
+[submodule "kyber-k2so"]
+	path = kyber-k2so
+	url = https://github.com/symbolicsoft/kyber-k2so
