@@ -45,7 +45,7 @@ func NewParameterSet(name string) *OwcpaParams {
 	case "TKyber-Test":
 		p.Ell = 1
 		p.Sigma = 100
-		p.Q = 7681
+		p.Q = 3329
 		p.D_flood_dist = &GaussianNoiseDist{}
 		p.LSS_scheme = &LSSAdditive{}
 	default:

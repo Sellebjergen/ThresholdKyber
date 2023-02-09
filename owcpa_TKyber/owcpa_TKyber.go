@@ -56,7 +56,7 @@ func Combine(params *OwcpaParams, ct []byte, d_is []kyberk2so.Poly) kyberk2so.Po
 	return y
 }
 
-func ScaleRound(in kyberk2so.Poly, p int, q int) kyberk2so.Poly {
+func Downscale(in kyberk2so.Poly, p int, q int) kyberk2so.Poly {
 	y := kyberk2so.PolyReduce(in)
 	unrounded := make([]float64, len(in))
 
@@ -69,7 +69,33 @@ func ScaleRound(in kyberk2so.Poly, p int, q int) kyberk2so.Poly {
 		res[i] = int16(math.Round(unrounded[i]))
 	}
 
+	mod2 := make([]int16, len(in))
+	for i := 0; i < len(mod2); i++ {
+		mod2[i] = res[i] % 2
+	}
+
 	var out kyberk2so.Poly
-	copy(out[:], res)
+	copy(out[:], mod2)
+	return out
+}
+
+func Upscale(in kyberk2so.Poly, p int, q int) kyberk2so.Poly {
+	unrounded := make([]float64, len(in))
+	for i := 0; i < len(unrounded); i++ {
+		unrounded[i] = (float64(q) / float64(p))
+	}
+
+	factor := make([]int16, len(in))
+	for i := 0; i < len(factor); i++ {
+		factor[i] = int16(math.Round(unrounded[i]))
+	}
+
+	scaled := make([]int16, len(in))
+	for i := 0; i < len(scaled); i++ {
+		scaled[i] = factor[i] * in[i]
+	}
+
+	var out kyberk2so.Poly
+	copy(out[:], scaled)
 	return out
 }

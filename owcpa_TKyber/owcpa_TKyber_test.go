@@ -129,3 +129,23 @@ func TestFullWithN1(t *testing.T) {
 		t.Errorf("Error")
 	}
 }
+
+// This represents the bug currently found in the IND-CPA TKyber code.
+func TestSimINDCPATransform(t *testing.T) {
+	params := NewParameterSet("TKyber-Test")
+	pk, skShares := Setup(params, 1, 1)
+	m := SampleUnifPolynomial(2)
+	upscaled := Upscale(m, 2, params.Q)
+	m_bytes := kyberk2so.PolyToMsg(upscaled)
+
+	coins := make([]byte, 32)
+	ct, _ := kyberk2so.IndcpaEncrypt(m_bytes, pk, coins, kyberk2so.ParamsK)
+	part := PartDec(params, skShares[0], ct, 0)
+
+	res := Combine(params, ct, []kyberk2so.Poly{part})
+	downscaled := Downscale(res, 2, params.Q)
+
+	if !reflect.DeepEqual(downscaled, m) {
+		t.Errorf("Error: Polynomials not matching")
+	}
+}

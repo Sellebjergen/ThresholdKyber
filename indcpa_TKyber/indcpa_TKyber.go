@@ -1,7 +1,6 @@
 package indcpa_TKyber
 
 import (
-	"fmt"
 	"reflect"
 
 	"golang.org/x/crypto/sha3"
@@ -26,15 +25,15 @@ func Enc(params *owcpa.OwcpaParams, msg []byte, pk []byte, delta int) *indcpaCip
 	for i := 0; i < delta; i++ {
 		x[i] = owcpa.SampleUnifPolynomial(2)
 	}
-	fmt.Println("x_1")
-	fmt.Println(x[0])
+
 	c := new(indcpaCiphertext)
 	c.encyptions = make([][]byte, delta)
 
 	mp = kyberk2so.PolyAdd(mp, F(x))
 	c.cF = mp
 	for i := 0; i < delta; i++ {
-		xi_bytes := kyberk2so.PolyToMsg(x[i])
+		upscaled := owcpa.Upscale(x[i], 2, params.Q)
+		xi_bytes := kyberk2so.PolyToMsg(upscaled)
 		c.encyptions[i] = owcpa.Enc(params, xi_bytes, pk)
 	}
 	c.cG = G(x)
@@ -55,10 +54,10 @@ func Combine(params *owcpa.OwcpaParams, ct *indcpaCiphertext, d_is [][]kyberk2so
 
 	x_prime := make([]kyberk2so.Poly, delta)
 	for j := 0; j < delta; j++ {
-		x_prime[j] = owcpa.Combine(params, ct.encyptions[j], d_is[j])
+		combined := owcpa.Combine(params, ct.encyptions[j], d_is[j])
+		x_prime[j] = owcpa.Downscale(combined, 2, params.Q)
 	}
-	fmt.Println("x_1'")
-	fmt.Println(x_prime[0])
+
 	mp := kyberk2so.PolySub(ct.cF, F(x_prime))
 
 	if !reflect.DeepEqual(ct.cG, G(x_prime)) {
