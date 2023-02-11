@@ -30,11 +30,11 @@ func PartDec(params *OwcpaParams, sk_i kyberk2so.PolyVec, ct []byte, party int) 
 	// Sample noise
 	e_i := params.D_flood_dist.SampleNoise(params.Q, 255, params.Sigma) // TODO: Fix params
 
-	bp, v := kyberk2so.IndcpaUnpackCiphertext(ct, kyberk2so.ParamsK)
+	u, v := kyberk2so.IndcpaUnpackCiphertext(ct, kyberk2so.ParamsK)
 
 	// Inner prod
-	kyberk2so.PolyvecNtt(bp, kyberk2so.ParamsK)
-	d_i := kyberk2so.PolyvecPointWiseAccMontgomery(sk_i, bp, kyberk2so.ParamsK)
+	kyberk2so.PolyvecNtt(u, kyberk2so.ParamsK)
+	d_i := kyberk2so.PolyvecPointWiseAccMontgomery(sk_i, u, kyberk2so.ParamsK)
 
 	d_i = kyberk2so.PolyInvNttToMont(d_i)
 	if party == 0 {
