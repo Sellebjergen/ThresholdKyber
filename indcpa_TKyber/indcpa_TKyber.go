@@ -20,7 +20,7 @@ func Setup(params *owcpa.OwcpaParams, n int, t int) ([]byte, []kyberk2so.PolyVec
 }
 
 func Enc(params *owcpa.OwcpaParams, msg []byte, pk []byte, delta int) *indcpaCiphertext {
-	c0 := kyberk2so.PolyFromMsg(msg)
+	mp := kyberk2so.PolyFromMsg(msg)
 	x := make([]kyberk2so.Poly, delta)
 	for i := 0; i < delta; i++ {
 		x[i] = owcpa.SampleUnifPolynomial(2)
@@ -29,7 +29,7 @@ func Enc(params *owcpa.OwcpaParams, msg []byte, pk []byte, delta int) *indcpaCip
 	c := new(indcpaCiphertext)
 	c.encyptions = make([][]byte, delta)
 
-	c0 = kyberk2so.PolyAdd(c0, F(x))
+	c0 := kyberk2so.PolyAdd(mp, F(x))
 	c.cF = c0
 	for i := 0; i < delta; i++ {
 		upscaled := owcpa.Upscale(x[i], 2, params.Q)
