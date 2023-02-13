@@ -7,13 +7,13 @@ type Poly [ParamsPolyBytes]int16
 type PolyVec []Poly
 
 // polyCompress lossily compresses and subsequently serializes a polynomial.
-func polyCompress(a Poly, paramsK int) []byte {
+func PolyCompress(a Poly, paramsK int) []byte {
 	t := make([]byte, 8)
 	a = polyCSubQ(a)
 	rr := 0
 	switch paramsK {
 	case 2, 3:
-		r := make([]byte, paramsPolyCompressedBytesK768) // 128
+		r := make([]byte, paramsPolyCompressedBytesK768)
 		for i := 0; i < ParamsN/8; i++ {
 			for j := 0; j < 8; j++ {
 				t[j] = byte(((uint16(a[8*i+j])<<4)+uint16(ParamsQ/2))/uint16(ParamsQ)) & 15
@@ -26,7 +26,7 @@ func polyCompress(a Poly, paramsK int) []byte {
 		}
 		return r
 	default:
-		r := make([]byte, paramsPolyCompressedBytesK1024) // 160
+		r := make([]byte, paramsPolyCompressedBytesK1024)
 		for i := 0; i < ParamsN/8; i++ {
 			for j := 0; j < 8; j++ {
 				t[j] = byte(((uint32(a[8*i+j])<<5)+uint32(ParamsQ/2))/uint32(ParamsQ)) & 31

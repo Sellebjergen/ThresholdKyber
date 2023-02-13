@@ -28,9 +28,21 @@ func IndcpaUnpackPublicKey(packedPublicKey []byte, paramsK int) (PolyVec, []byte
 		publicKeyPolyvec := polyvecFromBytes(packedPublicKey[:paramsPolyvecBytesK768], paramsK)
 		seed := packedPublicKey[paramsPolyvecBytesK768:]
 		return publicKeyPolyvec, seed
-	default:
+	case 4:
 		publicKeyPolyvec := polyvecFromBytes(packedPublicKey[:paramsPolyvecBytesK1024], paramsK)
 		seed := packedPublicKey[paramsPolyvecBytesK1024:]
+		return publicKeyPolyvec, seed
+	case 5:
+		publicKeyPolyvec := polyvecFromBytes(packedPublicKey[:paramsPolyvecBytesK1280], paramsK)
+		seed := packedPublicKey[paramsPolyvecBytesK1280:]
+		return publicKeyPolyvec, seed
+	case 6:
+		publicKeyPolyvec := polyvecFromBytes(packedPublicKey[:paramsPolyvecBytesK1536], paramsK)
+		seed := packedPublicKey[paramsPolyvecBytesK1536:]
+		return publicKeyPolyvec, seed
+	default:
+		publicKeyPolyvec := polyvecFromBytes(packedPublicKey[:paramsPolyvecBytesK1792], paramsK)
+		seed := packedPublicKey[paramsPolyvecBytesK1792:]
 		return publicKeyPolyvec, seed
 	}
 }
@@ -50,7 +62,7 @@ func IndcpaUnpackPrivateKey(packedPrivateKey []byte, paramsK int) PolyVec {
 // the compressed and serialized vector of polynomials `b` and the
 // compressed and serialized polynomial `v`.
 func IndcpaPackCiphertext(b PolyVec, v Poly, paramsK int) []byte {
-	return append(polyvecCompress(b, paramsK), polyCompress(v, paramsK)...)
+	return append(polyvecCompress(b, paramsK), PolyCompress(v, paramsK)...)
 }
 
 // IndcpaUnpackCiphertext de-serializes and decompresses the ciphertext
@@ -66,9 +78,21 @@ func IndcpaUnpackCiphertext(c []byte, paramsK int) (PolyVec, Poly) {
 		b := polyvecDecompress(c[:paramsPolyvecCompressedBytesK768], paramsK)
 		v := polyDecompress(c[paramsPolyvecCompressedBytesK768:], paramsK)
 		return b, v
-	default:
+	case 4:
 		b := polyvecDecompress(c[:paramsPolyvecCompressedBytesK1024], paramsK)
 		v := polyDecompress(c[paramsPolyvecCompressedBytesK1024:], paramsK)
+		return b, v
+	case 5:
+		b := polyvecDecompress(c[:paramsPolyvecCompressedBytesK1280], paramsK)
+		v := polyDecompress(c[paramsPolyvecCompressedBytesK1280:], paramsK)
+		return b, v
+	case 6:
+		b := polyvecDecompress(c[:paramsPolyvecCompressedBytesK1536], paramsK)
+		v := polyDecompress(c[paramsPolyvecCompressedBytesK1536:], paramsK)
+		return b, v
+	default:
+		b := polyvecDecompress(c[:paramsPolyvecCompressedBytesK1792], paramsK)
+		v := polyDecompress(c[paramsPolyvecCompressedBytesK1792:], paramsK)
 		return b, v
 	}
 }

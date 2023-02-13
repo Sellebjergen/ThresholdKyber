@@ -3,23 +3,81 @@
 
 package kyberk2so
 
+type KyberParams struct {
+	Q          int
+	K          int
+	ParamsQinv int
+}
+
+const (
+	Kyber512  string = "Kyber512"
+	Kyber768  string = "Kyber768"
+	Kyber1024 string = "Kyber1024"
+	Kyber1280 string = "Kyber1280"
+	Kyber1536 string = "Kyber1536"
+	Kyber1792 string = "Kyber1792"
+)
+
+func NewParameterSet(name string) *KyberParams {
+	var p KyberParams
+	switch name {
+	case Kyber512:
+		p.Q = 3329
+		p.ParamsQinv = 62209
+		p.K = 2
+	case Kyber768:
+		p.Q = 3329
+		p.ParamsQinv = 62209
+		p.K = 3
+	case Kyber1024:
+		p.Q = 3329
+		p.ParamsQinv = 62209
+		p.K = 4
+	case Kyber1280:
+		p.Q = 3329
+		p.ParamsQinv = 62209
+		p.K = 5
+	case Kyber1536:
+		p.Q = 3329
+		p.ParamsQinv = 62209
+		p.K = 6
+	case Kyber1792:
+		p.Q = 3329
+		p.ParamsQinv = 62209
+		p.K = 7
+	default:
+		panic("Error: Name did not match existing parameter set")
+	}
+
+	return &p
+}
+
 const ParamsN int = 256
 const ParamsQ int = 3329
 const ParamsK int = 2
 const paramsQinv int = 62209
 const paramsSymBytes int = 32
-const ParamsPolyBytes int = 384
+const ParamsPolyBytes int = 384 // 12 * 256 / 8 = 384
 const paramsETAK512 int = 3
 const paramsETAK768K1024 int = 2
 const paramsPolyvecBytesK512 int = 2 * ParamsPolyBytes
 const paramsPolyvecBytesK768 int = 3 * ParamsPolyBytes
 const paramsPolyvecBytesK1024 int = 4 * ParamsPolyBytes
-const paramsPolyCompressedBytesK512 int = 128
-const paramsPolyCompressedBytesK768 int = 128
-const paramsPolyCompressedBytesK1024 int = 160
+const paramsPolyvecBytesK1280 int = 5 * ParamsPolyBytes
+const paramsPolyvecBytesK1536 int = 6 * ParamsPolyBytes
+const paramsPolyvecBytesK1792 int = 7 * ParamsPolyBytes
 const paramsPolyvecCompressedBytesK512 int = 2 * 320
 const paramsPolyvecCompressedBytesK768 int = 3 * 320
 const paramsPolyvecCompressedBytesK1024 int = 4 * 352
+const paramsPolyvecCompressedBytesK1280 int = 5 * 320 // Change
+const paramsPolyvecCompressedBytesK1536 int = 6 * 320 // Change
+const paramsPolyvecCompressedBytesK1792 int = 7 * 352 // Change
+
+// herfra bliver det brugt i KEM
+const paramsPolyCompressedBytesK512 int = 128
+const paramsPolyCompressedBytesK768 int = 128
+const paramsPolyCompressedBytesK1024 int = 160
+
 const paramsIndcpaPublicKeyBytesK512 int = paramsPolyvecBytesK512 + paramsSymBytes
 const paramsIndcpaPublicKeyBytesK768 int = paramsPolyvecBytesK768 + paramsSymBytes
 const paramsIndcpaPublicKeyBytesK1024 int = paramsPolyvecBytesK1024 + paramsSymBytes

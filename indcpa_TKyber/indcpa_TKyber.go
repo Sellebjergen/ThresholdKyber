@@ -69,7 +69,7 @@ func Combine(params *owcpa.OwcpaParams, ct *indcpaCiphertext, d_is [][]kyberk2so
 
 func F(x []kyberk2so.Poly) kyberk2so.Poly {
 	hash := sha3.NewShake256()
-	output := make([]byte, 13*(7681/8)+12)
+	output := make([]byte, 13*(3329/8)+12)
 	for i := 0; i < len(x); i++ {
 		poly_bytes := kyberk2so.PolyToBytes(x[i])
 		hash.Write(poly_bytes)
