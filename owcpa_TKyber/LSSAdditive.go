@@ -61,6 +61,14 @@ func SampleUnifPolynomial(q int) kyberk2so.Poly {
 	return kyberk2so.Poly(out_coeff)
 }
 
+func SampleUniformPolyVec(q int, amount int) kyberk2so.PolyVec {
+	res := kyberk2so.PolyvecNew(amount)
+	for i := 0; i < amount; i++ {
+		res[i] = SampleUnifPolynomial(q)
+	}
+	return res
+}
+
 func Copy(toCopy kyberk2so.Poly) kyberk2so.Poly {
 	var out kyberk2so.Poly
 	coeff := toCopy

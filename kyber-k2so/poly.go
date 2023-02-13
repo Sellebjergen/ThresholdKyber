@@ -6,7 +6,7 @@ package kyberk2so
 type Poly [ParamsPolyBytes]int16
 type PolyVec []Poly
 
-// polyCompress lossily compresses and subsequently serializes a polynomial.
+// PolyCompress lossily compresses and subsequently serializes a polynomial.
 func PolyCompress(a Poly, paramsK int) []byte {
 	t := make([]byte, 8)
 	a = polyCSubQ(a)
