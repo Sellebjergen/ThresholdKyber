@@ -1,6 +1,8 @@
 package indcpa_TKyber
 
 import (
+	"crypto/rand"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -90,5 +92,77 @@ func TestLowDeltaCase(t *testing.T) {
 
 	if !reflect.DeepEqual(msg, output_msg) {
 		t.Errorf("Error")
+	}
+}
+
+func BenchmarkSetupTKyber(b *testing.B) {
+	cases := []struct {
+		TKyberVariant string
+		n             int
+		t             int
+		delta         int
+	}{
+		{TKyberVariant: "TKyber-Test", n: 1, t: 1, delta: 10},
+		{TKyberVariant: "TKyber-Test", n: 2, t: 2, delta: 10},
+		{TKyberVariant: "TKyber-Test", n: 3, t: 3, delta: 10},
+		{TKyberVariant: "TKyber-Test", n: 1, t: 1, delta: 1000},
+	}
+
+	for _, bCase := range cases {
+		b.Run(fmt.Sprintf("Setup %s", bCase.TKyberVariant), func(b *testing.B) { benchmarkSetup(b, bCase.TKyberVariant, bCase.n, bCase.t) })
+		b.Run(fmt.Sprintf("Enc %s", bCase.TKyberVariant), func(b *testing.B) { benchmarkEnc(b, bCase.TKyberVariant, bCase.n, bCase.t, bCase.delta) })
+		b.Run(fmt.Sprintf("PartDec %s", bCase.TKyberVariant), func(b *testing.B) { benchmarkPartDec(b, bCase.TKyberVariant, bCase.n, bCase.t, bCase.delta) })
+		b.Run(fmt.Sprintf("Combine %s", bCase.TKyberVariant), func(b *testing.B) { benchmarkCombine(b, bCase.TKyberVariant, bCase.n, bCase.t, bCase.delta) })
+	}
+}
+
+func benchmarkSetup(b *testing.B, paramSet string, n int, t int) {
+	params := owcpa.NewParameterSet(paramSet)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Setup(params, n, t)
+	}
+}
+
+func benchmarkEnc(b *testing.B, paramSet string, n int, t int, delta int) {
+	randMsg := make([]byte, 32)
+	rand.Read(randMsg)
+	params := owcpa.NewParameterSet(paramSet)
+	pk, _ := Setup(params, n, t)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Enc(params, randMsg, pk, delta)
+	}
+}
+
+func benchmarkPartDec(b *testing.B, paramSet string, n int, t int, delta int) {
+	randMsg := make([]byte, 32)
+	rand.Read(randMsg)
+	params := owcpa.NewParameterSet(paramSet)
+	pk, sk_shares := Setup(params, n, t)
+	ct := Enc(params, randMsg, pk, delta)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		PartDec(params, sk_shares[0], ct, 0, delta) // Er det fint med party 0 her?
+	}
+}
+
+func benchmarkCombine(b *testing.B, paramSet string, n int, t int, delta int) {
+	randMsg := make([]byte, 32)
+	rand.Read(randMsg)
+	params := owcpa.NewParameterSet(paramSet)
+	pk, sk_shares := Setup(params, n, t)
+	ct := Enc(params, randMsg, pk, delta)
+
+	d_is := make([][]kyberk2so.Poly, 0)
+	for i := 0; i < t; i++ {
+		d_is = append(d_is, PartDec(params, sk_shares[i], ct, i, delta))
+	}
+
+	d_is_transp := util.Transpose(d_is)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Combine(params, ct, d_is_transp)
 	}
 }
