@@ -1,8 +1,6 @@
 package util
 
 import (
-	"fmt"
-
 	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
 )
 
@@ -69,8 +67,7 @@ func makeCombRecursive(n int, left int, t int, res [][]int, tmp []int) ([][]int,
 		toAdd := make([]int, len(newTmp))
 		copy(toAdd, newTmp)
 		newRes = append(newRes, toAdd)
-		fmt.Println(newRes)
-		fmt.Println(newTmp)
+
 		return newRes, newTmp
 	}
 
@@ -82,4 +79,13 @@ func makeCombRecursive(n int, left int, t int, res [][]int, tmp []int) ([][]int,
 	}
 
 	return newRes, newTmp
+}
+
+func Contains(list []int, elem int) bool {
+	for _, el := range list {
+		if el == elem {
+			return true
+		}
+	}
+	return false
 }
