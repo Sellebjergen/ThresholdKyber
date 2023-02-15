@@ -7,7 +7,17 @@ import (
 	"ThresholdKyber.com/m/util"
 )
 
-func RepShare(sk kyberk2so.PolyVec, n int, t int) [][]kyberk2so.PolyVec {
+type LSSReplicated struct{}
+
+func (s *LSSReplicated) Share(sk kyberk2so.PolyVec, n int, t int) [][]kyberk2so.PolyVec {
+	return ShareRepNaive(sk, n, t, false)
+}
+
+func (s *LSSReplicated) Rec(d_is [][]kyberk2so.Poly, n int, t int, isNaive bool) kyberk2so.Poly {
+	return RecRepNaive(d_is, n, t, false)
+}
+
+func ShareRepNaive(sk kyberk2so.PolyVec, n int, t int, isNaive bool) [][]kyberk2so.PolyVec {
 	r := len(sk)
 	skShares := make([][]kyberk2so.Poly, r)
 
@@ -33,7 +43,11 @@ func RepShare(sk kyberk2so.PolyVec, n int, t int) [][]kyberk2so.PolyVec {
 		// Combinations
 		for j := 0; j < len(combinations); j++ {
 			comb := combinations[j]
-			if !util.Contains(comb, i+1) {
+			shouldGetShare := util.Contains(comb, i+1)
+			if !isNaive {
+				shouldGetShare = !shouldGetShare
+			}
+			if shouldGetShare {
 				// Iterate over the r = k polynomials of the sk
 				for poly_num := 0; poly_num < r; poly_num++ {
 					copy(shares[i][j][poly_num][:], skShares[poly_num][j][:])
@@ -48,7 +62,7 @@ func RepShare(sk kyberk2so.PolyVec, n int, t int) [][]kyberk2so.PolyVec {
 	return shares
 }
 
-func RepRec(d_is [][]kyberk2so.Poly, n int, t int) kyberk2so.Poly {
+func RecRepNaive(d_is [][]kyberk2so.Poly, n int, t int, isNaive bool) kyberk2so.Poly {
 	var p1 kyberk2so.Poly
 
 	combinations := util.MakeCombinations(n, t)
@@ -57,7 +71,11 @@ func RepRec(d_is [][]kyberk2so.Poly, n int, t int) kyberk2so.Poly {
 		isFound := false
 		comb := combinations[j]
 		for i := 0; i < n; i++ {
-			if !util.Contains(comb, i+1) {
+			shouldGetShare := util.Contains(comb, i+1)
+			if !isNaive {
+				shouldGetShare = !shouldGetShare
+			}
+			if shouldGetShare {
 				p1 = kyberk2so.PolyAdd(p1, d_is[i][j])
 				isFound = true
 			}

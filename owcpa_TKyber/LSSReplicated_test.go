@@ -11,7 +11,7 @@ func TestShareGivesCorrectAmountOfShares(t *testing.T) {
 	amountOfPlayers := 3
 	MockKyber512Key := SampleUniformPolyVec(17, 2)
 
-	shares := RepShare(MockKyber512Key, amountOfPlayers, 1)
+	shares := ShareRepNaive(MockKyber512Key, amountOfPlayers, 1, false)
 
 	if !reflect.DeepEqual(len(shares), amountOfPlayers) {
 		t.Errorf("Something went wrong, combination of shares are not equal starting value!")
@@ -22,7 +22,7 @@ func TestSharesCanBeReconstructed(t *testing.T) {
 	amountOfPlayers := 3
 	MockKyber512Key := SampleUniformPolyVec(17, 2)
 
-	shares := RepShare(MockKyber512Key, amountOfPlayers, 1)
+	shares := ShareRepNaive(MockKyber512Key, amountOfPlayers, 1, false)
 
 	var p1 kyberk2so.Poly
 	p1 = kyberk2so.PolyAdd(p1, shares[0][1][0]) // player 1 share of first poly, Share 2
@@ -46,7 +46,7 @@ func TestSharesCanBeReconstructedUsingARealKyberKey(t *testing.T) {
 	sk, _, _ := kyberk2so.IndcpaKeypair(2)
 	unpackedSk := kyberk2so.IndcpaUnpackPrivateKey(sk, 2)
 
-	shares := RepShare(unpackedSk, amountOfPlayers, 1)
+	shares := ShareRepNaive(unpackedSk, amountOfPlayers, 1, false)
 
 	// todo: this seems like the nesting is to deep? shouldn't this only be a matrix?
 	var p1 kyberk2so.Poly
@@ -69,7 +69,7 @@ func TestSharesCanBeReconstructedUsingARealKyberKey(t *testing.T) {
 
 func TestSinglePolyCanBeReconstructed(t *testing.T) {
 	toShare := []kyberk2so.Poly{{1, 2, 3, 4, 5, 6}}
-	shared := RepShare(toShare, 3, 1)
+	shared := ShareRepNaive(toShare, 3, 1, false)
 
 	var p1 kyberk2so.Poly
 	p1 = kyberk2so.PolyAdd(p1, shared[0][1][0])
@@ -83,7 +83,7 @@ func TestSinglePolyCanBeReconstructed(t *testing.T) {
 
 func TestSinglePolyCanBeReconstructedN4T2(t *testing.T) {
 	toShare := []kyberk2so.Poly{{1, 2, 3, 4, 5, 6}}
-	shared := RepShare(toShare, 4, 2)
+	shared := ShareRepNaive(toShare, 4, 2, false)
 
 	var p1 kyberk2so.Poly
 	p1 = kyberk2so.PolyAdd(p1, shared[0][3][0])
