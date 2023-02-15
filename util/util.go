@@ -1,6 +1,8 @@
 package util
 
 import (
+	"fmt"
+
 	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
 )
 
@@ -48,4 +50,36 @@ func Transpose(slice [][]kyberk2so.Poly) [][]kyberk2so.Poly {
 		}
 	}
 	return result
+}
+
+func MakeCombinations(n int, t int) [][]int {
+	res := make([][]int, 0)
+	tmp := make([]int, 0)
+
+	res, _ = makeCombRecursive(n, 1, t, res, tmp)
+	return res
+}
+
+func makeCombRecursive(n int, left int, t int, res [][]int, tmp []int) ([][]int, []int) {
+	newRes := make([][]int, len(res))
+	newTmp := make([]int, len(tmp))
+	copy(newRes, res)
+	copy(newTmp, tmp)
+	if t == 0 {
+		toAdd := make([]int, len(newTmp))
+		copy(toAdd, newTmp)
+		newRes = append(newRes, toAdd)
+		fmt.Println(newRes)
+		fmt.Println(newTmp)
+		return newRes, newTmp
+	}
+
+	for i := left; i < n+1; i++ {
+		newTmp = append(newTmp, i)
+		newRes, newTmp = makeCombRecursive(n, i+1, t-1, newRes, newTmp)
+
+		newTmp = newTmp[:len(newTmp)-1]
+	}
+
+	return newRes, newTmp
 }
