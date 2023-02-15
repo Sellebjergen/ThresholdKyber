@@ -17,8 +17,8 @@ type NoiseDistribution interface {
 }
 
 type LSSScheme interface {
-	Share(sk kyberk2so.PolyVec, n int) []kyberk2so.PolyVec
-	Rec(d_is []kyberk2so.Poly) kyberk2so.Poly
+	Share(sk kyberk2so.PolyVec, n int) [][]kyberk2so.PolyVec
+	Rec(d_is [][]kyberk2so.Poly) kyberk2so.Poly
 }
 
 func NewParameterSet(name string) *OwcpaParams {

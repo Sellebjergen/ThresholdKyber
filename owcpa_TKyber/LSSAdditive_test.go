@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
+	"ThresholdKyber.com/m/util"
 )
 
 // ================= Share tests =================
@@ -39,7 +40,10 @@ func TestShareThenRecPolynomial(t *testing.T) {
 	toShare[3] = 4
 	toShare[4] = 5
 
-	shares := SharePolynomial(toShare, 10)
+	polyShares := SharePolynomial(toShare, 10)
+
+	// TODO: I had to transpose unfortunately
+	shares := util.Transpose([][]kyberk2so.Poly{polyShares})
 
 	recombined := lss.Rec(shares)
 
@@ -60,15 +64,15 @@ func TestShare(t *testing.T) {
 
 	// combine the first polynomial
 	var sk1 kyberk2so.Poly
-	sk1 = kyberk2so.PolyAdd(sk1, shares[0][0])
-	sk1 = kyberk2so.PolyAdd(sk1, shares[1][0])
-	sk1 = kyberk2so.PolyAdd(sk1, shares[2][0])
+	sk1 = kyberk2so.PolyAdd(sk1, shares[0][0][0])
+	sk1 = kyberk2so.PolyAdd(sk1, shares[1][0][0])
+	sk1 = kyberk2so.PolyAdd(sk1, shares[2][0][0])
 
 	// combine the second polynomial
 	var sk2 kyberk2so.Poly
-	sk2 = kyberk2so.PolyAdd(sk2, shares[0][1])
-	sk2 = kyberk2so.PolyAdd(sk2, shares[1][1])
-	sk2 = kyberk2so.PolyAdd(sk2, shares[2][1])
+	sk2 = kyberk2so.PolyAdd(sk2, shares[0][0][1])
+	sk2 = kyberk2so.PolyAdd(sk2, shares[1][0][1])
+	sk2 = kyberk2so.PolyAdd(sk2, shares[2][0][1])
 
 	kyberk2so.PolyReduce(sk1)
 	kyberk2so.PolyReduce(sk2)

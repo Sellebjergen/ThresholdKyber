@@ -15,15 +15,15 @@ func TestSetupWorksInCaseNis3(t *testing.T) {
 
 	// total of first share
 	var sk1 kyberk2so.Poly
-	sk1 = kyberk2so.PolyAdd(sk1, sk_shares[0][0])
-	sk1 = kyberk2so.PolyAdd(sk1, sk_shares[1][0])
-	sk1 = kyberk2so.PolyAdd(sk1, sk_shares[2][0])
+	sk1 = kyberk2so.PolyAdd(sk1, sk_shares[0][0][0])
+	sk1 = kyberk2so.PolyAdd(sk1, sk_shares[1][0][0])
+	sk1 = kyberk2so.PolyAdd(sk1, sk_shares[2][0][0])
 
 	// total of second share
 	var sk2 kyberk2so.Poly
-	sk2 = kyberk2so.PolyAdd(sk2, sk_shares[0][1])
-	sk2 = kyberk2so.PolyAdd(sk2, sk_shares[1][1])
-	sk2 = kyberk2so.PolyAdd(sk2, sk_shares[2][1])
+	sk2 = kyberk2so.PolyAdd(sk2, sk_shares[0][0][1])
+	sk2 = kyberk2so.PolyAdd(sk2, sk_shares[1][0][1])
+	sk2 = kyberk2so.PolyAdd(sk2, sk_shares[2][0][1])
 
 	// assemble secret key
 	sk := kyberk2so.PolyVec{sk1, sk2}
@@ -54,7 +54,7 @@ func TestAdvancedCase(t *testing.T) {
 	ct := Enc(params, msg, pk)
 
 	// Decrypt
-	d_is := make([]kyberk2so.Poly, n)
+	d_is := make([][]kyberk2so.Poly, n)
 	for i := 0; i < n; i++ {
 		d_is[i] = PartDec(params, sk_shares[i], ct, i)
 	}
@@ -78,7 +78,7 @@ func TestSimpleCase(t *testing.T) {
 	ct, _ := kyberk2so.IndcpaEncrypt(msg, pk, coins, kyberk2so.ParamsK)
 
 	// Decrypt
-	d_is := make([]kyberk2so.Poly, 3)
+	d_is := make([][]kyberk2so.Poly, 3)
 	d_is[0] = PartDec(params, sk_shares[0], ct, 0)
 	d_is[1] = PartDec(params, sk_shares[1], ct, 1)
 	d_is[2] = PartDec(params, sk_shares[2], ct, 2)
@@ -95,14 +95,14 @@ func TestSetupUsing1PlayerGivesBackSecretKey(t *testing.T) {
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	params := NewParameterSet("TKyber-Test")
 	pk, skShares := Setup(params, 1, 1)
-	polyVec := kyberk2so.PolyvecNew(kyberk2so.ParamsK)
-	polyVec[0] = skShares[0][0]
-	polyVec[1] = skShares[0][1]
+	polyVec := []kyberk2so.PolyVec{kyberk2so.PolyvecNew(kyberk2so.ParamsK)}
+	polyVec[0][0] = skShares[0][0][0]
+	polyVec[0][1] = skShares[0][0][1]
 
 	coins := make([]byte, 32)
 	ct, _ := kyberk2so.IndcpaEncrypt(msg, pk, coins, kyberk2so.ParamsK)
 
-	sk_packed := kyberk2so.IndcpaPackPrivateKey(polyVec, kyberk2so.ParamsK)
+	sk_packed := kyberk2so.IndcpaPackPrivateKey(polyVec[0], kyberk2so.ParamsK)
 	out := kyberk2so.IndcpaDecrypt(ct, sk_packed, kyberk2so.ParamsK)
 
 	if !reflect.DeepEqual(msg, out) {
@@ -119,7 +119,7 @@ func TestFullWithN1(t *testing.T) {
 
 	ct, _ := kyberk2so.IndcpaEncrypt(msg, pk, coins, kyberk2so.ParamsK)
 
-	d_is := make([]kyberk2so.Poly, 1)
+	d_is := make([][]kyberk2so.Poly, 1)
 	d_is[0] = PartDec(params, skShares[0], ct, 0)
 
 	combined := Combine(params, ct, d_is)
@@ -142,7 +142,7 @@ func TestSimINDCPATransform(t *testing.T) {
 	ct, _ := kyberk2so.IndcpaEncrypt(m_bytes, pk, coins, kyberk2so.ParamsK)
 	part := PartDec(params, skShares[0], ct, 0)
 
-	res := Combine(params, ct, []kyberk2so.Poly{part})
+	res := Combine(params, ct, [][]kyberk2so.Poly{part})
 	downscaled := Downscale(res, 2, params.Q)
 
 	if !reflect.DeepEqual(downscaled, m) {
