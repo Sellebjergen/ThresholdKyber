@@ -50,6 +50,21 @@ func Transpose(slice [][]kyberk2so.Poly) [][]kyberk2so.Poly {
 	return result
 }
 
+func SwapFirstAndSecondDim(slice [][][]kyberk2so.Poly) [][][]kyberk2so.Poly {
+	xl := len(slice[0])
+	yl := len(slice)
+	result := make([][][]kyberk2so.Poly, xl)
+	for i := range result {
+		result[i] = make([][]kyberk2so.Poly, yl)
+	}
+	for i := 0; i < xl; i++ {
+		for j := 0; j < yl; j++ {
+			result[i][j] = slice[j][i]
+		}
+	}
+	return result
+}
+
 func MakeCombinations(n int, t int) [][]int {
 	res := make([][]int, 0)
 	tmp := make([]int, 0)

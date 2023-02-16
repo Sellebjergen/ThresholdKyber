@@ -7,6 +7,7 @@ import (
 
 	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
 	owcpa "ThresholdKyber.com/m/owcpa_TKyber"
+	"ThresholdKyber.com/m/util"
 )
 
 type indcpaCiphertext struct {
@@ -15,7 +16,7 @@ type indcpaCiphertext struct {
 	cG         []byte
 }
 
-func Setup(params *owcpa.OwcpaParams, n int, t int) ([]byte, []kyberk2so.PolyVec) {
+func Setup(params *owcpa.OwcpaParams, n int, t int) ([]byte, [][]kyberk2so.PolyVec) {
 	return owcpa.Setup(params, n, t)
 }
 
@@ -41,20 +42,28 @@ func Enc(params *owcpa.OwcpaParams, msg []byte, pk []byte, delta int) *indcpaCip
 	return c
 }
 
-func PartDec(params *owcpa.OwcpaParams, sk_i kyberk2so.PolyVec, ct *indcpaCiphertext, party int, delta int) []kyberk2so.Poly {
-	d_i := make([]kyberk2so.Poly, delta)
+func PartDec(params *owcpa.OwcpaParams, sk_i []kyberk2so.PolyVec, ct *indcpaCiphertext, party int, delta int) [][]kyberk2so.Poly {
+	d_i := make([][]kyberk2so.Poly, delta)
 	for j := 0; j < delta; j++ {
 		d_i[j] = owcpa.PartDec(params, sk_i, ct.encyptions[j], party)
 	}
 	return d_i
 }
 
-func Combine(params *owcpa.OwcpaParams, ct *indcpaCiphertext, d_is [][]kyberk2so.Poly) kyberk2so.Poly {
+func Combine(params *owcpa.OwcpaParams, ct *indcpaCiphertext, d_is [][][]kyberk2so.Poly) kyberk2so.Poly {
 	delta := len(ct.encyptions)
 
 	x_prime := make([]kyberk2so.Poly, delta)
+
+	// This is needed since originally 1 dim is player, second is which delta, third is L
+	// We need to fetch all players shares of the i'th out of delta encryptions
+	// Therefore we transpose the first and second dimensions
+	// To get new 3d matrix where 1 dim is delta encryptions, second is player, and third is L
+	// TODO: This can probably be done cleaner
+	d_is_transp := util.SwapFirstAndSecondDim(d_is)
+
 	for j := 0; j < delta; j++ {
-		combined := owcpa.Combine(params, ct.encyptions[j], d_is[j])
+		combined := owcpa.Combine(params, ct.encyptions[j], d_is_transp[j])
 		x_prime[j] = owcpa.Downscale(combined, 2, params.Q)
 	}
 

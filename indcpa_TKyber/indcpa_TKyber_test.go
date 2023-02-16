@@ -8,7 +8,6 @@ import (
 
 	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
 	owcpa "ThresholdKyber.com/m/owcpa_TKyber"
-	"ThresholdKyber.com/m/util"
 )
 
 // ================= Integration tests =================
@@ -26,11 +25,9 @@ func TestSimpleCase(t *testing.T) {
 	// Decrypt
 	d_1 := PartDec(params, sk_shares[0], ct, 0, delta)
 
-	d_is := [][]kyberk2so.Poly{d_1}
+	d_is := [][][]kyberk2so.Poly{d_1}
 
-	d_is_transp := util.Transpose(d_is)
-
-	combined := Combine(params, ct, d_is_transp)
+	combined := Combine(params, ct, d_is)
 
 	output_msg := kyberk2so.PolyToMsg(combined)
 
@@ -54,11 +51,9 @@ func TestAdvancedCase(t *testing.T) {
 	d_2 := PartDec(params, sk_shares[1], ct, 1, delta)
 	d_3 := PartDec(params, sk_shares[2], ct, 2, delta)
 
-	d_is := [][]kyberk2so.Poly{d_1, d_2, d_3}
+	d_is := [][][]kyberk2so.Poly{d_1, d_2, d_3}
 
-	d_is_transp := util.Transpose(d_is)
-
-	combined := Combine(params, ct, d_is_transp)
+	combined := Combine(params, ct, d_is)
 
 	output_msg := kyberk2so.PolyToMsg(combined)
 
@@ -82,11 +77,9 @@ func TestLowDeltaCase(t *testing.T) {
 	d_2 := PartDec(params, sk_shares[1], ct, 1, delta)
 	d_3 := PartDec(params, sk_shares[2], ct, 2, delta)
 
-	d_is := [][]kyberk2so.Poly{d_1, d_2, d_3}
+	d_is := [][][]kyberk2so.Poly{d_1, d_2, d_3}
 
-	d_is_transp := util.Transpose(d_is)
-
-	combined := Combine(params, ct, d_is_transp)
+	combined := Combine(params, ct, d_is)
 
 	output_msg := kyberk2so.PolyToMsg(combined)
 
@@ -154,15 +147,13 @@ func benchmarkCombine(b *testing.B, paramSet string, n int, t int, delta int) {
 	pk, sk_shares := Setup(params, n, t)
 	ct := Enc(params, randMsg, pk, delta)
 
-	d_is := make([][]kyberk2so.Poly, 0)
+	d_is := make([][][]kyberk2so.Poly, 0)
 	for i := 0; i < t; i++ {
 		d_is = append(d_is, PartDec(params, sk_shares[i], ct, i, delta))
 	}
 
-	d_is_transp := util.Transpose(d_is)
-
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Combine(params, ct, d_is_transp)
+		Combine(params, ct, d_is)
 	}
 }
