@@ -1,6 +1,7 @@
 package owcpa_TKyber
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -130,7 +131,7 @@ func TestFullWithN1(t *testing.T) {
 	}
 }
 
-// This represents the bug currently found in the IND-CPA TKyber code.
+// This represents an old bug found that used to be in the IND-CPA TKyber code.
 func TestSimINDCPATransform(t *testing.T) {
 	params := NewParameterSet("TKyber-Test")
 	pk, skShares := Setup(params, 1, 1)
@@ -147,5 +148,42 @@ func TestSimINDCPATransform(t *testing.T) {
 
 	if !reflect.DeepEqual(downscaled, m) {
 		t.Errorf("Error: Polynomials not matching")
+	}
+}
+
+// ================= Replicated LSS tests =================
+
+func TestWithReplicatedLSS(t *testing.T) {
+	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	params := NewParameterSet("TKyber-Test-Replicated")
+	n := 3
+	t_param := 1
+	pk, sk_shares := Setup(params, n, t_param)
+
+	ct := Enc(params, msg, pk)
+
+	// Decrypt
+	d_1 := PartDec(params, sk_shares[0], ct, 0)
+	d_2 := PartDec(params, sk_shares[1], ct, 1)
+	d_3 := PartDec(params, sk_shares[2], ct, 2)
+
+	d_is := [][]kyberk2so.Poly{d_1, d_2, d_3}
+
+	//fmt.Println(d_is)
+
+	//fmt.Println(d_is)
+
+	combined := Combine(params, ct, d_is, n, t_param)
+
+	fmt.Println(combined)
+
+	output_msg := kyberk2so.PolyToMsg(combined)
+	//t.Errorf("Error")
+
+	fmt.Println(msg)
+	fmt.Println(output_msg)
+
+	if !reflect.DeepEqual(msg, output_msg) {
+		t.Errorf("Error")
 	}
 }
