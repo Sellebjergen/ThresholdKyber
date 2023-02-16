@@ -27,7 +27,7 @@ func TestSimpleCase(t *testing.T) {
 
 	d_is := [][][]kyberk2so.Poly{d_1}
 
-	combined := Combine(params, ct, d_is)
+	combined := Combine(params, ct, d_is, n, t_param)
 
 	output_msg := kyberk2so.PolyToMsg(combined)
 
@@ -53,7 +53,7 @@ func TestAdvancedCase(t *testing.T) {
 
 	d_is := [][][]kyberk2so.Poly{d_1, d_2, d_3}
 
-	combined := Combine(params, ct, d_is)
+	combined := Combine(params, ct, d_is, n, t_param)
 
 	output_msg := kyberk2so.PolyToMsg(combined)
 
@@ -79,7 +79,7 @@ func TestLowDeltaCase(t *testing.T) {
 
 	d_is := [][][]kyberk2so.Poly{d_1, d_2, d_3}
 
-	combined := Combine(params, ct, d_is)
+	combined := Combine(params, ct, d_is, n, t_param)
 
 	output_msg := kyberk2so.PolyToMsg(combined)
 
@@ -87,6 +87,41 @@ func TestLowDeltaCase(t *testing.T) {
 		t.Errorf("Error")
 	}
 }
+
+// ================= Replicated LSS tests =================
+
+func TestWithReplicatedLSS(t *testing.T) {
+	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	params := owcpa.NewParameterSet("TKyber-Test-Replicated")
+	n := 3
+	t_param := 1
+	delta := 1
+	pk, sk_shares := Setup(params, n, t_param)
+
+	ct := Enc(params, msg, pk, delta)
+
+	// Decrypt
+	d_1 := PartDec(params, sk_shares[0], ct, 0, delta)
+	d_2 := PartDec(params, sk_shares[1], ct, 1, delta)
+	d_3 := PartDec(params, sk_shares[2], ct, 2, delta)
+
+	d_is := [][][]kyberk2so.Poly{d_1, d_2, d_3}
+
+	//fmt.Println(d_is)
+
+	combined := Combine(params, ct, d_is, n, t_param)
+
+	output_msg := kyberk2so.PolyToMsg(combined)
+	//t.Errorf("Error")
+
+	if !reflect.DeepEqual(msg, output_msg) {
+		t.Errorf("Error")
+	}
+}
+
+// ================= Naive LSS tests =================
+
+// ================= Benchmarking =================
 
 func BenchmarkSetupTKyber(b *testing.B) {
 	cases := []struct {
@@ -154,6 +189,6 @@ func benchmarkCombine(b *testing.B, paramSet string, n int, t int, delta int) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Combine(params, ct, d_is)
+		Combine(params, ct, d_is, n, t)
 	}
 }

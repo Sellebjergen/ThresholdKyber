@@ -9,7 +9,7 @@ import (
 type LSSAdditive struct{}
 
 // Currently additively secret sharing is hardcoded, would be nice to extract.
-func (s *LSSAdditive) Share(sk kyberk2so.PolyVec, n int) [][]kyberk2so.PolyVec {
+func (s *LSSAdditive) Share(sk kyberk2so.PolyVec, n int, t int) [][]kyberk2so.PolyVec {
 	shares := make([][]kyberk2so.PolyVec, n)
 	for i := 0; i < n; i++ {
 		shares[i] = make([]kyberk2so.PolyVec, 1)
@@ -30,7 +30,7 @@ func (s *LSSAdditive) Share(sk kyberk2so.PolyVec, n int) [][]kyberk2so.PolyVec {
 	return shares
 }
 
-func (s *LSSAdditive) Rec(d_is [][]kyberk2so.Poly) kyberk2so.Poly {
+func (s *LSSAdditive) Rec(d_is [][]kyberk2so.Poly, n int, t int) kyberk2so.Poly {
 	var out kyberk2so.Poly
 
 	for i := 0; i < len(d_is); i++ {

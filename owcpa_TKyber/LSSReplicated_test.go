@@ -1,6 +1,7 @@
 package owcpa_TKyber
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -94,6 +95,25 @@ func TestSinglePolyCanBeReconstructedN4T2(t *testing.T) {
 	p1 = kyberk2so.PolyAdd(p1, shared[1][2][0])
 
 	if !reflect.DeepEqual(toShare[0], p1) {
+		t.Errorf("WEE WOO WEE WOO")
+	}
+}
+
+func TestReplicatedRecSimple(t *testing.T) {
+	one := kyberk2so.Poly{1}
+	zero := kyberk2so.Poly{0}
+	expected := kyberk2so.Poly{3}
+	d_is := [][]kyberk2so.Poly{}
+	d_is = append(d_is, []kyberk2so.Poly{zero, one, one})
+	d_is = append(d_is, []kyberk2so.Poly{one, zero, one})
+	d_is = append(d_is, []kyberk2so.Poly{one, one, zero})
+
+	lss := &LSSReplicated{}
+	res := lss.Rec(d_is, 3, 1)
+
+	fmt.Println(res)
+
+	if !reflect.DeepEqual(expected, res) {
 		t.Errorf("WEE WOO WEE WOO")
 	}
 }

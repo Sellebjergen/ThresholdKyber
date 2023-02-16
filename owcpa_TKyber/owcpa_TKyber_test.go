@@ -59,7 +59,7 @@ func TestAdvancedCase(t *testing.T) {
 		d_is[i] = PartDec(params, sk_shares[i], ct, i)
 	}
 
-	combined := Combine(params, ct, d_is)
+	combined := Combine(params, ct, d_is, n, t_param)
 	output_msg := kyberk2so.PolyToMsg(combined)
 
 	if !reflect.DeepEqual(msg, output_msg) {
@@ -83,7 +83,7 @@ func TestSimpleCase(t *testing.T) {
 	d_is[1] = PartDec(params, sk_shares[1], ct, 1)
 	d_is[2] = PartDec(params, sk_shares[2], ct, 2)
 
-	combined := Combine(params, ct, d_is)
+	combined := Combine(params, ct, d_is, 3, 3)
 	output_msg := kyberk2so.PolyToMsg(combined)
 
 	if !reflect.DeepEqual(msg, output_msg) {
@@ -122,7 +122,7 @@ func TestFullWithN1(t *testing.T) {
 	d_is := make([][]kyberk2so.Poly, 1)
 	d_is[0] = PartDec(params, skShares[0], ct, 0)
 
-	combined := Combine(params, ct, d_is)
+	combined := Combine(params, ct, d_is, 1, 1)
 	output_msg := kyberk2so.PolyToMsg(combined)
 
 	if !reflect.DeepEqual(msg, output_msg) {
@@ -142,7 +142,7 @@ func TestSimINDCPATransform(t *testing.T) {
 	ct, _ := kyberk2so.IndcpaEncrypt(m_bytes, pk, coins, kyberk2so.ParamsK)
 	part := PartDec(params, skShares[0], ct, 0)
 
-	res := Combine(params, ct, [][]kyberk2so.Poly{part})
+	res := Combine(params, ct, [][]kyberk2so.Poly{part}, 1, 1)
 	downscaled := Downscale(res, 2, params.Q)
 
 	if !reflect.DeepEqual(downscaled, m) {

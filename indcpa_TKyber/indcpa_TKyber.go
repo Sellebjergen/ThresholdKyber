@@ -50,20 +50,20 @@ func PartDec(params *owcpa.OwcpaParams, sk_i []kyberk2so.PolyVec, ct *indcpaCiph
 	return d_i
 }
 
-func Combine(params *owcpa.OwcpaParams, ct *indcpaCiphertext, d_is [][][]kyberk2so.Poly) kyberk2so.Poly {
+func Combine(params *owcpa.OwcpaParams, ct *indcpaCiphertext, d_is [][][]kyberk2so.Poly, n int, t int) kyberk2so.Poly {
 	delta := len(ct.encyptions)
 
 	x_prime := make([]kyberk2so.Poly, delta)
 
-	// This is needed since originally 1 dim is player, second is which delta, third is L
-	// We need to fetch all players shares of the i'th out of delta encryptions
+	// This is needed since originally 1 dim is player, second is which of the delta encryptions, third is L
+	// We need to fetch all players shares of the i'th out of the delta encryptions
 	// Therefore we transpose the first and second dimensions
 	// To get new 3d matrix where 1 dim is delta encryptions, second is player, and third is L
 	// TODO: This can probably be done cleaner
 	d_is_transp := util.SwapFirstAndSecondDim(d_is)
 
 	for j := 0; j < delta; j++ {
-		combined := owcpa.Combine(params, ct.encyptions[j], d_is_transp[j])
+		combined := owcpa.Combine(params, ct.encyptions[j], d_is_transp[j], n, t)
 		x_prime[j] = owcpa.Downscale(combined, 2, params.Q)
 	}
 

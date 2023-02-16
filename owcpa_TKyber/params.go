@@ -17,8 +17,8 @@ type NoiseDistribution interface {
 }
 
 type LSSScheme interface {
-	Share(sk kyberk2so.PolyVec, n int) [][]kyberk2so.PolyVec
-	Rec(d_is [][]kyberk2so.Poly) kyberk2so.Poly
+	Share(sk kyberk2so.PolyVec, n int, t int) [][]kyberk2so.PolyVec
+	Rec(d_is [][]kyberk2so.Poly, n int, t int) kyberk2so.Poly
 }
 
 func NewParameterSet(name string) *OwcpaParams {
@@ -48,6 +48,18 @@ func NewParameterSet(name string) *OwcpaParams {
 		p.Q = 3329
 		p.D_flood_dist = &GaussianNoiseDist{}
 		p.LSS_scheme = &LSSAdditive{}
+	case "TKyber-Test-Replicated":
+		p.Ell = 1
+		p.Sigma = 100
+		p.Q = 3329
+		p.D_flood_dist = &GaussianNoiseDist{}
+		p.LSS_scheme = &LSSReplicated{}
+	case "TKyber-Test-Naive":
+		p.Ell = 1
+		p.Sigma = 100
+		p.Q = 3329
+		p.D_flood_dist = &GaussianNoiseDist{}
+		p.LSS_scheme = &LSSNaive{}
 	default:
 		panic("Error: Name did not match existing parameter set")
 	}

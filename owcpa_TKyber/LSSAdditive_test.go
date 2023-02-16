@@ -45,7 +45,7 @@ func TestShareThenRecPolynomial(t *testing.T) {
 	// TODO: I had to transpose unfortunately
 	shares := util.Transpose([][]kyberk2so.Poly{polyShares})
 
-	recombined := lss.Rec(shares)
+	recombined := lss.Rec(shares, 10, 10)
 
 	if !reflect.DeepEqual(recombined, toShare) {
 		t.Errorf("Recombined is not equal the original shared polynomial!")
@@ -60,7 +60,7 @@ func TestShare(t *testing.T) {
 	sk[0][1] = 73
 	sk[1][0] = 0
 	sk[1][1] = 27
-	shares := lss.Share(sk, 3)
+	shares := lss.Share(sk, 3, 3)
 
 	// combine the first polynomial
 	var sk1 kyberk2so.Poly

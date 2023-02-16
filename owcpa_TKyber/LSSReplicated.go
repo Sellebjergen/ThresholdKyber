@@ -13,7 +13,7 @@ func (s *LSSReplicated) Share(sk kyberk2so.PolyVec, n int, t int) [][]kyberk2so.
 	return ShareRepNaive(sk, n, t, false)
 }
 
-func (s *LSSReplicated) Rec(d_is [][]kyberk2so.Poly, n int, t int, isNaive bool) kyberk2so.Poly {
+func (s *LSSReplicated) Rec(d_is [][]kyberk2so.Poly, n int, t int) kyberk2so.Poly {
 	return RecRepNaive(d_is, n, t, false)
 }
 
@@ -22,8 +22,6 @@ func ShareRepNaive(sk kyberk2so.PolyVec, n int, t int, isNaive bool) [][]kyberk2
 	skShares := make([][]kyberk2so.Poly, r)
 
 	combinations := util.MakeCombinations(n, t)
-
-	fmt.Println(combinations)
 
 	// the total amount of shares
 	shares := make([][]kyberk2so.PolyVec, n)
@@ -59,32 +57,32 @@ func ShareRepNaive(sk kyberk2so.PolyVec, n int, t int, isNaive bool) [][]kyberk2
 
 	}
 
+	//fmt.Println(shares)
 	return shares
 }
 
 func RecRepNaive(d_is [][]kyberk2so.Poly, n int, t int, isNaive bool) kyberk2so.Poly {
+	//fmt.Println(d_is)
 	var p1 kyberk2so.Poly
 
 	combinations := util.MakeCombinations(n, t)
 
+	fmt.Println(combinations)
+
 	for j := 0; j < len(combinations); j++ {
-		isFound := false
 		comb := combinations[j]
 		for i := 0; i < n; i++ {
-			shouldGetShare := util.Contains(comb, i+1)
+			hasShare := util.Contains(comb, i+1)
 			if !isNaive {
-				shouldGetShare = !shouldGetShare
+				hasShare = !hasShare
 			}
-			if shouldGetShare {
+			if hasShare {
 				p1 = kyberk2so.PolyAdd(p1, d_is[i][j])
-				isFound = true
-			}
-		}
+				break
 
-		if isFound {
-			continue
+			}
 		}
 	}
 
-	return p1
+	return kyberk2so.PolyReduce(p1)
 }
