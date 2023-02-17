@@ -2,7 +2,6 @@ package owcpa_TKyber
 
 import (
 	"crypto/rand"
-	"fmt"
 	"math"
 
 	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
@@ -31,8 +30,6 @@ func PartDec(params *OwcpaParams, sk_i []kyberk2so.PolyVec, ct []byte, party int
 	// Sample noise 				TODO: Det her skal vist være for hver j fra mængden [L]
 	//e_i := params.D_flood_dist.SampleNoise(params.Q, 255, params.Sigma) // TODO: Fix params
 
-	fmt.Println(sk_i)
-
 	u, v := kyberk2so.IndcpaUnpackCiphertext(ct, kyberk2so.ParamsK)
 
 	// Inner prod
@@ -55,7 +52,6 @@ func PartDec(params *OwcpaParams, sk_i []kyberk2so.PolyVec, ct []byte, party int
 
 		d_i[j] = kyberk2so.PolyReduce(d_i[j])
 	}
-
 	return d_i
 }
 

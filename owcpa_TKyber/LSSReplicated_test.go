@@ -80,6 +80,20 @@ func TestSinglePolyCanBeReconstructed(t *testing.T) {
 	if !reflect.DeepEqual(toShare[0], p1) {
 		t.Errorf("WEE WOO WEE WOO")
 	}
+
+	var zero kyberk2so.Poly
+
+	if !reflect.DeepEqual(shared[0][0][0], zero) {
+		t.Errorf("WEE WOO WEE WOO")
+	}
+
+	if !reflect.DeepEqual(shared[1][1][0], zero) {
+		t.Errorf("WEE WOO WEE WOO")
+	}
+
+	if !reflect.DeepEqual(shared[2][2][0], zero) {
+		t.Errorf("WEE WOO WEE WOO")
+	}
 }
 
 func TestSinglePolyCanBeReconstructedN4T2(t *testing.T) {
@@ -114,6 +128,45 @@ func TestReplicatedRecSimple(t *testing.T) {
 	fmt.Println(res)
 
 	if !reflect.DeepEqual(expected, res) {
+		t.Errorf("WEE WOO WEE WOO")
+	}
+}
+
+func TestReplicatedRecAdvanced(t *testing.T) {
+	one := kyberk2so.Poly{1}
+	two := kyberk2so.Poly{2}
+	five := kyberk2so.Poly{5}
+	zero := kyberk2so.Poly{0}
+	expected := kyberk2so.Poly{8}
+	d_is := [][]kyberk2so.Poly{}
+	d_is = append(d_is, []kyberk2so.Poly{zero, two, five})
+	d_is = append(d_is, []kyberk2so.Poly{one, zero, five})
+	d_is = append(d_is, []kyberk2so.Poly{one, two, zero})
+
+	lss := &LSSReplicated{}
+	res := lss.Rec(d_is, 3, 1)
+
+	fmt.Println(res)
+
+	if !reflect.DeepEqual(expected, res) {
+		t.Errorf("WEE WOO WEE WOO")
+	}
+}
+
+// Share test
+func TestReplicatedSharesAreEqual(t *testing.T) {
+	toShare := []kyberk2so.Poly{{1, 2, 3, 4, 5, 6}}
+	shared := ShareRepNaive(toShare, 3, 1, false)
+
+	if !reflect.DeepEqual(shared[0][1], shared[2][1]) {
+		t.Errorf("WEE WOO WEE WOO")
+	}
+
+	if !reflect.DeepEqual(shared[2][0], shared[1][0]) {
+		t.Errorf("WEE WOO WEE WOO")
+	}
+
+	if !reflect.DeepEqual(shared[0][2], shared[1][2]) {
 		t.Errorf("WEE WOO WEE WOO")
 	}
 }

@@ -67,8 +67,6 @@ func RecRepNaive(d_is [][]kyberk2so.Poly, n int, t int, isNaive bool) kyberk2so.
 
 	combinations := util.MakeCombinations(n, t)
 
-	fmt.Println(combinations)
-
 	for j := 0; j < len(combinations); j++ {
 		comb := combinations[j]
 		for i := 0; i < n; i++ {
@@ -77,7 +75,13 @@ func RecRepNaive(d_is [][]kyberk2so.Poly, n int, t int, isNaive bool) kyberk2so.
 				hasShare = !hasShare
 			}
 			if hasShare {
-				p1 = kyberk2so.PolyAdd(p1, d_is[i][j])
+				fmt.Print("Player:")
+				fmt.Println(i + 1)
+				fmt.Print("i: ")
+				fmt.Println(i)
+				fmt.Print("j: ")
+				fmt.Println(j)
+				p1 = kyberk2so.PolyAdd(p1, d_is[i][j]) //TODO: Possible swap i and j
 				break
 
 			}

@@ -1,7 +1,6 @@
 package owcpa_TKyber
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -169,19 +168,9 @@ func TestWithReplicatedLSS(t *testing.T) {
 
 	d_is := [][]kyberk2so.Poly{d_1, d_2, d_3}
 
-	//fmt.Println(d_is)
-
-	//fmt.Println(d_is)
-
 	combined := Combine(params, ct, d_is, n, t_param)
 
-	fmt.Println(combined)
-
 	output_msg := kyberk2so.PolyToMsg(combined)
-	//t.Errorf("Error")
-
-	fmt.Println(msg)
-	fmt.Println(output_msg)
 
 	if !reflect.DeepEqual(msg, output_msg) {
 		t.Errorf("Error")
