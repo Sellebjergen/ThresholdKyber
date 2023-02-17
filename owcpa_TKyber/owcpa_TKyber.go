@@ -33,12 +33,11 @@ func PartDec(params *OwcpaParams, sk_i []kyberk2so.PolyVec, ct []byte, party int
 	u, v := kyberk2so.IndcpaUnpackCiphertext(ct, kyberk2so.ParamsK)
 
 	// Inner prod
-	L := len(sk_i)
-	d_i := make([]kyberk2so.Poly, L)
+	d_i := make([]kyberk2so.Poly, len(sk_i))
 
 	kyberk2so.PolyvecNtt(u, kyberk2so.ParamsK)
 
-	for j := 0; j < L; j++ {
+	for j := 0; j < len(sk_i); j++ {
 		d_i[j] = kyberk2so.PolyvecPointWiseAccMontgomery(sk_i[j], u, kyberk2so.ParamsK)
 		d_i[j] = kyberk2so.PolyInvNttToMont(d_i[j])
 		if party == 0 {

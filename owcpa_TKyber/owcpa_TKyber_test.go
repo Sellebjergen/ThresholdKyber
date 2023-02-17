@@ -1,6 +1,7 @@
 package owcpa_TKyber
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -171,6 +172,39 @@ func TestWithReplicatedLSS(t *testing.T) {
 	combined := Combine(params, ct, d_is, n, t_param)
 
 	output_msg := kyberk2so.PolyToMsg(combined)
+
+	if !reflect.DeepEqual(msg, output_msg) {
+		t.Errorf("Error")
+	}
+}
+
+func TestWithReplicatedLSSNoCombine(t *testing.T) {
+	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	params := NewParameterSet("TKyber-Test-Replicated")
+	n := 3
+	t_param := 1
+	pk, sk_shares := Setup(params, n, t_param)
+
+	ct := Enc(params, msg, pk)
+
+	// Decrypt
+	d_1 := PartDec(params, sk_shares[0], ct, 0)
+	d_2 := PartDec(params, sk_shares[1], ct, 1)
+	d_3 := PartDec(params, sk_shares[2], ct, 2)
+
+	d_is := [][]kyberk2so.Poly{d_1, d_2, d_3}
+
+	var p kyberk2so.Poly
+
+	p = kyberk2so.PolyAdd(p, d_is[0][1])
+	p = kyberk2so.PolyAdd(p, d_is[0][2])
+	p = kyberk2so.PolyAdd(p, d_is[1][0])
+
+	p = kyberk2so.PolyReduce(p)
+
+	fmt.Println(p)
+
+	output_msg := kyberk2so.PolyToMsg(p)
 
 	if !reflect.DeepEqual(msg, output_msg) {
 		t.Errorf("Error")
