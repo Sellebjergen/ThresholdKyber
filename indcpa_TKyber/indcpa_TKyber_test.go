@@ -41,7 +41,7 @@ func TestAdvancedCase(t *testing.T) {
 	params := owcpa.NewParameterSet("TKyber-Test")
 	n := 3
 	t_param := 3
-	delta := 10
+	delta := 3
 	pk, sk_shares := Setup(params, n, t_param)
 
 	ct := Enc(params, msg, pk, delta)
@@ -106,8 +106,6 @@ func TestWithReplicatedLSS(t *testing.T) {
 	d_3 := PartDec(params, sk_shares[2], ct, 2, delta)
 
 	d_is := [][][]kyberk2so.Poly{d_1, d_2, d_3}
-
-	//fmt.Println(d_is)
 
 	combined := Combine(params, ct, d_is, n, t_param)
 

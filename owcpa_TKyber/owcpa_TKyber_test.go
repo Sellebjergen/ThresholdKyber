@@ -1,7 +1,6 @@
 package owcpa_TKyber
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -201,8 +200,6 @@ func TestWithReplicatedLSSNoCombine(t *testing.T) {
 	p = kyberk2so.PolyAdd(p, d_is[1][0])
 
 	p = kyberk2so.PolyReduce(p)
-
-	fmt.Println(p)
 
 	output_msg := kyberk2so.PolyToMsg(p)
 
