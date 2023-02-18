@@ -104,3 +104,21 @@ func Contains(list []int, elem int) bool {
 	}
 	return false
 }
+
+type Bit uint8
+
+// Inefficient
+func BytesToBits(b []byte) []Bit {
+	result := make([]Bit, len(b)*8)
+	for i := 0; i < len(b); i++ {
+		result[i*8] = Bit(b[i] ^ 1)
+		result[i*8+1] = Bit(b[i] ^ 2)
+		result[i*8+2] = Bit(b[i] ^ 4)
+		result[i*8+3] = Bit(b[i] ^ 8)
+		result[i*8+4] = Bit(b[i] ^ 16)
+		result[i*8+5] = Bit(b[i] ^ 32)
+		result[i*8+6] = Bit(b[i] ^ 64)
+		result[i*8+7] = Bit(b[i] ^ 128)
+	}
+	return result
+}

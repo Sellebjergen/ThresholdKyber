@@ -37,7 +37,7 @@ func PartDec(params *OwcpaParams, sk_i []kyberk2so.PolyVec, ct []byte, party int
 
 	for j := 0; j < len(sk_i); j++ {
 		// Sample noise
-		e_i := params.D_flood_dist.SampleNoise(params.Q, 255, params.Sigma) // TODO: Fix params
+		e_i := params.D_flood_dist.SampleNoise(params, 255) // TODO: Fix params
 
 		// Inner prod.
 		d_i[j] = kyberk2so.PolyvecPointWiseAccMontgomery(sk_i[j], u, kyberk2so.ParamsK)
