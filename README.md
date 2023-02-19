@@ -19,4 +19,6 @@ Robustness of peter and katharinas article
 
 
 ## TODO
-[] make CBD byte operation more efficient by removing the need for uint8.
+[] make CBD byte operation more efficient by removing the need for uint8. \
+[] Update params to be taken from a struct to increase modulo q \
+[] Update bounds in the constants to adhere for the newly chosen modulo q.
