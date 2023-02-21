@@ -12,145 +12,63 @@ import (
 
 // ================= Integration tests =================
 
-func TestSimpleCase(t *testing.T) {
-	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	params := owcpa.NewParameterSet("TKyber-Test")
-	n := 1
-	t_param := 1
-	delta := 2
-	pk, sk_shares := Setup(params, n, t_param)
+func TestTKyberConsistency(t *testing.T) {
+	cases := []struct {
+		TKyberVariant string
+		n             int
+		t             int
+		delta         int
+	}{
 
-	ct := Enc(params, msg, pk, delta)
+		{TKyberVariant: "TKyber-Test", n: 1, t: 0, delta: 2},
+		{TKyberVariant: "TKyber-Test", n: 2, t: 1, delta: 2},
+		{TKyberVariant: "TKyber-Test", n: 3, t: 2, delta: 2},
+		{TKyberVariant: "TKyber-Test", n: 4, t: 3, delta: 2},
 
-	// Decrypt
-	d_1 := PartDec(params, sk_shares[0], ct, 0, delta)
+		{TKyberVariant: "TKyber-Test", n: 3, t: 2, delta: 1},
+		{TKyberVariant: "TKyber-Test", n: 3, t: 2, delta: 10},
 
-	d_is := [][][]kyberk2so.Poly{d_1}
+		{TKyberVariant: "TKyber-Test-Replicated", n: 3, t: 1, delta: 2},
+		{TKyberVariant: "TKyber-Test-Replicated", n: 3, t: 2, delta: 2},
 
-	combined := Combine(params, ct, d_is, n, t_param)
+		{TKyberVariant: "TKyber-Test-Naive", n: 3, t: 1, delta: 2},
+		{TKyberVariant: "TKyber-Test-Naive", n: 3, t: 2, delta: 2},
+	}
 
-	output_msg := kyberk2so.PolyToMsg(combined)
-
-	if !reflect.DeepEqual(msg, output_msg) {
-		t.Errorf("Error")
+	for _, tCase := range cases {
+		t.Run(fmt.Sprintf("%s with n = %d, t = %d, delta = %d", tCase.TKyberVariant, tCase.n, tCase.t, tCase.delta),
+			func(t *testing.T) { testConsistencyCheck(t, tCase.TKyberVariant, tCase.n, tCase.t, tCase.delta) })
 	}
 }
 
-func TestAdvancedCase(t *testing.T) {
-	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	params := owcpa.NewParameterSet("TKyber-Test")
-	n := 3
-	t_param := 3
-	delta := 3
+func testConsistencyCheck(t *testing.T, TKyberVariant string, n, t_param, delta int) {
+	msg := make([]byte, 32)
+	rand.Read(msg)
+	params := owcpa.NewParameterSet(TKyberVariant)
 	pk, sk_shares := Setup(params, n, t_param)
 
 	ct := Enc(params, msg, pk, delta)
 
 	// Decrypt
-	d_1 := PartDec(params, sk_shares[0], ct, 0, delta)
-	d_2 := PartDec(params, sk_shares[1], ct, 1, delta)
-	d_3 := PartDec(params, sk_shares[2], ct, 2, delta)
-
-	d_is := [][][]kyberk2so.Poly{d_1, d_2, d_3}
-
-	combined := Combine(params, ct, d_is, n, t_param)
-
-	output_msg := kyberk2so.PolyToMsg(combined)
-
-	if !reflect.DeepEqual(msg, output_msg) {
-		t.Errorf("Error")
+	d_is := make([][][]kyberk2so.Poly, n)
+	for i := 0; i < t_param+1; i++ {
+		d_is[i] = PartDec(params, sk_shares[i], ct, i, delta)
 	}
-}
-
-func TestLowDeltaCase(t *testing.T) {
-	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	params := owcpa.NewParameterSet("TKyber-Test")
-	n := 3
-	t_param := 3
-	delta := 1
-	pk, sk_shares := Setup(params, n, t_param)
-
-	ct := Enc(params, msg, pk, delta)
-
-	// Decrypt
-	d_1 := PartDec(params, sk_shares[0], ct, 0, delta)
-	d_2 := PartDec(params, sk_shares[1], ct, 1, delta)
-	d_3 := PartDec(params, sk_shares[2], ct, 2, delta)
-
-	d_is := [][][]kyberk2so.Poly{d_1, d_2, d_3}
-
-	combined := Combine(params, ct, d_is, n, t_param)
-
-	output_msg := kyberk2so.PolyToMsg(combined)
-
-	if !reflect.DeepEqual(msg, output_msg) {
-		t.Errorf("Error")
+	for i := t_param + 1; i < n; i++ {
+		d_is[i] = make([][]kyberk2so.Poly, len(sk_shares[i]))
 	}
-}
-
-// ================= Replicated LSS tests =================
-
-func TestWithReplicatedLSS(t *testing.T) {
-	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	params := owcpa.NewParameterSet("TKyber-Test-Replicated")
-	n := 3
-	t_param := 1
-	delta := 1
-	pk, sk_shares := Setup(params, n, t_param)
-
-	ct := Enc(params, msg, pk, delta)
-
-	// Decrypt
-	d_1 := PartDec(params, sk_shares[0], ct, 0, delta)
-	d_2 := PartDec(params, sk_shares[1], ct, 1, delta)
-	d_3 := PartDec(params, sk_shares[2], ct, 2, delta)
-
-	d_is := [][][]kyberk2so.Poly{d_1, d_2, d_3}
 
 	combined := Combine(params, ct, d_is, n, t_param)
-
 	output_msg := kyberk2so.PolyToMsg(combined)
-	//t.Errorf("Error")
 
 	if !reflect.DeepEqual(msg, output_msg) {
-		t.Errorf("Error")
-	}
-}
-
-// ================= Naive LSS tests =================
-
-func TestWithNaiveLSS(t *testing.T) {
-	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	params := owcpa.NewParameterSet("TKyber-Test-Naive")
-	n := 3
-	t_param := 2
-	delta := 1
-	pk, sk_shares := Setup(params, n, t_param)
-
-	ct := Enc(params, msg, pk, delta)
-
-	// Decrypt
-	d_1 := PartDec(params, sk_shares[0], ct, 0, delta)
-	d_2 := PartDec(params, sk_shares[1], ct, 1, delta)
-	d_3 := PartDec(params, sk_shares[2], ct, 2, delta)
-
-	d_is := [][][]kyberk2so.Poly{d_1, d_2, d_3}
-
-	//fmt.Println(d_is)
-
-	combined := Combine(params, ct, d_is, n, t_param)
-
-	output_msg := kyberk2so.PolyToMsg(combined)
-	//t.Errorf("Error")
-
-	if !reflect.DeepEqual(msg, output_msg) {
-		t.Errorf("Error")
+		t.Errorf("Consistency test failed")
 	}
 }
 
 // ================= Benchmarking =================
 
-func BenchmarkSetupTKyber(b *testing.B) {
+func BenchmarkTKyber(b *testing.B) {
 	cases := []struct {
 		TKyberVariant string
 		n             int

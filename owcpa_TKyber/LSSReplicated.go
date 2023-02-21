@@ -40,6 +40,7 @@ func ShareRepNaive(sk kyberk2so.PolyVec, n int, t int, isNaive bool) [][]kyberk2
 		for j := 0; j < len(combinations); j++ {
 			comb := combinations[j]
 			shouldGetShare := util.Contains(comb, i+1)
+
 			if !isNaive {
 				shouldGetShare = !shouldGetShare
 			}
@@ -55,13 +56,11 @@ func ShareRepNaive(sk kyberk2so.PolyVec, n int, t int, isNaive bool) [][]kyberk2
 
 	}
 
-	//fmt.Println(shares)
 	return shares
 }
 
 func RecRepNaive(d_is [][]kyberk2so.Poly, n int, t int, isNaive bool) kyberk2so.Poly {
-	//fmt.Println(d_is)
-	var p1 kyberk2so.Poly
+	var p kyberk2so.Poly
 
 	combinations := util.MakeCombinations(n, t)
 
@@ -72,13 +71,13 @@ func RecRepNaive(d_is [][]kyberk2so.Poly, n int, t int, isNaive bool) kyberk2so.
 			if !isNaive {
 				hasShare = !hasShare
 			}
-			if hasShare {
-				p1 = kyberk2so.PolyAdd(p1, d_is[i][j]) //TODO: Possible swap i and j
+			if hasShare { // TODO: Do we need  && (d_is[i][j] != kyberk2so.Poly{0}) ???
+				p = kyberk2so.PolyAdd(p, d_is[i][j])
 				break
 
 			}
 		}
 	}
 
-	return kyberk2so.PolyReduce(p1)
+	return kyberk2so.PolyReduce(p)
 }

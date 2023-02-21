@@ -7,9 +7,9 @@ import (
 type LSSNaive struct{}
 
 func (s *LSSNaive) Share(sk kyberk2so.PolyVec, n int, t int) [][]kyberk2so.PolyVec {
-	return ShareRepNaive(sk, n, t, true)
+	return ShareRepNaive(sk, n, n-t, true)
 }
 
 func (s *LSSNaive) Rec(d_is [][]kyberk2so.Poly, n int, t int) kyberk2so.Poly {
-	return RecRepNaive(d_is, n, t, true)
+	return RecRepNaive(d_is, n, n-t, true)
 }

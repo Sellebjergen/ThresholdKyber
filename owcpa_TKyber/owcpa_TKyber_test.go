@@ -1,11 +1,105 @@
 package owcpa_TKyber
 
 import (
+	"crypto/rand"
+	"fmt"
 	"reflect"
 	"testing"
 
 	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
 )
+
+// ================= Integration tests =================
+
+func TestTKyberConsistency(t *testing.T) {
+	cases := []struct {
+		TKyberVariant string
+		n             int
+		t             int
+	}{
+		{TKyberVariant: "TKyber-Test", n: 1, t: 0},
+		{TKyberVariant: "TKyber-Test", n: 2, t: 1},
+		{TKyberVariant: "TKyber-Test", n: 3, t: 2},
+		{TKyberVariant: "TKyber-Test", n: 4, t: 3},
+
+		{TKyberVariant: "TKyber-Test-Replicated", n: 3, t: 1},
+		{TKyberVariant: "TKyber-Test-Replicated", n: 3, t: 2},
+
+		{TKyberVariant: "TKyber-Test-Naive", n: 3, t: 1},
+		{TKyberVariant: "TKyber-Test-Naive", n: 3, t: 2},
+	}
+
+	for _, tCase := range cases {
+		t.Run(fmt.Sprintf("%s with n = %d, t = %d", tCase.TKyberVariant, tCase.n, tCase.t),
+			func(t *testing.T) { testConsistencyCheck(t, tCase.TKyberVariant, tCase.n, tCase.t) })
+	}
+}
+
+func testConsistencyCheck(t *testing.T, TKyberVariant string, n, t_param int) {
+	msg := make([]byte, 32)
+	rand.Read(msg)
+	params := NewParameterSet(TKyberVariant)
+	pk, sk_shares := Setup(params, n, t_param)
+
+	ct := Enc(params, msg, pk)
+
+	// Decrypt
+	d_is := make([][]kyberk2so.Poly, n)
+	for i := 0; i < t_param+1; i++ {
+		d_is[i] = PartDec(params, sk_shares[i], ct, i)
+	}
+
+	combined := Combine(params, ct, d_is, n, t_param)
+	output_msg := kyberk2so.PolyToMsg(combined)
+
+	if !reflect.DeepEqual(msg, output_msg) {
+		t.Errorf("Consistency test failed")
+	}
+}
+
+func TestFullDeterministic(t *testing.T) {
+	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	params := NewParameterSet("TKyber-Test")
+	pk, sk_shares := Setup(params, 3, 2)
+
+	coins := make([]byte, 32)
+	// rand.Read(coins)
+
+	ct, _ := kyberk2so.IndcpaEncrypt(msg, pk, coins, kyberk2so.ParamsK)
+
+	// Decrypt
+	d_is := make([][]kyberk2so.Poly, 3)
+	d_is[0] = PartDec(params, sk_shares[0], ct, 0)
+	d_is[1] = PartDec(params, sk_shares[1], ct, 1)
+	d_is[2] = PartDec(params, sk_shares[2], ct, 2)
+
+	combined := Combine(params, ct, d_is, 3, 2)
+	output_msg := kyberk2so.PolyToMsg(combined)
+
+	if !reflect.DeepEqual(msg, output_msg) {
+		t.Errorf("Error")
+	}
+}
+
+// This represents an old bug found that used to be in the IND-CPA TKyber code.
+func TestSimINDCPATransform(t *testing.T) {
+	params := NewParameterSet("TKyber-Test")
+	pk, skShares := Setup(params, 1, 0)
+	m := SampleUnifPolynomial(2)
+	upscaled := Upscale(m, 2, params.Q)
+	m_bytes := kyberk2so.PolyToMsg(upscaled)
+
+	coins := make([]byte, 32)
+	ct, _ := kyberk2so.IndcpaEncrypt(m_bytes, pk, coins, kyberk2so.ParamsK)
+	part := PartDec(params, skShares[0], ct, 0)
+
+	res := Combine(params, ct, [][]kyberk2so.Poly{part}, 1, 0)
+	downscaled := Downscale(res, 2, params.Q)
+
+	if !reflect.DeepEqual(downscaled, m) {
+		t.Errorf("Error: Polynomials not matching")
+	}
+}
 
 // ================= Setup tests =================
 
@@ -42,55 +136,6 @@ func TestSetupWorksInCaseNis3(t *testing.T) {
 	}
 }
 
-// ================= Integration tests =================
-
-func TestAdvancedCase(t *testing.T) {
-	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	params := NewParameterSet("TKyber-Test")
-	n := 4
-	t_param := 4
-	pk, sk_shares := Setup(params, n, t_param)
-
-	ct := Enc(params, msg, pk)
-
-	// Decrypt
-	d_is := make([][]kyberk2so.Poly, n)
-	for i := 0; i < n; i++ {
-		d_is[i] = PartDec(params, sk_shares[i], ct, i)
-	}
-
-	combined := Combine(params, ct, d_is, n, t_param)
-	output_msg := kyberk2so.PolyToMsg(combined)
-
-	if !reflect.DeepEqual(msg, output_msg) {
-		t.Errorf("Error")
-	}
-}
-
-func TestSimpleCase(t *testing.T) {
-	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	params := NewParameterSet("TKyber-Test")
-	pk, sk_shares := Setup(params, 3, 3)
-
-	coins := make([]byte, 32)
-	// rand.Read(coins)
-
-	ct, _ := kyberk2so.IndcpaEncrypt(msg, pk, coins, kyberk2so.ParamsK)
-
-	// Decrypt
-	d_is := make([][]kyberk2so.Poly, 3)
-	d_is[0] = PartDec(params, sk_shares[0], ct, 0)
-	d_is[1] = PartDec(params, sk_shares[1], ct, 1)
-	d_is[2] = PartDec(params, sk_shares[2], ct, 2)
-
-	combined := Combine(params, ct, d_is, 3, 3)
-	output_msg := kyberk2so.PolyToMsg(combined)
-
-	if !reflect.DeepEqual(msg, output_msg) {
-		t.Errorf("Error")
-	}
-}
-
 func TestSetupUsing1PlayerGivesBackSecretKey(t *testing.T) {
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	params := NewParameterSet("TKyber-Test")
@@ -110,72 +155,7 @@ func TestSetupUsing1PlayerGivesBackSecretKey(t *testing.T) {
 	}
 }
 
-func TestFullWithN1(t *testing.T) {
-	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	params := NewParameterSet("TKyber-Test")
-	pk, skShares := Setup(params, 1, 1)
-
-	coins := make([]byte, 32)
-
-	ct, _ := kyberk2so.IndcpaEncrypt(msg, pk, coins, kyberk2so.ParamsK)
-
-	d_is := make([][]kyberk2so.Poly, 1)
-	d_is[0] = PartDec(params, skShares[0], ct, 0)
-
-	combined := Combine(params, ct, d_is, 1, 1)
-	output_msg := kyberk2so.PolyToMsg(combined)
-
-	if !reflect.DeepEqual(msg, output_msg) {
-		t.Errorf("Error")
-	}
-}
-
-// This represents an old bug found that used to be in the IND-CPA TKyber code.
-func TestSimINDCPATransform(t *testing.T) {
-	params := NewParameterSet("TKyber-Test")
-	pk, skShares := Setup(params, 1, 1)
-	m := SampleUnifPolynomial(2)
-	upscaled := Upscale(m, 2, params.Q)
-	m_bytes := kyberk2so.PolyToMsg(upscaled)
-
-	coins := make([]byte, 32)
-	ct, _ := kyberk2so.IndcpaEncrypt(m_bytes, pk, coins, kyberk2so.ParamsK)
-	part := PartDec(params, skShares[0], ct, 0)
-
-	res := Combine(params, ct, [][]kyberk2so.Poly{part}, 1, 1)
-	downscaled := Downscale(res, 2, params.Q)
-
-	if !reflect.DeepEqual(downscaled, m) {
-		t.Errorf("Error: Polynomials not matching")
-	}
-}
-
 // ================= Replicated LSS tests =================
-
-func TestWithReplicatedLSS(t *testing.T) {
-	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	params := NewParameterSet("TKyber-Test-Replicated")
-	n := 3
-	t_param := 1
-	pk, sk_shares := Setup(params, n, t_param)
-
-	ct := Enc(params, msg, pk)
-
-	// Decrypt
-	d_1 := PartDec(params, sk_shares[0], ct, 0)
-	d_2 := PartDec(params, sk_shares[1], ct, 1)
-	d_3 := PartDec(params, sk_shares[2], ct, 2)
-
-	d_is := [][]kyberk2so.Poly{d_1, d_2, d_3}
-
-	combined := Combine(params, ct, d_is, n, t_param)
-
-	output_msg := kyberk2so.PolyToMsg(combined)
-
-	if !reflect.DeepEqual(msg, output_msg) {
-		t.Errorf("Error")
-	}
-}
 
 func TestWithReplicatedLSSNoCombine(t *testing.T) {
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")

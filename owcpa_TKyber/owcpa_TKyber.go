@@ -36,6 +36,10 @@ func PartDec(params *OwcpaParams, sk_i []kyberk2so.PolyVec, ct []byte, party int
 	kyberk2so.PolyvecNtt(u, kyberk2so.ParamsK)
 
 	for j := 0; j < len(sk_i); j++ {
+		/* if (sk_i[j][0] == kyberk2so.Poly{0}) && (sk_i[j][1] == kyberk2so.Poly{0}) {
+			continue
+		} */ // TODO: See TODO in LSSReplicated. This piece of code needs to be here if we rely on the check there.
+
 		// Sample noise
 		e_i := params.D_flood_dist.SampleNoise(params, 255) // TODO: Fix params
 
