@@ -1,8 +1,6 @@
 package owcpa_TKyber
 
 import (
-	"fmt"
-
 	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
 	"ThresholdKyber.com/m/util"
 )
@@ -75,12 +73,6 @@ func RecRepNaive(d_is [][]kyberk2so.Poly, n int, t int, isNaive bool) kyberk2so.
 				hasShare = !hasShare
 			}
 			if hasShare {
-				fmt.Print("Player:")
-				fmt.Println(i + 1)
-				fmt.Print("i: ")
-				fmt.Println(i)
-				fmt.Print("j: ")
-				fmt.Println(j)
 				p1 = kyberk2so.PolyAdd(p1, d_is[i][j]) //TODO: Possible swap i and j
 				break
 

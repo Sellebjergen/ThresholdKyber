@@ -14,10 +14,9 @@ func (s *LSSAdditive) Share(sk kyberk2so.PolyVec, n int, t int) [][]kyberk2so.Po
 	for i := 0; i < n; i++ {
 		shares[i] = make([]kyberk2so.PolyVec, 1)
 	}
-	paramsK := 2
 
 	for i := range shares {
-		shares[i][0] = kyberk2so.PolyvecNew(paramsK)
+		shares[i][0] = kyberk2so.PolyvecNew(kyberk2so.ParamsK)
 	}
 
 	for poly, sk_poly := range sk {
@@ -45,7 +44,7 @@ func SharePolynomial(toShare kyberk2so.Poly, n int) []kyberk2so.Poly {
 	shares := make([]kyberk2so.Poly, n)
 
 	for i := 0; i <= n-2; i++ {
-		shares[i] = SampleUnifPolynomial(3329) // TODO: Kyber params
+		shares[i] = SampleUnifPolynomial(kyberk2so.ParamsQ) // TODO: Kyber params
 	}
 
 	shares[n-1] = Copy(toShare)
