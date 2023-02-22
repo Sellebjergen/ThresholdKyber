@@ -9,7 +9,7 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-type hybridCiphertext struct {
+type hybrid1Ciphertext struct {
 	c1 []byte
 	c2 []byte
 	c3 []byte
@@ -20,7 +20,7 @@ func K_h1(paramsK int) ([]byte, []byte) {
 	return pk, sk
 }
 
-func E_h1(pk []byte, msg []byte, paramsK int, isDet bool) *hybridCiphertext {
+func E_h1(pk []byte, msg []byte, paramsK int, isDet bool) *hybrid1Ciphertext {
 	k := make([]byte, 32)
 	rand.Read(k)
 	k_other_font := H(k)
@@ -40,10 +40,10 @@ func E_h1(pk []byte, msg []byte, paramsK int, isDet bool) *hybridCiphertext {
 		c3 = G(c1, c2, k)
 	}
 
-	return &hybridCiphertext{c1, c2, c3}
+	return &hybrid1Ciphertext{c1, c2, c3}
 }
 
-func D_h1(sk []byte, ct *hybridCiphertext, paramsK int, isDet bool) ([]byte, []byte) {
+func D_h1(sk []byte, ct *hybrid1Ciphertext, paramsK int, isDet bool) ([]byte, []byte) {
 	k := kyberk2so.IndcpaDecrypt(ct.c1, sk, paramsK)
 	if k == nil {
 		return nil, nil
