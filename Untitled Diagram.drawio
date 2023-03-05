@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-03-01T18:35:40.510Z" agent="5.0 (Macintosh)" etag="aIdM597B6mKtoU29YNqK" version="20.8.20" type="github">
+<mxfile host="app.diagrams.net" modified="2023-03-05T17:45:54.141Z" agent="5.0 (Macintosh)" etag="o294bAYbnffejuHpDJf1" version="21.0.2" type="github">
   <diagram name="Page-1" id="hLuPmDGO4PXkCt97cyZo">
-    <mxGraphModel dx="2370" dy="1446" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#FFFFFF" math="0" shadow="0">
+    <mxGraphModel dx="2061" dy="1157" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#FFFFFF" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -79,6 +79,9 @@
         <mxCell id="O7RyFbMv_qGXEK2Rhbus-10" value="&lt;div&gt;Gladius&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="738" y="268" width="120" height="60" as="geometry" />
         </mxCell>
+        <mxCell id="LVyAhiCASs7lZBnIoiiR-2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="O7RyFbMv_qGXEK2Rhbus-11" target="LVyAhiCASs7lZBnIoiiR-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
         <mxCell id="O7RyFbMv_qGXEK2Rhbus-11" value="Kat + Pete params generation" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="-17" y="352" width="120" height="60" as="geometry" />
         </mxCell>
@@ -150,6 +153,9 @@
         </mxCell>
         <mxCell id="O7RyFbMv_qGXEK2Rhbus-50" value="Scala-mamba" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=1;labelBackgroundColor=none;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
           <mxGeometry x="602" y="479" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="LVyAhiCASs7lZBnIoiiR-1" value="Q based on chinese remainder theorem" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="-17" y="442" width="120" height="60" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
