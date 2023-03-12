@@ -1,0 +1,144 @@
+from circuit import sha3_256
+
+# Params (Kyber512)
+n = 256
+q = 3329
+r = 2
+
+# centre:
+#
+# Input:
+# Output:
+def centre(x_i_angle):
+    # BitDecomp
+    b = x_i_angle.bit_decompose(bit_length = 12 + 1)
+
+    # BitAdd
+    q_plus_1 = cint(q + 1)
+    qp1_bits = q_plus_1.bit_decompose(bit_length = 12 + 1)
+    b_prime = sint.bit_adder(b, qp1_bits)
+
+    # BitNeg
+    b_prime_prime = bitNeg(b_prime)
+
+    # BitLT
+    f = x_i_angle < 1665
+
+    # Compute <a>
+    a = []
+    for i in range(len(b)):
+        a.append(f * b[i] + (1 - f) * b_prime_prime[i])
+
+    return a
+
+def bitNeg(a_angle):
+    flipped = []
+    for i in range(len(a_angle)):
+        flipped.append(sint.bit_not(a_angle[i]))
+    one = cint(1)
+    one_decomp = one.bit_decompose(bit_length = len(flipped))
+    return sint.bit_adder(flipped, one_decomp)
+
+# KEM decapsulation:
+#
+# Input:
+# Output:
+def kem_decap(u, v, s_angle):
+    # v - u^T <s>
+    x = inner_prod(u, s_angle)
+    x = poly_sub(v, x)
+    x.print_reveal_nested()
+
+def inner_prod(u, s):
+    d = Array(n*2, sint)
+    for i in range(r):
+        u_i = u.get_column(i)
+        s_i = s.get_column(i)
+        d_i = poly_mult(u_i, s_i)
+        for j in range(len(d_i)):
+            d[j] = d[j] + d_i[j]
+    return d
+
+def poly_mult(a, b):
+    res = Array(len(a) + len(b), sint)
+    for i in range(len(a)):
+        for j in range(len(b)):
+            res[i + j] = res[i + j] + a[i] * b[j]
+    return res
+
+def poly_sub(a, b):
+    for i in range(len(a)):
+        b[i] = a[i] - b[i]
+    return b
+
+def poly_mul_const(a, const):
+    for i in range(len(a)):
+        a[i] = a[i] * const
+    return a
+
+def poly_rem(a, divisor):
+    rem = copy(a)
+
+    """ @while_do(lambda x: x < n_bidders, regint(0))
+    def _(i):
+        #nonlocal actual_capacity_of_solution
+        current_bidder = bidders[i]
+        actual_solution.append(current_bidder)  
+        actual_capacity_of_solution.iadd(current_bidder[2])
+        return i+1 """
+
+def copy(a):
+    rem = Array(n, sint)
+    for i in range(len(a)):
+        rem[i] = a[i]
+    return rem
+
+# Hash check:
+#
+# Input:
+# Output:
+def hash_check(k_angle, c_2):
+    k_as_sbits = []
+    for i in range(len(k_angle)):
+        k_as_sbits.append(sbit(k_angle[i]))
+    digest = sha3_256(sbitvec.from_vec(k_as_sbits + c_2))
+    digest.elements()[0].reveal().print_reg()
+
+# Message extraction: Does not output the message m, but rather the key k
+# The message can then be extracted using the key outside MP-SPDZ. This is more efficient (i think).
+#
+# Input: k_bits is an array of sint(0)/sint(1) values representing the bits of the key
+# Output: The key k.
+def msg_ext(k_angle):
+    k_bits_clear = Array(n, cint)
+    for i in range(len(k_angle)):
+        k_bits_clear[i] = k_angle[i].reveal()
+    k_bits_clear.print_reveal_nested()
+
+# Concrete input
+mock_k_angle = Array(n, sint)
+mock_k_angle[15] = sint(1)
+cbit = cbits.get_type(1)
+c2 = [cbit(0)] * n
+c3 = [cbit(0)] * n
+
+s_angle = Matrix(n, r, sint)
+ct_1 = Matrix(n, r, cint)
+ct_2 = Array(n, cint)
+
+# Run protocol
+kem_decap(ct_1, ct_2, s_angle)
+#hash_check(mock_k_angle, c2) # Conversion of sint to sbit is huge time sink, commented out for testing
+msg_ext(mock_k_angle)
+
+# Testing of centered
+centered = centre(sint(3000)) # Should be bits corresponding to 3000 - 3329 = 1336
+print_ln(len(centered))
+print_ln("%s", sint.bit_compose(centered).reveal())
+centered2 = centre(sint(1000)) # Should be bits corresponding to 3000 - 3329 = 1336
+print_ln(len(centered2))
+print_ln("%s", sint.bit_compose(centered2).reveal())
+
+
+for i in range(len(centered)):
+    print_ln("%s", centered[i].reveal())
