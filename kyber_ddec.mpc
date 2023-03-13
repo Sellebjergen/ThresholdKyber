@@ -11,15 +11,25 @@ r = 2
 # Output:
 def centre(x_i_angle):
     # BitDecomp
-    b = x_i_angle.bit_decompose(bit_length = 12 + 1)
+    b = x_i_angle.bit_decompose(bit_length = 12)
+
+    print_ln("3000 as bits")
+    for i in range(len(b)):
+        print_ln("%s", b[i].reveal())
 
     # BitAdd
     q_plus_1 = cint(q + 1)
-    qp1_bits = q_plus_1.bit_decompose(bit_length = 12 + 1)
-    b_prime = sint.bit_adder(b, qp1_bits)
+    qp1_bits = q_plus_1.bit_decompose(bit_length = 12)
+    b_prime = sint.bit_adder(flipBits(b), qp1_bits)
+
+    print_ln("Delim")
+    print_ln("%s", sint.bit_compose(b_prime).reveal())
 
     # BitNeg
     b_prime_prime = bitNeg(b_prime)
+   
+    print_ln("%s", sint.bit_compose(b_prime_prime).reveal())
+    print_ln("Delim")
 
     # BitLT
     f = x_i_angle < 1665
@@ -31,10 +41,14 @@ def centre(x_i_angle):
 
     return a
 
-def bitNeg(a_angle):
+def flipBits(a_angle):
     flipped = []
     for i in range(len(a_angle)):
         flipped.append(sint.bit_not(a_angle[i]))
+    return flipped
+
+def bitNeg(a_angle):
+    flipped = flipBits(a_angle)
     one = cint(1)
     one_decomp = one.bit_decompose(bit_length = len(flipped))
     return sint.bit_adder(flipped, one_decomp)
@@ -48,6 +62,9 @@ def kem_decap(u, v, s_angle):
     x = inner_prod(u, s_angle)
     x = poly_sub(v, x)
     x.print_reveal_nested()
+    w = []
+    for i in range(len(x)):
+        w.append(centre(x))
 
 def inner_prod(u, s):
     d = Array(n*2, sint)
@@ -101,8 +118,8 @@ def hash_check(k_angle, c_2):
     k_as_sbits = []
     for i in range(len(k_angle)):
         k_as_sbits.append(sbit(k_angle[i]))
-    digest = sha3_256(sbitvec.from_vec(k_as_sbits + c_2))
-    digest.elements()[0].reveal().print_reg()
+    digest = sha3_256(sbitvec.from_vec(k_as_sbits + c_2).reverse_bytes())
+    digest.reveal_print_hex()
 
 # Message extraction: Does not output the message m, but rather the key k
 # The message can then be extracted using the key outside MP-SPDZ. This is more efficient (i think).
@@ -131,14 +148,17 @@ kem_decap(ct_1, ct_2, s_angle)
 #hash_check(mock_k_angle, c2) # Conversion of sint to sbit is huge time sink, commented out for testing
 msg_ext(mock_k_angle)
 
-# Testing of centered
-centered = centre(sint(3000)) # Should be bits corresponding to 3000 - 3329 = 1336
+""" # Testing of centered
+# Result should be 111010110111 (-329, see https://www.exploringbinary.com/twos-complement-converter/)
+centered = centre(sint(3000))
 print_ln(len(centered))
-print_ln("%s", sint.bit_compose(centered).reveal())
-centered2 = centre(sint(1000)) # Should be bits corresponding to 3000 - 3329 = 1336
-print_ln(len(centered2))
-print_ln("%s", sint.bit_compose(centered2).reveal())
-
-
 for i in range(len(centered)):
     print_ln("%s", centered[i].reveal())
+
+# Should just return standard bit representation of 1000, since 1000 < q/2
+centered2 = centre(sint(1000)) 
+print_ln(len(centered2))
+for i in range(len(centered2)):
+    print_ln("%s", centered2[i].reveal()) """
+
+
