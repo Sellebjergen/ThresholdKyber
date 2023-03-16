@@ -5,7 +5,7 @@ n = 256
 q = 3329
 r = 2
 
-# centre:
+# Centre:
 #
 # Input:
 # Output:
@@ -13,23 +13,13 @@ def centre(x_i_angle):
     # BitDecomp
     b = x_i_angle.bit_decompose(bit_length = 12)
 
-    print_ln("3000 as bits")
-    for i in range(len(b)):
-        print_ln("%s", b[i].reveal())
-
     # BitAdd
     q_plus_1 = cint(q + 1)
     qp1_bits = q_plus_1.bit_decompose(bit_length = 12)
     b_prime = sint.bit_adder(flipBits(b), qp1_bits)
 
-    print_ln("Delim")
-    print_ln("%s", sint.bit_compose(b_prime).reveal())
-
     # BitNeg
     b_prime_prime = bitNeg(b_prime)
-   
-    print_ln("%s", sint.bit_compose(b_prime_prime).reveal())
-    print_ln("Delim")
 
     # BitLT
     f = x_i_angle < 1665
@@ -59,22 +49,31 @@ def bitNeg(a_angle):
 # Output:
 def kem_decap(u, v, s_angle):
     # v - u^T <s>
-    x = inner_prod(u, s_angle)
+    x = inner_prod(u, s_angle, f)
     x = poly_sub(v, x)
     x.print_reveal_nested()
     w = []
     for i in range(len(x)):
-        w.append(centre(x))
+        w.append(centre(x[i]))
+    k = []
+    for i in range(len(w)):
+        k.append(w[i][len(w[i]) - 1]) # get msb of each w_i
+    return k
 
-def inner_prod(u, s):
-    d = Array(n*2, sint)
+def inner_prod(u, s, f):
+    d = Array(len(f), sint)
     for i in range(r):
         u_i = u.get_column(i)
         s_i = s.get_column(i)
-        d_i = poly_mult(u_i, s_i)
+        d_i = rq_mult(u_i, s_i, f)
         for j in range(len(d_i)):
             d[j] = d[j] + d_i[j]
     return d
+
+def rq_mult(a, b, f):
+    prod = poly_mult(a, b)
+    rem = poly_rem(prod, f)
+    return rem
 
 def poly_mult(a, b):
     res = Array(len(a) + len(b), sint)
@@ -84,9 +83,10 @@ def poly_mult(a, b):
     return res
 
 def poly_sub(a, b):
+    res = Array(len(b), sint)
     for i in range(len(a)):
-        b[i] = a[i] - b[i]
-    return b
+        res[i] = a[i] - b[i]
+    return res
 
 def poly_mul_const(a, const):
     for i in range(len(a)):
@@ -103,6 +103,23 @@ def poly_rem(a, divisor):
         actual_solution.append(current_bidder)  
         actual_capacity_of_solution.iadd(current_bidder[2])
         return i+1 """
+    @while_do(lambda: ((deg(rem) > sint(0)) * (deg(rem) >= deg(divisor))))
+    def _():
+        t = lead(rem) / lead(divisor)
+        rem.update(poly_sub(rem, poly_mul_const(divisor, t)))
+    return rem
+
+def deg(a):
+    degree = sint(0)
+    for i in range(len(a)):
+        degree = (a[i] == sint(0)).if_else(degree, sint(i))
+    return degree
+
+def lead(a):
+    lead = sint(0)
+    for i in range(len(a)):
+        lead = (a[i] == sint(0)).if_else(lead, a[i])
+    return lead
 
 def copy(a):
     rem = Array(n, sint)
@@ -132,7 +149,7 @@ def msg_ext(k_angle):
         k_bits_clear[i] = k_angle[i].reveal()
     k_bits_clear.print_reveal_nested()
 
-# Concrete input
+""" # Concrete input
 mock_k_angle = Array(n, sint)
 mock_k_angle[15] = sint(1)
 cbit = cbits.get_type(1)
@@ -148,7 +165,7 @@ kem_decap(ct_1, ct_2, s_angle)
 #hash_check(mock_k_angle, c2) # Conversion of sint to sbit is huge time sink, commented out for testing
 msg_ext(mock_k_angle)
 
-""" # Testing of centered
+# Testing of centered
 # Result should be 111010110111 (-329, see https://www.exploringbinary.com/twos-complement-converter/)
 centered = centre(sint(3000))
 print_ln(len(centered))
@@ -160,5 +177,18 @@ centered2 = centre(sint(1000))
 print_ln(len(centered2))
 for i in range(len(centered2)):
     print_ln("%s", centered2[i].reveal()) """
+
+# Testing of rq_mul
+f = Array(n, cint)
+f[0], f[2] = cint(1), cint(0)
+
+lhs = Array(4, sint)
+lhs[0], lhs[1], lhs[2], lhs[3] = sint(3), sint(5), sint(0), sint(8)
+
+rhs = Array(3, cint)
+rhs[0], rhs[1], rhs[2] = cint(1), cint(1), cint(5)
+
+res = rq_mult(lhs, rhs, f)
+res.print_reveal_nested()
 
 
