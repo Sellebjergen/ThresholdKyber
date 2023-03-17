@@ -19,24 +19,24 @@ Robustness of peter and katharinas article
 
 
 ## TODO
-- [ ] Make CBD byte operation more efficient by removing the need for uint8. \
-- [ ] Update params to be taken from a struct to increase modulo q \
-- [ ] Update bounds in the constants to adhere for the newly chosen modulo q. \
-- [ ] Update Gasussian Samplong to use cryptograåhically safe randomness \
-- [ ] Update paramsPolyvecCompressedBytes variables for k > 3 \
-- [ ] Fixing inner product in MP SPDZ \
-- [ ] Write about inner product in report \
-- [ ] Implementing Distributed key generation in MP SPDZ \
-- [x] Write about distributed key generation in report \
-- [ ] Update preliminaries with quotient rings etc. (half page that every article has) \
-- [ ] Update preliminaries with notation \
-- [ ] Formal definition and properties \
-- [ ] strong 0, 1-reconstruction \
-- [ ] rewrite pictures of hybrid constructions into some algorithm tex library \
-- [ ] Inserting code fragments in implementation section \
-- [ ] Benchmark MP SPDZ vs golang implementation \
+- [ ] Make CBD byte operation more efficient by removing the need for uint8.
+- [ ] Update params to be taken from a struct to increase modulo q.
+- [ ] Update bounds in the constants to adhere for the newly chosen modulo q.
+- [ ] Update Gasussian Sampling to use cryptographically safe randomness.
+- [ ] Update paramsPolyvecCompressedBytes variables for k > 3.
+- [ ] Fixing inner product in MP SPDZ.
+- [ ] Write about inner product in report.
+- [ ] Implementing Distributed key generation in MP SPDZ.
+- [x] Write about distributed key generation in report.
+- [ ] Update preliminaries with quotient rings etc. (half page that every article has)
+- [ ] Update preliminaries with notation.
+- [ ] Formal definition and properties of LSS.
+- [ ] strong 0, 1-reconstruction.
+- [ ] rewrite pictures of hybrid constructions into some algorithm tex library.
+- [ ] Inserting code fragments in implementation section.
+- [ ] Benchmark MP SPDZ vs golang implementation.
 
 
 ## Ideas further
-- [ ] Zero knowledge for distributed key generation
+- [ ] Zero knowledge for distributed key generation.
 
