@@ -20,7 +20,7 @@ Robustness of peter and katharinas article
 
 ## TODO
 - [ ] Make CBD byte operation more efficient by removing the need for uint8.
-- [ ] Update params to be taken from a struct to increase modulo q.
+- [x] Update Kyber params to be generated using python script.
 - [ ] Update bounds in the constants to adhere for the newly chosen modulo q.
 - [ ] Update Gasussian Sampling to use cryptographically safe randomness.
 - [ ] Update paramsPolyvecCompressedBytes variables for k > 3.
