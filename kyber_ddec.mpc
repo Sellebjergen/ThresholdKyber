@@ -149,7 +149,41 @@ def msg_ext(k_angle):
         k_bits_clear[i] = k_angle[i].reveal()
     k_bits_clear.print_reveal_nested()
 
-""" # Concrete input
+def test_ddec(ct_1, ct_2, s_angle, k_angle, c2, c3):
+    # Run protocol
+    kem_decap(ct_1, ct_2, s_angle)
+    hash_check(k_angle, c2) # Conversion of sint to sbit is huge time sink, commented out for testing
+    msg_ext(k_angle)
+
+# Testing of centered
+# Result should be 111010110111 (-329, see https://www.exploringbinary.com/twos-complement-converter/)
+def test_centre():
+    centered = centre(sint(3000))
+    print_ln(len(centered))
+    for i in range(len(centered)):
+        print_ln("%s", centered[i].reveal())
+
+    # Should just return standard bit representation of 1000, since 1000 < q/2
+    centered2 = centre(sint(1000)) 
+    print_ln(len(centered2))
+    for i in range(len(centered2)):
+        print_ln("%s", centered2[i].reveal())
+
+def test_rq_mult():
+    # Testing of rq_mul
+    f = Array(n, cint)
+    f[0], f[2] = cint(1), cint(0)
+
+    lhs = Array(4, sint)
+    lhs[0], lhs[1], lhs[2], lhs[3] = sint(3), sint(5), sint(0), sint(8)
+
+    rhs = Array(3, cint)
+    rhs[0], rhs[1], rhs[2] = cint(1), cint(1), cint(5)
+
+    res = rq_mult(lhs, rhs, f)
+    res.print_reveal_nested()
+
+# Concrete input
 mock_k_angle = Array(n, sint)
 mock_k_angle[15] = sint(1)
 cbit = cbits.get_type(1)
@@ -160,35 +194,6 @@ s_angle = Matrix(n, r, sint)
 ct_1 = Matrix(n, r, cint)
 ct_2 = Array(n, cint)
 
-# Run protocol
-kem_decap(ct_1, ct_2, s_angle)
-#hash_check(mock_k_angle, c2) # Conversion of sint to sbit is huge time sink, commented out for testing
-msg_ext(mock_k_angle)
-
-# Testing of centered
-# Result should be 111010110111 (-329, see https://www.exploringbinary.com/twos-complement-converter/)
-centered = centre(sint(3000))
-print_ln(len(centered))
-for i in range(len(centered)):
-    print_ln("%s", centered[i].reveal())
-
-# Should just return standard bit representation of 1000, since 1000 < q/2
-centered2 = centre(sint(1000)) 
-print_ln(len(centered2))
-for i in range(len(centered2)):
-    print_ln("%s", centered2[i].reveal()) """
-
-# Testing of rq_mul
-f = Array(n, cint)
-f[0], f[2] = cint(1), cint(0)
-
-lhs = Array(4, sint)
-lhs[0], lhs[1], lhs[2], lhs[3] = sint(3), sint(5), sint(0), sint(8)
-
-rhs = Array(3, cint)
-rhs[0], rhs[1], rhs[2] = cint(1), cint(1), cint(5)
-
-res = rq_mult(lhs, rhs, f)
-res.print_reveal_nested()
-
-
+test_centre()
+#test_rq_mult()
+#test_ddec(ct_1, ct_2, s_angle, mock_k_angle, c2, c3)

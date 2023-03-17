@@ -3,61 +3,13 @@
 
 package kyberk2so
 
-type KyberParams struct {
-	Q          int
-	K          int
-	ParamsQinv int
-}
-
-const (
-	Kyber512  string = "Kyber512"
-	Kyber768  string = "Kyber768"
-	Kyber1024 string = "Kyber1024"
-	Kyber1280 string = "Kyber1280"
-	Kyber1536 string = "Kyber1536"
-	Kyber1792 string = "Kyber1792"
-)
-
-func NewParameterSet(name string) *KyberParams {
-	var p KyberParams
-	switch name {
-	case Kyber512:
-		p.Q = 3329
-		p.ParamsQinv = 62209
-		p.K = 2
-	case Kyber768:
-		p.Q = 3329
-		p.ParamsQinv = 62209
-		p.K = 3
-	case Kyber1024:
-		p.Q = 3329
-		p.ParamsQinv = 62209
-		p.K = 4
-	case Kyber1280:
-		p.Q = 3329
-		p.ParamsQinv = 62209
-		p.K = 5
-	case Kyber1536:
-		p.Q = 3329
-		p.ParamsQinv = 62209
-		p.K = 6
-	case Kyber1792:
-		p.Q = 3329
-		p.ParamsQinv = 62209
-		p.K = 7
-	default:
-		panic("Error: Name did not match existing parameter set")
-	}
-
-	return &p
-}
-
 const ParamsN int = 256
 const ParamsQ int = 3329
 const ParamsK int = 2
 const paramsQinv int = 62209
-const paramsSymBytes int = 32
 const ParamsPolyBytes int = 384 // 12 * 256 / 8 = 384
+
+const paramsSymBytes int = 32
 const paramsETAK512 int = 3
 const paramsETAK768K1024 int = 2
 const paramsPolyvecBytesK512 int = 2 * ParamsPolyBytes
