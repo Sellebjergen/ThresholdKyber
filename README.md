@@ -25,7 +25,7 @@ Robustness of peter and katharinas article
 - [ ] Update Gasussian Samplong to use cryptograåhically safe randomness \
 - [ ] Update paramsPolyvecCompressedBytes variables for k > 3 \
 - [ ] Fixing inner product in MP SPDZ \
-- [ ] Write about inner product in report. \
+- [ ] Write about inner product in report \
 - [ ] Implementing Distributed key generation in MP SPDZ \
 - [x] Write about distributed key generation in report \
 - [ ] Update preliminaries with quotient rings etc. (half page that every article has) \
