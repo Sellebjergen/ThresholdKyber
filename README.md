@@ -35,6 +35,7 @@ Robustness of peter and katharinas article
 - [ ] rewrite pictures of hybrid constructions into some algorithm tex library.
 - [ ] Inserting code fragments in implementation section.
 - [ ] Benchmark MP SPDZ vs golang implementation.
+- [ ] Write notation section
 
 
 ## Ideas further
