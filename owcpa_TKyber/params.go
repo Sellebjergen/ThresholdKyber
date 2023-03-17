@@ -25,7 +25,6 @@ func NewParameterSet(name string) *OwcpaParams {
 	switch name {
 	case "TKyber1024-Q16645":
 		p.Ell = 1
-		p.Q = 3329 * 5
 		p.D_flood_dist = &GaussianNoiseDist{SigmaFlood: 947}
 		p.LSS_scheme = &LSSAdditive{}
 	case "TKyber1024-Q33290":
@@ -41,17 +40,17 @@ func NewParameterSet(name string) *OwcpaParams {
 	case "TKyber-Test":
 		p.Ell = 1
 		p.Q = 3329
-		p.D_flood_dist = &GaussianNoiseDist{SigmaFlood: 100}
+		p.D_flood_dist = &GaussianNoiseDist{SigmaFlood: 75}
 		p.LSS_scheme = &LSSAdditive{}
 	case "TKyber-Test-Replicated":
 		p.Ell = 1
 		p.Q = 3329
-		p.D_flood_dist = &GaussianNoiseDist{SigmaFlood: 100}
+		p.D_flood_dist = &GaussianNoiseDist{SigmaFlood: 75}
 		p.LSS_scheme = &LSSReplicated{}
 	case "TKyber-Test-Naive":
 		p.Ell = 1
 		p.Q = 3329
-		p.D_flood_dist = &GaussianNoiseDist{SigmaFlood: 100}
+		p.D_flood_dist = &GaussianNoiseDist{SigmaFlood: 75}
 		p.LSS_scheme = &LSSNaive{}
 	default:
 		panic("Error: Name did not match existing parameter set")

@@ -192,24 +192,23 @@ func TestWithReplicatedLSSNoCombine(t *testing.T) {
 func TestWithBinomialNoise(t *testing.T) {
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	params := NewParameterSet("TKyber-Test")
-	params.D_flood_dist = &BinomialNoiseDist{}
-	pk, sk_shares := Setup(params, 3, 3)
+	params.D_flood_dist = &BinomialNoiseDist{eta: 2}
+	pk, sk_shares := Setup(params, 2, 2)
 
-	coins := make([]byte, 32)
-	// rand.Read(coins)
+	for i := 0; i < 100; i++ {
+		ct := Enc(params, msg, pk)
 
-	ct, _ := kyberk2so.IndcpaEncrypt(msg, pk, coins, kyberk2so.ParamsK)
+		// Decrypt
+		d_is := make([][]kyberk2so.Poly, 2)
+		d_is[0] = PartDec(params, sk_shares[0], ct, 0)
+		d_is[1] = PartDec(params, sk_shares[1], ct, 1)
 
-	// Decrypt
-	d_is := make([][]kyberk2so.Poly, 3)
-	d_is[0] = PartDec(params, sk_shares[0], ct, 0)
-	d_is[1] = PartDec(params, sk_shares[1], ct, 1)
-	d_is[2] = PartDec(params, sk_shares[2], ct, 2)
+		combined := Combine(params, ct, d_is, 2, 2)
+		output_msg := kyberk2so.PolyToMsg(combined)
 
-	combined := Combine(params, ct, d_is, 3, 3)
-	output_msg := kyberk2so.PolyToMsg(combined)
-
-	if !reflect.DeepEqual(msg, output_msg) {
-		t.Errorf("Error")
+		if !reflect.DeepEqual(msg, output_msg) {
+			t.Errorf("Error")
+		}
 	}
+
 }
