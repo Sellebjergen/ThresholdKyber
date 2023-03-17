@@ -25,12 +25,12 @@ Robustness of peter and katharinas article
 - [ ] Update Gasussian Samplong to use cryptograåhically safe randomness \
 - [ ] Update paramsPolyvecCompressedBytes variables for k > 3 \
 - [ ] Fixing inner product in MP SPDZ \
-- [ ] Write about inner product in report \
+- [ ] Write about inner product in report \
 - [ ] Implementing Distributed key generation in MP SPDZ \
 - [x] Write about distributed key generation in report \
 - [ ] Update preliminaries with quotient rings etc. (half page that every article has) \
 - [ ] Update preliminaries with notation \
-- [ ] Formal definition and properties \
+- [ ] Formal definition and properties of LSS \
 - [ ] strong 0, 1-reconstruction \
 - [ ] rewrite pictures of hybrid constructions into some algorithm tex library \
 - [ ] Inserting code fragments in implementation section \
@@ -38,5 +38,5 @@ Robustness of peter and katharinas article
 
 
 ## Ideas further
-- [ ] Zero knowledge for distributed key generation
+- [ ] Zero knowledge for distributed key generation
 
