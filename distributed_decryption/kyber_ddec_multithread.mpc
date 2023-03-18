@@ -49,30 +49,28 @@ def bitNeg(a_angle):
 # Output:
 def kem_decap(u, v, s_angle):
     # v - u^T <s>
-    x = inner_prod(u, s_angle, f)
+    x = inner_prod(u, s_angle)
     x = poly_sub(v, x)
-    x.print_reveal_nested()
-    w = []
-    for i in range(len(x)):
-        w.append(centre(x[i]))
+    w = Array(n, sint)
+    @for_range_opt_multithread(16, n)
+    def _(i):
+        w[i] = centre(x[i])[11] # w.append(centre(x[i]))
     k = []
     for i in range(len(w)):
-        k.append(w[i][len(w[i]) - 1]) # get msb of each w_i
+        k.append(w[i]) # get msb of each w_i
     return k
 
-def inner_prod(u, s, f):
-    d = Array(len(f), sint)
+def inner_prod(u, s):
+    d = Array(n, sint)
     for i in range(r):
-        u_i = u.get_column(i)
-        s_i = s.get_column(i)
-        d_i = rq_mult(u_i, s_i, f)
-        for j in range(len(d_i)):
+        d_i = rq_mult(u.get_column(i), s.get_column(i), n)
+        for j in range(n):
             d[j] = d[j] + d_i[j]
     return d
 
-def rq_mult(a, b, f):
+def rq_mult(a, b, f_n):
     prod = poly_mult(a, b)
-    rem = poly_rem(prod, f)
+    rem = poly_rem(prod, f_n)
     return rem
 
 def poly_mult(a, b):
@@ -88,43 +86,16 @@ def poly_sub(a, b):
         res[i] = a[i] - b[i]
     return res
 
-def poly_mul_const(a, const):
+# Only supports f_n => 2*len(a), this is enough in our case
+def poly_rem(a, f_n):
+    if len(a) <= f_n:
+        return a
+    rem = Array(f_n, sint)
     for i in range(len(a)):
-        a[i] = a[i] * const
-    return a
-
-def poly_rem(a, divisor):
-    rem = copy(a)
-
-    """ @while_do(lambda x: x < n_bidders, regint(0))
-    def _(i):
-        #nonlocal actual_capacity_of_solution
-        current_bidder = bidders[i]
-        actual_solution.append(current_bidder)  
-        actual_capacity_of_solution.iadd(current_bidder[2])
-        return i+1 """
-    @while_do(lambda: ((deg(rem) > sint(0)) * (deg(rem) >= deg(divisor))))
-    def _():
-        t = lead(rem) / lead(divisor)
-        rem.update(poly_sub(rem, poly_mul_const(divisor, t)))
-    return rem
-
-def deg(a):
-    degree = sint(0)
-    for i in range(len(a)):
-        degree = (a[i] == sint(0)).if_else(degree, sint(i))
-    return degree
-
-def lead(a):
-    lead = sint(0)
-    for i in range(len(a)):
-        lead = (a[i] == sint(0)).if_else(lead, a[i])
-    return lead
-
-def copy(a):
-    rem = Array(n, sint)
-    for i in range(len(a)):
-        rem[i] = a[i]
+        if i < f_n:
+            rem[i] += a[i]
+        else:
+            rem[i % f_n] -= a[i]
     return rem
 
 # Hash check:
@@ -135,7 +106,7 @@ def hash_check(k_angle, c_2):
     k_as_sbits = []
     for i in range(len(k_angle)):
         k_as_sbits.append(sbit(k_angle[i]))
-    digest = sha3_256(sbitvec.from_vec(k_as_sbits + c_2).reverse_bytes())
+    digest = sha3_256(sbitvec.from_vec(k_angle + c_2).reverse_bytes())
     digest.reveal_print_hex()
 
 # Message extraction: Does not output the message m, but rather the key k
@@ -149,9 +120,9 @@ def msg_ext(k_angle):
         k_bits_clear[i] = k_angle[i].reveal()
     k_bits_clear.print_reveal_nested()
 
-def test_ddec(ct_1, ct_2, s_angle, k_angle, c2, c3):
+def test_ddec(ct_1, ct_2, s_angle, c2, c3):
     # Run protocol
-    kem_decap(ct_1, ct_2, s_angle)
+    k_angle = kem_decap(ct_1, ct_2, s_angle)
     hash_check(k_angle, c2) # Conversion of sint to sbit is huge time sink, commented out for testing
     msg_ext(k_angle)
 
@@ -169,23 +140,19 @@ def test_centre():
     for i in range(len(centered2)):
         print_ln("%s", centered2[i].reveal())
 
-def test_rq_mult():
-    # Testing of rq_mul
-    f = Array(n, cint)
-    f[0], f[2] = cint(1), cint(0)
-
+# Testing of rq_mul
+# Should return [-12, 18] corresponding to -12 + 18x
+def test_rq_mult(): 
     lhs = Array(4, sint)
-    lhs[0], lhs[1], lhs[2], lhs[3] = sint(3), sint(5), sint(0), sint(8)
+    lhs[0], lhs[1] = sint(3), sint(3)
 
     rhs = Array(3, cint)
-    rhs[0], rhs[1], rhs[2] = cint(1), cint(1), cint(5)
+    rhs[0], rhs[1] = cint(1), cint(5)
 
-    res = rq_mult(lhs, rhs, f)
+    res = rq_mult(lhs, rhs, 2)
     res.print_reveal_nested()
 
 # Concrete input
-mock_k_angle = Array(n, sint)
-mock_k_angle[15] = sint(1)
 cbit = cbits.get_type(1)
 c2 = [cbit(0)] * n
 c3 = [cbit(0)] * n
@@ -194,6 +161,7 @@ s_angle = Matrix(n, r, sint)
 ct_1 = Matrix(n, r, cint)
 ct_2 = Array(n, cint)
 
-test_centre()
+#test_centre()
 #test_rq_mult()
-#test_ddec(ct_1, ct_2, s_angle, mock_k_angle, c2, c3)
+test_ddec(ct_1, ct_2, s_angle, c2, c3)
+#centre(sint(3329))
