@@ -24,7 +24,8 @@ Robustness of peter and katharinas article
 - [ ] Update bounds in the constants to adhere for the newly chosen modulo q.
 - [ ] Update Gasussian Sampling to use cryptographically safe randomness.
 - [ ] Update paramsPolyvecCompressedBytes variables for k > 3.
-- [ ] Fixing inner product in MP SPDZ.
+- [x] Fixing inner product in MP SPDZ implementation of DDec.
+- [ ] Optimize DDec implementation.
 - [ ] Write about inner product in report.
 - [ ] Implementing Distributed key generation in MP SPDZ.
 - [x] Write about distributed key generation in report.
