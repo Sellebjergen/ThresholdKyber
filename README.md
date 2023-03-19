@@ -25,15 +25,16 @@ Robustness of peter and katharinas article
 - [ ] Update Gasussian Sampling to use cryptographically safe randomness.
 - [ ] Update paramsPolyvecCompressedBytes variables for k > 3.
 - [x] Fixing inner product in MP SPDZ implementation of DDec.
-- [ ] Optimize DDec implementation.
-- [ ] Write about inner product in report.
+- [ ] Optimize DDec implementation.                                                            ***(WIP)***
+- [ ] Write about inner product in report.                                                     ***(WIP)***
 - [x] Implementing Distributed key generation in MP SPDZ.
 - [x] Write about distributed key generation in report.
 - [ ] Update preliminaries with quotient rings etc. (half page that every article has)
 - [ ] Update preliminaries with notation.
 - [ ] Formal definition and properties of LSS.
 - [ ] strong 0, 1-reconstruction.
-- [ ] rewrite pictures of hybrid constructions into some algorithm tex library.
+- [ ] rewrite pictures of hybrid constructions into some algorithm tex library.                ***(WIP)***
+- [ ] Make protocols in report consistent (use crytocode).                                     ***(WIP)***
 - [ ] Inserting code fragments in implementation section.
 - [ ] Benchmark MP SPDZ vs golang implementation.
 - [ ] Write notation section
