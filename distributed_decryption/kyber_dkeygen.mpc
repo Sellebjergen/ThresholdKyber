@@ -1,0 +1,106 @@
+n = 256
+r = 2
+q = 3329
+
+player_numb = 2
+
+# _____________________ Rq arith. _______________________
+
+def rq_mult(a, b, f_n):
+    prod = poly_mult(a, b)
+    rem = poly_rem(prod, f_n)
+    return rem
+
+def poly_mult(a, b):
+    res = Array(len(a) + len(b), sint)
+    for i in range(len(a)):
+        for j in range(len(b)):
+            res[i + j] = res[i + j] + a[i] * b[j]
+    return res
+
+def poly_sub(a, b):
+    res = Array(len(b), sint)
+    for i in range(len(a)):
+        res[i] = a[i] - b[i]
+    return res
+
+def poly_add(a, b):
+    res = Array(len(b), sint)
+    for i in range(len(a)):
+        res[i] = a[i] + b[i]
+    return res
+
+# Only supports f_n => 2*len(a), this is enough in our case
+def poly_rem(a, f_n):
+    if len(a) <= f_n:
+        return a
+    rem = Array(f_n, sint)
+    for i in range(len(a)):
+        if i < f_n:
+            rem[i] += a[i]
+        else:
+            rem[i % f_n] -= a[i]
+    return rem
+
+# _____________________ Main code _______________________
+
+def read_sk_input():
+    s_values = MultiArray([p, r, n], sint)
+    e_values = MultiArray([p, r, n], sint)
+    for p in range(player_numb):
+        s_values[p].input_from(p)
+        e_values[p].input_from(p)
+    return s_values, e_values
+
+def get_rand_A():
+    A = MultiArray([r, r, n], regint)
+    for i in range(r):
+        for j in range(r):
+            for k in range(n):
+                A[i][j][k] = regint.get_random(64)
+    return A
+
+def dkeygen(s_values, e_values):
+    # Sum
+    s_angle = Matrix(r, n, sint)
+    e_angle = Matrix(r, n, sint)
+    for p in range(player_numb):
+        for i in range(r):
+            for j in range(n):
+                s_angle[i][j] += s_values[p][i][j]
+                e_angle[i][j] += e_values[p][i][j]
+
+    A = get_rand_A()
+    t_angle = Matrix(r, n, sint)
+
+    # t = As + e
+    for i in range(r):
+        for j in range (r):
+            t_angle[i] = poly_add(t_angle[i], rq_mult(A[i][j], s_angle[j], n))
+        t_angle[i] = poly_add(t_angle[i], e_angle[i])
+
+    t = t_angle.reveal()
+
+    return A, t, s_angle, e_angle
+
+# _____________________ Testing _______________________
+
+def test_dkeygen():
+    # Mock input values
+    s_values = MultiArray([player_numb, r, n], sint)
+    e_values = MultiArray([player_numb, r, n], sint)
+
+    s_values[0][0][42] = 500
+    s_values[1][0][12] = 300
+
+    e_values[0][0][15] = 1
+    e_values[1][0][65] = 3
+
+    A, t, s, e = dkeygen(s_values, e_values)
+
+    t.print_reveal_nested()
+
+#s_p, e_p = read_sk_input()
+#dkeygen(s_p, e_p)
+
+test_dkeygen()
