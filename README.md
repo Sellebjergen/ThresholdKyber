@@ -27,7 +27,7 @@ Robustness of peter and katharinas article
 - [x] Fixing inner product in MP SPDZ implementation of DDec.
 - [ ] Optimize DDec implementation.
 - [ ] Write about inner product in report.
-- [ ] Implementing Distributed key generation in MP SPDZ.
+- [x] Implementing Distributed key generation in MP SPDZ.
 - [x] Write about distributed key generation in report.
 - [ ] Update preliminaries with quotient rings etc. (half page that every article has)
 - [ ] Update preliminaries with notation.

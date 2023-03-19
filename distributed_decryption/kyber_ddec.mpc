@@ -1,9 +1,12 @@
 from circuit import sha3_256
+from Compiler import floatingpoint
 
 # Params (Kyber512)
 n = 256
 q = 3329
 r = 2
+
+# _____________________ Centre + bit op _______________________
 
 # Centre:
 #
@@ -16,13 +19,14 @@ def centre(x_i_angle):
     # BitAdd
     q_plus_1 = cint(q + 1)
     qp1_bits = q_plus_1.bit_decompose(bit_length = 12)
-    b_prime = sint.bit_adder(flipBits(b), qp1_bits)
+    b_prime = floatingpoint.BitAdd(flipBits(b), qp1_bits)
 
     # BitNeg
     b_prime_prime = bitNeg(b_prime)
 
     # BitLT
-    f = x_i_angle < 1665
+    q_div_2 = cint(1665).bit_decompose(bit_length = 12)
+    f=floatingpoint.BITLT(b, q_div_2, 12)
 
     # Compute <a>
     a = []
@@ -41,32 +45,16 @@ def bitNeg(a_angle):
     flipped = flipBits(a_angle)
     one = cint(1)
     one_decomp = one.bit_decompose(bit_length = len(flipped))
-    return sint.bit_adder(flipped, one_decomp)
+    return floatingpoint.BitAdd(flipped, one_decomp)
 
-# KEM decapsulation:
-#
-# Input:
-# Output:
-def kem_decap(u, v, s_angle):
-    # v - u^T <s>
-    x = inner_prod(u, s_angle)
-    x = poly_sub(v, x)
-    w = [[]] * n
-    for i in range(n):
-        w[i] = centre(x[i])
-    k = []
-    for i in range(len(w)):
-        k.append(w[i][len(w[i]) - 1]) # get msb of each w_i
-    return k
+# _____________________ Rq arith. _______________________
 
 def inner_prod(u, s):
     d = Array(n, sint)
     for i in range(r):
-        u_i = u.get_column(i)
-        s_i = s.get_column(i)
-        d_i = rq_mult(u_i, s_i, n)
+        d_i = rq_mult(u[i], s[i], n)
         for j in range(n):
-            d[j] = d[j] + d_i[j]
+            d[j] += d_i[j]
     return d
 
 def rq_mult(a, b, f_n):
@@ -99,6 +87,24 @@ def poly_rem(a, f_n):
             rem[i % f_n] -= a[i]
     return rem
 
+# _____________________ main functionality _______________________
+
+# KEM decapsulation:
+#
+# Input:
+# Output:
+def kem_decap(u, v, s_angle):
+    # v - u^T <s>
+    x = inner_prod(u, s_angle)
+    x = poly_sub(v, x)
+    w = [[]] * n
+    for i in range(n):
+        w[i] = centre(x[i])
+    k = []
+    for i in range(len(w)):
+        k.append(w[i][len(w[i]) - 1]) # get msb of each w_i
+    return k
+
 # Hash check:
 #
 # Input:
@@ -121,15 +127,17 @@ def msg_ext(k_angle):
         k_bits_clear[i] = k_angle[i].reveal()
     k_bits_clear.print_reveal_nested()
 
+# _____________________ Testing _______________________
+
 def test_ddec(ct_1, ct_2, s_angle, c2, c3):
     # Run protocol
     k_angle = kem_decap(ct_1, ct_2, s_angle)
-    #hash_check(k_angle, c2) # Conversion of sint to sbit is huge time sink, commented out for testing
+    hash_check(k_angle, c2) # Conversion of sint to sbit is huge time sink, commented out for testing
     msg_ext(k_angle)
 
 # Testing of centered
-# Result should be 111010110111 (-329, see https://www.exploringbinary.com/twos-complement-converter/)
 def test_centre():
+    # Result should be 111010110111 (-329, see https://www.exploringbinary.com/twos-complement-converter/)
     centered = centre(sint(3000))
     print_ln(len(centered))
     for i in range(len(centered)):
@@ -158,11 +166,10 @@ cbit = cbits.get_type(1)
 c2 = [cbit(0)] * n
 c3 = [cbit(0)] * n
 
-s_angle = Matrix(n, r, sint)
-ct_1 = Matrix(n, r, cint)
-ct_2 = Array(n, cint)
+s_angle = Matrix(r, n, sint)
+kyber_ct_1 = Matrix(r, n, cint)
+kyber_ct_2 = Array(n, cint)
 
 #test_centre()
 #test_rq_mult()
-test_ddec(ct_1, ct_2, s_angle, c2, c3)
-#centre(sint(3329))
+test_ddec(kyber_ct_1, kyber_ct_2, s_angle, c2, c3)
