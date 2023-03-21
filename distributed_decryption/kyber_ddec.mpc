@@ -6,12 +6,11 @@ n = 256
 q = 3329
 r = 2
 
+cbit = cbits.get_type(1)
+
 # _____________________ Centre + bit op _______________________
 
-# Centre:
-#
-# Input:
-# Output:
+# Centre
 def centre(x_i_angle):
     # BitDecomp
     b = x_i_angle.bit_decompose(bit_length = 12)
@@ -90,13 +89,11 @@ def poly_rem(a, f_n):
 # _____________________ main functionality _______________________
 
 # KEM decapsulation:
-#
-# Input:
-# Output:
 def kem_decap(u, v, s_angle):
     # v - u^T <s>
     x = inner_prod(u, s_angle)
     x = poly_sub(v, x)
+    print_ln("%s", x[0].reveal()) # BUG: SHOULD BE REDUCED MOD 3329, BUT IT IS NOT
     w = [[]] * n
     for i in range(n):
         w[i] = centre(x[i])
@@ -106,9 +103,6 @@ def kem_decap(u, v, s_angle):
     return k
 
 # Hash check:
-#
-# Input:
-# Output:
 def hash_check(k_angle, c_2):
     k_as_sbits = []
     for i in range(len(k_angle)):
@@ -116,11 +110,7 @@ def hash_check(k_angle, c_2):
     digest = sha3_256(sbitvec.from_vec(k_as_sbits + c_2).reverse_bytes())
     digest.reveal_print_hex()
 
-# Message extraction: Does not output the message m, but rather the key k
-# The message can then be extracted using the key outside MP-SPDZ. This is more efficient (i think).
-#
-# Input: k_bits is an array of sint(0)/sint(1) values representing the bits of the key
-# Output: The key k.
+# Message extraction
 def msg_ext(k_angle):
     k_bits_clear = Array(n, cint)
     for i in range(len(k_angle)):
@@ -132,7 +122,7 @@ def msg_ext(k_angle):
 def test_ddec(ct_1, ct_2, s_angle, c2, c3):
     # Run protocol
     k_angle = kem_decap(ct_1, ct_2, s_angle)
-    hash_check(k_angle, c2) # Conversion of sint to sbit is huge time sink, commented out for testing
+    #hash_check(k_angle, c2) # Conversion of sint to sbit is huge time sink, commented out for testing
     msg_ext(k_angle)
 
 # Testing of centered
@@ -161,15 +151,55 @@ def test_rq_mult():
     res = rq_mult(lhs, rhs, 2)
     res.print_reveal_nested()
 
-# Concrete input
-cbit = cbits.get_type(1)
-c2 = [cbit(0)] * n
-c3 = [cbit(0)] * n
+# _____________________ Get Input _______________________
 
-s_angle = Matrix(r, n, sint)
-kyber_ct_1 = Matrix(r, n, cint)
-kyber_ct_2 = Array(n, cint)
+def read_s_from_file():
+    s = Matrix(r, n, sint)
+    for i in range(r):
+        for j in range(n):
+            s[i][j] = sint.get_input_from(0)
+    return s
+
+def read_public_values_from_file():
+    u = Matrix(r, n, cint)
+    v = Array(n, cint)
+    c2 = [cbit(0)] * (256+128)
+    c3 = [cbit(0)] * 256
+
+    for i in range(r):
+        for j in range(n):
+            u[i][j] = public_input()
+
+    for i in range(n):
+        v[i] = public_input()
+
+    for i in range(256+128): # IV + C2
+        c2[i] = cbit(public_input())
+
+    for i in range(256):
+        c3[i] = cbit(public_input())
+
+    return u, v, c2, c3
+
+def test_input():
+    s_angle = read_s_from_file()
+    s_angle.print_reveal_nested()
+    u, v, c2, c3 = read_public_values_from_file()
+    u.print_reveal_nested()
+    v.print_reveal_nested()
+
+    for i in range(n):
+        print_ln("%s", c2[i])
+
+    for i in range(n):
+        print_ln("%s", c3[i])
+
+# _____________________ Main _______________________
+s_angle = read_s_from_file()
+
+u, v, c2, c3 = read_public_values_from_file()
 
 #test_centre()
 #test_rq_mult()
-test_ddec(kyber_ct_1, kyber_ct_2, s_angle, c2, c3)
+test_ddec(u, v, s_angle, c2, c3)
+#test_input()

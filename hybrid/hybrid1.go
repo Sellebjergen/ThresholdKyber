@@ -75,11 +75,9 @@ func H(in []byte) []byte {
 }
 
 func G(ct []byte, inBytes []byte, inMsg []byte) []byte {
-	hash := sha3.NewShake256()
-	output := make([]byte, 256) // 256 is placeholder for |G|
+	hash := sha3.New256()
 	hash.Write(ct)
 	hash.Write(inBytes)
 	hash.Write(inMsg)
-	hash.Read(output)
-	return output
+	return hash.Sum(nil)
 }
