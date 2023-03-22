@@ -26,7 +26,7 @@ Robustness of peter and katharinas article
 - [ ] Update paramsPolyvecCompressedBytes variables for k > 3.
 - [x] Fixing inner product in MP SPDZ implementation of DDec.
 - [ ] Optimize DDec implementation.                                                            ***(WIP)***
-- [ ] Write about inner product in report.                                                     ***(WIP)***
+- [x] Write about inner product in report.
 - [x] Implementing Distributed key generation in MP SPDZ.
 - [x] Write about distributed key generation in report.
 - [ ] Update preliminaries with quotient rings etc. (half page that every article has)
