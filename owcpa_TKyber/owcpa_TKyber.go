@@ -55,7 +55,6 @@ func PartDec(params *OwcpaParams, sk_i []kyberk2so.PolyVec, ct []byte, party int
 
 		// Add noise
 		d_i[j] = kyberk2so.PolyAdd(d_i[j], e_i)
-
 		d_i[j] = kyberk2so.PolyReduce(d_i[j])
 	}
 
