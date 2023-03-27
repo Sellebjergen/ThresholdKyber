@@ -13,7 +13,8 @@ cbit = cbits.get_type(1)
 # Centre
 def centre(x_i_angle):
     # BitDecomp
-    b = x_i_angle.bit_decompose(bit_length = 12)
+    b = floatingpoint.BitDecFull(x_i_angle, 12)
+    #b = x_i_angle.bit_decompose(bit_length = 12)
 
     # BitAdd
     # Below line is hardcoded q_div_2 = cint(q + 1).bit_decompose(bit_length = 12) for efficiency
@@ -198,6 +199,6 @@ def test_input():
 
 s_angle = read_s_from_file()
 u, v, c2, c3 = read_public_values_from_file()
-iterations = 10
+iterations = 1
 for i in range(iterations):
     run_ddec(u, v, s_angle, c2, c3)

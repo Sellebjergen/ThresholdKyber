@@ -75,9 +75,9 @@ func BenchmarkTKyber(b *testing.B) {
 		t             int
 		delta         int
 	}{
-		{TKyberVariant: "TKyber-Test", n: 1, t: 1, delta: 10},
-		{TKyberVariant: "TKyber-Test", n: 2, t: 2, delta: 10},
-		{TKyberVariant: "TKyber-Test", n: 3, t: 3, delta: 10},
+		{TKyberVariant: "TKyber-Test", n: 1, t: 1, delta: 1},
+		{TKyberVariant: "TKyber-Test", n: 2, t: 2, delta: 1},
+		{TKyberVariant: "TKyber-Test", n: 3, t: 3, delta: 1},
 		{TKyberVariant: "TKyber-Test", n: 1, t: 1, delta: 1000},
 	}
 
