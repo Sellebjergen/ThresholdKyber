@@ -31,7 +31,7 @@ func BenchmarkKyberKeygen(b *testing.B) {
 	}
 }
 
-func benchmarkKyberEncrypt(b *testing.B) {
+func BenchmarkKyberEncrypt(b *testing.B) {
 	randMsg := make([]byte, 32)
 	coins := make([]byte, 32)
 	rand.Read(coins)
