@@ -5,6 +5,7 @@ package kyberk2so
 
 import (
 	"crypto/rand"
+	"fmt"
 
 	"golang.org/x/crypto/sha3"
 )
@@ -250,6 +251,8 @@ func IndcpaDecrypt(c []byte, privateKey []byte, paramsK int) []byte {
 	PolyvecNtt(bp, paramsK)
 	mp := PolyvecPointWiseAccMontgomery(privateKeyPolyvec, bp, paramsK)
 	mp = PolyInvNttToMont(mp)
+	fmt.Println("inner prod poly reduced")
+	fmt.Println(PolyReduce(mp))
 	mp = PolySub(v, mp)
 	mp = PolyReduce(mp)
 	return PolyToMsg(mp)

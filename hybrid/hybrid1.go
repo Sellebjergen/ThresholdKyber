@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/rand"
+	"fmt"
 
 	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
 	"golang.org/x/crypto/sha3"
@@ -23,6 +24,9 @@ func K_h1(paramsK int) ([]byte, []byte) {
 func E_h1(pk []byte, msg []byte, paramsK int, isDet bool) *Hybrid1Ciphertext {
 	k := make([]byte, 32)
 	rand.Read(k)
+	for _, n := range k {
+		fmt.Printf("%08b ", n)
+	}
 	k_other_font := H(k)
 
 	coins := make([]byte, 32)

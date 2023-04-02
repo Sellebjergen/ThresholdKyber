@@ -14,8 +14,8 @@ func main() {
 
 	s := kyberk2so.IndcpaUnpackPrivateKey(sk, 2)
 
-	/* fmt.Println("s")
-	fmt.Println(s) */
+	fmt.Println("s")
+	fmt.Println(s)
 
 	ct := hybrid.E_h1(pk, msg, 2, false)
 
@@ -39,7 +39,7 @@ func main() {
 }
 
 func write_ddec_input(s kyberk2so.PolyVec, u kyberk2so.PolyVec, v kyberk2so.Poly, c2 []byte, c3 []byte) {
-	file_public_input, err := os.Create("C:/Users/Kasper/Desktop/Speciale/mp-spdz-0.3.5/Programs/Public-Input/kyber_ddec-[-P-3329]") // creating...
+	file_public_input, err := os.Create("C:/Users/Kasper/Desktop/Speciale/mp-spdz-0.3.5/Programs/Public-Input/kyber_ddec") // creating...
 	if err != nil {
 		fmt.Printf("error creating file: %v", err)
 		return

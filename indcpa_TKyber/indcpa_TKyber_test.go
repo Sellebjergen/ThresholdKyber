@@ -78,14 +78,13 @@ func BenchmarkTKyber(b *testing.B) {
 		{TKyberVariant: "TKyber-Test", n: 1, t: 1, delta: 1},
 		{TKyberVariant: "TKyber-Test", n: 2, t: 2, delta: 1},
 		{TKyberVariant: "TKyber-Test", n: 3, t: 3, delta: 1},
-		{TKyberVariant: "TKyber-Test", n: 1, t: 1, delta: 1000},
 	}
 
 	for _, bCase := range cases {
-		b.Run(fmt.Sprintf("Setup %s", bCase.TKyberVariant), func(b *testing.B) { benchmarkSetup(b, bCase.TKyberVariant, bCase.n, bCase.t) })
-		b.Run(fmt.Sprintf("Enc %s", bCase.TKyberVariant), func(b *testing.B) { benchmarkEnc(b, bCase.TKyberVariant, bCase.n, bCase.t, bCase.delta) })
-		b.Run(fmt.Sprintf("PartDec %s", bCase.TKyberVariant), func(b *testing.B) { benchmarkPartDec(b, bCase.TKyberVariant, bCase.n, bCase.t, bCase.delta) })
-		b.Run(fmt.Sprintf("Combine %s", bCase.TKyberVariant), func(b *testing.B) { benchmarkCombine(b, bCase.TKyberVariant, bCase.n, bCase.t, bCase.delta) })
+		b.Run(fmt.Sprintf("Setup %s, n %d, t %d", bCase.TKyberVariant, bCase.n, bCase.t), func(b *testing.B) { benchmarkSetup(b, bCase.TKyberVariant, bCase.n, bCase.t) })
+		b.Run(fmt.Sprintf("Enc %s n %d, t %d", bCase.TKyberVariant, bCase.n, bCase.t), func(b *testing.B) { benchmarkEnc(b, bCase.TKyberVariant, bCase.n, bCase.t, bCase.delta) })
+		b.Run(fmt.Sprintf("PartDec %s n %d, t %d", bCase.TKyberVariant, bCase.n, bCase.t), func(b *testing.B) { benchmarkPartDec(b, bCase.TKyberVariant, bCase.n, bCase.t, bCase.delta) })
+		b.Run(fmt.Sprintf("Combine %s n %d, t %d", bCase.TKyberVariant, bCase.n, bCase.t), func(b *testing.B) { benchmarkCombine(b, bCase.TKyberVariant, bCase.n, bCase.t, bCase.delta) })
 	}
 }
 

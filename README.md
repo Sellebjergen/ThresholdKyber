@@ -35,7 +35,7 @@ Robustness of peter and katharinas article
 - [ ] strong 0, 1-reconstruction.
 - [x] rewrite pictures of hybrid constructions into some algorithm tex library.
 - [x] Make protocols in report consistent (use crytocode).
-- [ ] Inserting code fragments in implementation section.
+- [x] Inserting code fragments in implementation section.
 - [ ] Benchmark MP SPDZ vs golang implementation.
 - [ ] Write notation section
 

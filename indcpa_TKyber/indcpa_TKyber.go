@@ -78,13 +78,13 @@ func Combine(params *owcpa.OwcpaParams, ct *indcpaCiphertext, d_is [][][]kyberk2
 
 func F(x []kyberk2so.Poly) kyberk2so.Poly {
 	hash := sha3.NewShake256()
-	output := make([]byte, 13*(3329/8)+12)
+	output := make([]byte, 384)
 	for i := 0; i < len(x); i++ {
 		poly_bytes := kyberk2so.PolyToBytes(x[i])
 		hash.Write(poly_bytes)
 	}
 	hash.Read(output)
-	return kyberk2so.PolyFromBytes(output) // TODO: Er message space R_2 for IND-CPA fint?
+	return kyberk2so.PolyFromBytes(output)
 }
 
 func G(x []kyberk2so.Poly) []byte {
