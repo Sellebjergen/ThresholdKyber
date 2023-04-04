@@ -1,5 +1,7 @@
 from circuit import sha3_256
 from Compiler import floatingpoint
+from Compiler.GC import types
+program.use_edabit(True)
 
 # Params (Kyber512)
 n = 256
@@ -14,10 +16,9 @@ cbit = cbits.get_type(1)
 def centre(x_i_angle):
     # BitDecomp
     b = floatingpoint.BitDecFull(x_i_angle, 12)
-    #b = x_i_angle.bit_decompose(bit_length = 12)
 
     # BitAdd
-    # Below line is hardcoded q_div_2 = cint(q + 1).bit_decompose(bit_length = 12) for efficiency
+    # Below line is hardcoded qp1_bits = cint(q + 1).bit_decompose(bit_length = 12) for efficiency
     qp1_bits = [cint(0)] + [cint(1)] + [cint(0)] * 6 + [cint(1)] + [cint(0)] + [cint(1)] * 2
     b_prime = floatingpoint.BitAdd(flipBits(b), qp1_bits)
 
@@ -37,10 +38,7 @@ def centre(x_i_angle):
     return a
 
 def flipBits(a_angle):
-    flipped = []
-    for i in range(len(a_angle)):
-        flipped.append(sint.bit_not(a_angle[i]))
-    return flipped
+    return [sint.bit_not(bit) for bit in a_angle]
 
 def bitNeg(a_angle):
     flipped = flipBits(a_angle)
@@ -52,9 +50,7 @@ def bitNeg(a_angle):
 def inner_prod(u, s):
     d = Array(n, sint)
     for i in range(r):
-        d_i = rq_mult(u[i], s[i], n)
-        for j in range(n):
-            d[j] += d_i[j]
+        d += rq_mult(u[i], s[i], n)
     return d
 
 def rq_mult(a, b, f_n):
@@ -63,7 +59,7 @@ def rq_mult(a, b, f_n):
     return rem
 
 def poly_mult(a, b):
-    res = Array(len(a) + len(b), sint)
+    res = Array(len(a) + len(b) - 1, sint)
     for i in range(len(a)):
         for j in range(len(b)):
             res[i + j] = res[i + j] + a[i] * b[j]
@@ -93,20 +89,21 @@ def poly_rem(a, f_n):
 def kem_decap(u, v, s_angle):
     # v - u^T <s>
     x = inner_prod(u, s_angle)
+    x.print_reveal_nested()
     x = poly_sub(v, x)
-    w = [[]] * n
-    for i in range(n):
-        w[i] = centre(x[i])
-    k = []
-    for i in range(len(w)):
-        k.append(w[i][len(w[i]) - 1]) # get msb of each w_i
+    w = [centre(x_i) for x_i in x]
+    k = [w_i[-1] for w_i in w] # get msb of each w_i
     return k
 
 # Hash check:
 def hash_check(k_angle, c_2):
-    digest = sha3_256(sbitvec.from_vec(k_angle + c_2).reverse_bytes())
+    k_angle_sintbit = [sintbit(x_i) for x_i in k_angle] # Convert to sintbit to indicate that they contain bits.
+    k_angle_sbit = [sbit(x_i) for x_i in k_angle_sintbit] # Conversion from sintbit to sbit can be done in any domain.
+    input = reverse(k_angle_sbit + c_2) # Have to reverse inputs since lists of bits have index 0 to contain lsb, whereas hashing expects the order to be reversed
+    to_hash = sbitvec.from_vec(input).reverse_bytes()
+    digest = sha3_256(to_hash)
     digest.reveal_print_hex()
-
+ 
 # Message extraction
 def msg_ext(k_angle):
     k_bits_clear = Array(n, cint)
@@ -115,12 +112,6 @@ def msg_ext(k_angle):
     k_bits_clear.print_reveal_nested()
 
 # _____________________ Testing _______________________
-
-def run_ddec(ct_1, ct_2, s_angle, c2, c3):
-    # Run protocol
-    k_angle = kem_decap(ct_1, ct_2, s_angle)
-    hash_check(k_angle, c2) # Conversion of sint to sbit is huge time sink, commented out for testing
-    msg_ext(k_angle)
 
 # Testing of centered
 def test_centre():
@@ -147,6 +138,28 @@ def test_rq_mult():
 
     res = rq_mult(lhs, rhs, 2)
     res.print_reveal_nested()
+
+
+def test_inner_prod_sub():
+    lhs = Matrix(r, n, sint)
+    rhs = Matrix(r, n, cint)
+
+    lhs[0][0] = sint(3200)
+    lhs[0][1] = sint(17)
+
+    rhs[0][0] = cint(300)
+    rhs[0][1] = cint(42)
+
+    # Expected result is [1248, -318, 714], since 318 + 3011 = 3329
+    res = inner_prod(lhs, rhs) 
+    res.print_reveal_nested() 
+
+    # Expected result is [-1071, 1192, -714], since 177 - 1248 = -1071 and 874 - -318 = 1192
+    v = Array(n, cint)
+    v[0] = cint(177)
+    v[1] = cint(874)
+    res2 = poly_sub(v, res)
+    res2.print_reveal_nested()
 
 # _____________________ Get Input _______________________
 
@@ -191,14 +204,27 @@ def test_input():
     for i in range(n):
         print_ln("%s", c3[i])
 
+def reverse(bits):
+    rev = []
+    for i in range(len(bits)):
+        rev.append(bits[(len(bits) - 1) - i])
+    return rev
+
 # _____________________ Main _______________________
+
+def run_ddec(ct_1, ct_2, s_angle, c2, c3):
+    # Run protocol
+    k_angle = kem_decap(ct_1, ct_2, s_angle)
+    hash_check(k_angle, c2) # Conversion of sint to sbit is huge time sink, commented out for testing
+    msg_ext(k_angle)
 
 #test_centre()
 #test_rq_mult()
+#test_inner_prod_sub()
 #test_input()
 
 s_angle = read_s_from_file()
 u, v, c2, c3 = read_public_values_from_file()
-iterations = 1
+iterations = 10
 for i in range(iterations):
     run_ddec(u, v, s_angle, c2, c3)
