@@ -16,10 +16,14 @@ cbit = cbits.get_type(1)
 def centre(x_i_angle):
     # BitDecomp
     b = floatingpoint.BitDecFull(x_i_angle, 12)
+    """ print_ln("%s", x_i_angle.reveal())
+    for i in range(len(b)):
+        print_ln("%s", b[i].reveal()) """
 
     # BitAdd
     # Below line is hardcoded qp1_bits = cint(q + 1).bit_decompose(bit_length = 12) for efficiency
-    qp1_bits = [cint(0)] + [cint(1)] + [cint(0)] * 6 + [cint(1)] + [cint(0)] + [cint(1)] * 2
+    # qp1_bits = [cint(0)] + [cint(1)] + [cint(0)] * 6 + [cint(1)] + [cint(0)] + [cint(1)] * 2
+    qp1_bits = cint(q + 1).bit_decompose(bit_length = 12)
     b_prime = floatingpoint.BitAdd(flipBits(b), qp1_bits)
 
     # BitNeg
@@ -27,7 +31,8 @@ def centre(x_i_angle):
 
     # BitLT
     # Below line is hardcoded q_div_2 = cint(1665).bit_decompose(bit_length = 12) for efficiency
-    q_div_2 = [cint(1)] + [cint(0)] * 6 + [cint(1)] + [cint(0)] + [cint(1)] * 2 + [cint(0)] 
+    #q_div_2 = [cint(1)] + [cint(0)] * 6 + [cint(1)] + [cint(0)] + [cint(1)] * 2 + [cint(0)] 
+    q_div_2 = cint(1665).bit_decompose(bit_length = 12)
     f=floatingpoint.BITLT(b, q_div_2, 12)
 
     # Compute <a>
@@ -89,8 +94,9 @@ def poly_rem(a, f_n):
 def kem_decap(u, v, s_angle):
     # v - u^T <s>
     x = inner_prod(u, s_angle)
-    x.print_reveal_nested()
     x = poly_sub(v, x)
+    x.print_reveal_nested()
+    x = [x_i - sint(2497) for x_i in x]
     w = [centre(x_i) for x_i in x]
     k = [w_i[-1] for w_i in w] # get msb of each w_i
     return k
@@ -225,6 +231,6 @@ def run_ddec(ct_1, ct_2, s_angle, c2, c3):
 
 s_angle = read_s_from_file()
 u, v, c2, c3 = read_public_values_from_file()
-iterations = 10
+iterations = 1
 for i in range(iterations):
     run_ddec(u, v, s_angle, c2, c3)

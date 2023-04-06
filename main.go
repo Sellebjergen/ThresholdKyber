@@ -46,21 +46,21 @@ func write_ddec_input(s kyberk2so.PolyVec, u kyberk2so.PolyVec, v kyberk2so.Poly
 	}
 	defer file_public_input.Close()
 
-	file_private_input, err := os.Create("C:/Users/Kasper/Desktop/Speciale/mp-spdz-0.3.5/Player-Data/Input-P0-0") // creating...
+	/* file_private_input, err := os.Create("C:/Users/Kasper/Desktop/Speciale/mp-spdz-0.3.5/Player-Data/Input-P0-0") // creating...
 	if err != nil {
 		fmt.Printf("error creating file: %v", err)
 		return
 	}
-	defer file_private_input.Close()
+	defer file_private_input.Close() */
 
-	writePolyVec(s, file_private_input)
-	writePolyVec(u, file_public_input)
-	writePoly(v, file_public_input)
-	writeBytes(c2, file_public_input)
-	writeBytes(c3, file_public_input)
+	//WritePolyVec(s, file_private_input)
+	WritePolyVec(u, file_public_input)
+	WritePoly(v, file_public_input)
+	WriteBytes(c2, file_public_input)
+	WriteBytes(c3, file_public_input)
 }
 
-func writePolyVec(s kyberk2so.PolyVec, f *os.File) {
+func WritePolyVec(s kyberk2so.PolyVec, f *os.File) {
 	for _, poly := range s {
 		for i, coef := range poly {
 			if i > 255 {
@@ -73,7 +73,7 @@ func writePolyVec(s kyberk2so.PolyVec, f *os.File) {
 
 }
 
-func writePoly(poly kyberk2so.Poly, f *os.File) {
+func WritePoly(poly kyberk2so.Poly, f *os.File) {
 	for i, coef := range poly {
 		if i > 255 {
 			break
@@ -83,7 +83,7 @@ func writePoly(poly kyberk2so.Poly, f *os.File) {
 	f.WriteString(fmt.Sprintf("\n"))
 }
 
-func writeBytes(b []byte, f *os.File) {
+func WriteBytes(b []byte, f *os.File) {
 	for _, oneByte := range b {
 		byte_as_string := fmt.Sprintf("%08b", oneByte)
 		to_write := ""
