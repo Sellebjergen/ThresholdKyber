@@ -14,11 +14,11 @@ func Generate_test_vec(paramsK int) {
 	//s := kyberk2so.IndcpaUnpackPrivateKey(sk, paramsK)
 
 	coins := make([]byte, 32)
-	ct := hybrid.E_h1(pk, msg, paramsK, coins, false)
+	ct := hybrid.E_h1(pk, msg, paramsK, coins, true)
 	k := kyberk2so.IndcpaDecrypt(ct.C1, sk, paramsK)
 	u, v := kyberk2so.IndcpaUnpackCiphertext(ct.C1, paramsK)
 
-	file_key_expected, err := os.Create("ThresholdKyber/ddec/test_vectors/test_vector2/expected_output") // creating...
+	file_key_expected, err := os.Create("C:/Users/Kasper/Desktop/Speciale/ThresholdKyber/ddec/test_vectors_ddec/test_vector2/expected_output") // creating...
 	if err != nil {
 		fmt.Printf("error creating file: %v", err)
 		return
@@ -74,10 +74,10 @@ func WriteBytes(b []byte, f *os.File) {
 	for _, oneByte := range b {
 		byte_as_string := fmt.Sprintf("%08b", oneByte)
 		to_write := ""
-		for _, char := range byte_as_string {
+		for _, char := range reverse(byte_as_string) {
 			to_write += string(char) + " "
 		}
-		f.WriteString(reverse(to_write))
+		f.WriteString(to_write)
 	}
 	f.WriteString(fmt.Sprintf("\n"))
 }

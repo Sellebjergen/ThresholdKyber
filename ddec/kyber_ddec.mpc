@@ -101,13 +101,14 @@ def hash_check(k_angle, c_2, c_3):
     # Distributed hashing to get <t>
     k_angle_sintbit = [sintbit(x_i) for x_i in k_angle] # Convert to sintbit to indicate that they contain bits.
     k_angle_sbit = [sbit(x_i) for x_i in k_angle_sintbit] # Conversion from sintbit to sbit can be done in any domain.
-    input = reverse(k_angle_sbit + c_2) # Have to reverse inputs since lists of bits have index 0 to contain lsb, whereas hashing expects the order to be reversed
-    to_hash = sbitvec.from_vec(input).reverse_bytes()
+    input = c_2 + k_angle_sbit  # Have to reverse inputs since lists of bits have index 0 to contain lsb, whereas hashing expects the order to be reversed
+
+    to_hash = sbitvec.from_vec(input) #.reverse_bytes()
     t_angle = sha3_256(to_hash) # Note: Input and output for sha3_256 are bit-reversed
 
     # Compare t and c_3
-    for i in range(len(t_angle.reverse_bytes().elements())):
-        current_bit = cbit(t_angle.reverse_bytes().elements()[0].reveal()[i])
+    for i in range(len(t_angle.v)):
+        current_bit = cbit(t_angle.v[i].reveal())
         c_3[i].bit_xor(current_bit).print_if("Fail")
  
 # Message extraction

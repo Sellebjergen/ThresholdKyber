@@ -5,6 +5,8 @@ package kyberk2so
 
 import (
 	"crypto/rand"
+	"fmt"
+	"os"
 
 	"golang.org/x/crypto/sha3"
 )
@@ -200,6 +202,14 @@ func IndcpaKeypair(paramsK int) ([]byte, []byte, error) {
 		e[i] = polyGetNoise(noiseSeed, nonce, paramsK)
 		nonce = nonce + 1
 	}
+
+	file_s_expected, err := os.Create("C:/Users/Kasper/Desktop/Speciale/mp-spdz-0.3.5/Player-Data/Input-P0-0") // creating...
+	if err != nil {
+		fmt.Printf("error creating file: %v", err)
+	}
+	defer file_s_expected.Close()
+	WritePolyVec(skpv, file_s_expected)
+
 	PolyvecNtt(skpv, paramsK)
 	polyvecReduce(skpv, paramsK)
 	PolyvecNtt(e, paramsK)
@@ -209,6 +219,18 @@ func IndcpaKeypair(paramsK int) ([]byte, []byte, error) {
 	polyvecAdd(pkpv, e, paramsK)
 	polyvecReduce(pkpv, paramsK)
 	return IndcpaPackPrivateKey(skpv, paramsK), IndcpaPackPublicKey(pkpv, publicSeed, paramsK), nil
+}
+
+func WritePolyVec(s PolyVec, f *os.File) {
+	for _, poly := range s {
+		for i, coef := range poly {
+			if i > 255 {
+				break
+			}
+			f.WriteString(fmt.Sprintf("%d ", coef))
+		}
+		f.WriteString(fmt.Sprintf("\n"))
+	}
 }
 
 // IndcpaEncrypt is the encryption function of the CPA-secure
