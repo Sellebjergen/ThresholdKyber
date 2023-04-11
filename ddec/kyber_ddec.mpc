@@ -21,8 +21,6 @@ def centre(x_i_angle):
         print_ln("%s", b[i].reveal()) """
 
     # BitAdd
-    # Below line is hardcoded qp1_bits = cint(q + 1).bit_decompose(bit_length = 12) for efficiency
-    # qp1_bits = [cint(0)] + [cint(1)] + [cint(0)] * 6 + [cint(1)] + [cint(0)] + [cint(1)] * 2
     qp1_bits = cint(q + 1).bit_decompose(bit_length = 12)
     b_prime = floatingpoint.BitAdd(flipBits(b), qp1_bits)
 
@@ -30,8 +28,6 @@ def centre(x_i_angle):
     b_prime_prime = bitNeg(b_prime)
 
     # BitLT
-    # Below line is hardcoded q_div_2 = cint(1665).bit_decompose(bit_length = 12) for efficiency
-    #q_div_2 = [cint(1)] + [cint(0)] * 6 + [cint(1)] + [cint(0)] + [cint(1)] * 2 + [cint(0)] 
     q_div_2 = cint(1665).bit_decompose(bit_length = 12)
     f=floatingpoint.BITLT(b, q_div_2, 12)
 
@@ -95,20 +91,24 @@ def kem_decap(u, v, s_angle):
     # v - u^T <s>
     x = inner_prod(u, s_angle)
     x = poly_sub(v, x)
-    x.print_reveal_nested()
-    x = [x_i - sint(2497) for x_i in x]
-    w = [centre(x_i) for x_i in x]
+    y = [x_i + sint(832) for x_i in x]
+    w = [centre(y_i) for y_i in y]
     k = [w_i[-1] for w_i in w] # get msb of each w_i
     return k
 
 # Hash check:
-def hash_check(k_angle, c_2):
+def hash_check(k_angle, c_2, c_3):
+    # Distributed hashing to get <t>
     k_angle_sintbit = [sintbit(x_i) for x_i in k_angle] # Convert to sintbit to indicate that they contain bits.
     k_angle_sbit = [sbit(x_i) for x_i in k_angle_sintbit] # Conversion from sintbit to sbit can be done in any domain.
     input = reverse(k_angle_sbit + c_2) # Have to reverse inputs since lists of bits have index 0 to contain lsb, whereas hashing expects the order to be reversed
     to_hash = sbitvec.from_vec(input).reverse_bytes()
-    digest = sha3_256(to_hash)
-    digest.reveal_print_hex()
+    t_angle = sha3_256(to_hash) # Note: Input and output for sha3_256 are bit-reversed
+
+    # Compare t and c_3
+    for i in range(len(t_angle.reverse_bytes().elements())):
+        current_bit = cbit(t_angle.reverse_bytes().elements()[0].reveal()[i])
+        c_3[i].bit_xor(current_bit).print_if("Fail")
  
 # Message extraction
 def msg_ext(k_angle):
@@ -221,7 +221,7 @@ def reverse(bits):
 def run_ddec(ct_1, ct_2, s_angle, c2, c3):
     # Run protocol
     k_angle = kem_decap(ct_1, ct_2, s_angle)
-    hash_check(k_angle, c2) # Conversion of sint to sbit is huge time sink, commented out for testing
+    hash_check(k_angle, c2, c3)
     msg_ext(k_angle)
 
 #test_centre()

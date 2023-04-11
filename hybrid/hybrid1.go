@@ -21,7 +21,7 @@ func K_h1(paramsK int) ([]byte, []byte) {
 	return pk, sk
 }
 
-func E_h1(pk []byte, msg []byte, paramsK int, isDet bool) *Hybrid1Ciphertext {
+func E_h1(pk []byte, msg []byte, paramsK int, coins []byte, isDet bool) *Hybrid1Ciphertext {
 	k := make([]byte, 32)
 	rand.Read(k)
 	for _, n := range k {
@@ -29,8 +29,6 @@ func E_h1(pk []byte, msg []byte, paramsK int, isDet bool) *Hybrid1Ciphertext {
 	}
 	k_other_font := H(k)
 
-	coins := make([]byte, 32)
-	rand.Read(coins)
 	c1, _ := kyberk2so.IndcpaEncrypt(k, pk, coins, paramsK)
 
 	r := make([]byte, aes.BlockSize) // Randomness should be of length aes.BlockSize

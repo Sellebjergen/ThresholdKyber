@@ -9,7 +9,8 @@ func TestHybrid1Consistency(t *testing.T) {
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	pk, sk := K_h1(2)
 
-	ct := E_h1(pk, msg, 2, false)
+	coins := make([]byte, 32)
+	ct := E_h1(pk, msg, 2, coins, false)
 
 	_, msg_decrypted := D_h1(sk, ct, 2, false)
 
