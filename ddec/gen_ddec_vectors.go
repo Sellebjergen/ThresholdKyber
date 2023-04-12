@@ -18,7 +18,7 @@ func Generate_test_vec(paramsK int) {
 	k := kyberk2so.IndcpaDecrypt(ct.C1, sk, paramsK)
 	u, v := kyberk2so.IndcpaUnpackCiphertext(ct.C1, paramsK)
 
-	file_key_expected, err := os.Create("C:/Users/Kasper/Desktop/Speciale/ThresholdKyber/ddec/test_vectors_ddec/test_vector2/expected_output") // creating...
+	file_key_expected, err := os.Create("C:/Users/Kasper/Desktop/Speciale/ThresholdKyber/ddec/test_vectors_ddec/test_vector4/expected_output") // creating...
 	if err != nil {
 		fmt.Printf("error creating file: %v", err)
 		return
