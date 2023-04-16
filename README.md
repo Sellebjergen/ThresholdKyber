@@ -3,6 +3,8 @@
 ## Meeting Questions
 - Is IND-CPA Kyber inherently rigid?
 - Is hashing hard inside MPC because output has to look "scrambled" and that would require a lot of operations?
+- Explain Strong {0, 1}-reconstruction
+- Server for benchmarking?
 
 ## TODO
 - [ ] Update bounds in the constants to adhere for the newly chosen modulo q. (is this supposed to be the k parameter instead?)
@@ -16,7 +18,6 @@
 - [ ] Describe proof of security of OW-CPA TKyber
 - [ ] Include additional more intuitive description of security notions for TPKE's
 - [ ] Implement higher moduli with CRT
-- [ ] Explore parameter sets using TKyber parameter script
 - [ ] Fix details (primarily rigidity) in security section of DDec for Kyber.
 - [ ] Update Rényi Divergence section in report
 - [ ] Write introduction
@@ -39,10 +40,10 @@
 ## Low priority
 - [ ] Make CBD byte operation more efficient by removing the need for uint8.
 - [ ] Update Gasussian Sampling to use cryptographically safe randomness.
-- [ ] Implement NTT's for DDec implementation
-
 
 ## Further Ideas
+- [ ] Explore parameter sets using TKyber parameter script
+- [ ] Implement NTT's for DDec implementation
 - [ ] Zero knowledge for distributed key generation.
 
 ## Other Ideas
