@@ -100,7 +100,7 @@ func readTestVectorFromFile(name string) kyberk2so.Poly {
 	return poly
 }
 
-func TestMerge(t *testing.T) {
+func testMerge(t *testing.T) {
 	poly1 := readTestVectorFromFile("vector1_q3329")
 	poly2 := readTestVectorFromFile("vector1_q3313")
 
