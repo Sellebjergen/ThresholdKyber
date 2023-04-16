@@ -11,7 +11,7 @@
 - [ ] Update paramsPolyvecCompressedBytes variables for k > 3.
 - [ ] Update preliminaries with quotient rings etc. (half page that every article has)
 - [ ] Update preliminaries with notation.
-- [ ] Formal definition and properties of LSS.
+- [x] Formal definition and properties of LSS.
 - [ ] Describe strong {0, 1}-reconstruction.
 - [ ] Benchmark MP SPDZ vs golang implementation.
 - [ ] Write notation section
