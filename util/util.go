@@ -14,7 +14,7 @@ func max(x, y int) int {
 }
 
 // Euclidean modulo function
-func euc_mod(x, m int) int {
+func Euc_mod(x, m int) int {
 	res := x % m
 
 	if res < 0 {

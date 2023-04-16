@@ -10,3 +10,4 @@ def generateKyberParams(q, k, n):
     print(f"q: {q}, k: {k}, n: {n}, paramsPolyBytes: {paramsPolyBytes}, paramsQInv: {ctr}")
 
 generateKyberParams(3329, 2, 256)
+generateKyberParams(3313, 2, 256)
