@@ -13,7 +13,6 @@
 - [ ] Include additional more intuitive description of security notions for TPKE's
 - [ ] Implement higher moduli with CRT
 - [ ] Explore parameter sets using TKyber parameter script
-- [ ] Figure out why it is difficult to hash inside an MPC protocol.
 - [ ] Fix details (primarily rigidity) in security section of DDec for Kyber.
 - [ ] Update Rényi Divergence section in report
 - [ ] Write introduction
@@ -21,6 +20,7 @@
 - [ ] Write abstract
 
 ## Completed
+- [X] Figure out why it is difficult to hash inside an MPC protocol.
 - [x] rewrite pictures of hybrid constructions into some algorithm tex library.
 - [x] Make protocols in report consistent (use crytocode).
 - [x] Inserting code fragments in implementation section.
