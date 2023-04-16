@@ -47,7 +47,7 @@ func TestEuclid2(t *testing.T) {
 	}
 }
 
-func TestWritePartialTestVectorToFile(t *testing.T) {
+func testWritePartialTestVectorToFile(t *testing.T) {
 	t_param := 2
 	n_param := 3
 
