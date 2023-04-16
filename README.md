@@ -1,5 +1,9 @@
 # Threshold Kyber
 
+## Meeting Questions
+- Is IND-CPA Kyber inherently rigid?
+- Hashing is hard inside MPC because output has to look "scrambled" and that would re3quire a lot of operations?
+
 ## TODO
 - [ ] Update bounds in the constants to adhere for the newly chosen modulo q. (is this supposed to be the k parameter instead?)
 - [ ] Update paramsPolyvecCompressedBytes variables for k > 3.
