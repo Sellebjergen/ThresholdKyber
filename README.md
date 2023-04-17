@@ -23,7 +23,7 @@
 - [ ] Update Rényi Divergence section in report
 - [ ] Write introduction
 - [ ] Write conclusion
-- [ ] Write abstract
+- [ ] Write abstract (Do this as the very last thing)
 
 ## Completed
 - [X] Figure out why it is difficult to hash inside an MPC protocol.
