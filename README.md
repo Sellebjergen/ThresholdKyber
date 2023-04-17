@@ -9,7 +9,7 @@
 ## TODO
 - [ ] Update bounds in the constants to adhere for the newly chosen modulo q. (is this supposed to be the k parameter instead?)
 - [ ] Update paramsPolyvecCompressedBytes variables for k > 3.
-- [ ] Update preliminaries with quotient rings etc. (half page that every article has)
+- [x] Update preliminaries with quotient rings etc. (half page that every article has)
 - [ ] Update preliminaries with notation.
 - [x] Formal definition and properties of LSS.
 - [ ] Describe strong {0, 1}-reconstruction.
