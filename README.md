@@ -16,7 +16,7 @@
 - [ ] Benchmark MP SPDZ vs golang implementation.
 - [ ] Write notation section
 - [ ] Describe proof of security of OW-CPA TKyber
-- [ ] Include additional more intuitive description of security notions for TPKE's
+- [X] Include additional more intuitive description of security notions for TPKE's
 - [X] Implement higher moduli with CRT
 - [ ] Allow using different q than 3329 for Kyber
 - [ ] Fix details (primarily rigidity) in security section of DDec for Kyber.
