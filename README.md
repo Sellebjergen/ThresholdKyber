@@ -9,15 +9,10 @@
 ## TODO
 - [ ] Update bounds in the constants to adhere for the newly chosen modulo q. (is this supposed to be the k parameter instead?)
 - [ ] Update paramsPolyvecCompressedBytes variables for k > 3.
-- [x] Update preliminaries with quotient rings etc. (half page that every article has)
 - [ ] Update preliminaries with notation.
-- [x] Formal definition and properties of LSS.
 - [ ] Describe strong {0, 1}-reconstruction.
 - [ ] Benchmark MP SPDZ vs golang implementation.
 - [ ] Write notation section
-- [X] Describe proof of security of OW-CPA TKyber
-- [X] Include additional more intuitive description of security notions for TPKE's
-- [X] Implement higher moduli with CRT
 - [ ] Allow using different q than 3329 for Kyber
 - [ ] Fix details (primarily rigidity) in security section of DDec for Kyber.
 - [ ] Update Rényi Divergence section in report
@@ -26,6 +21,11 @@
 - [ ] Write abstract (Do this as the very last thing)
 
 ## Completed
+- [x] Update preliminaries with quotient rings etc. (half page that every article has)
+- [x] Formal definition and properties of LSS.
+- [X] Describe proof of security of OW-CPA TKyber
+- [X] Include additional more intuitive description of security notions for TPKE's
+- [X] Implement higher moduli with CRT
 - [X] Figure out why it is difficult to hash inside an MPC protocol.
 - [x] rewrite pictures of hybrid constructions into some algorithm tex library.
 - [x] Make protocols in report consistent (use crytocode).
