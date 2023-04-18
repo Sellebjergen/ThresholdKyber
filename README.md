@@ -5,6 +5,7 @@
 - Is hashing hard inside MPC because output has to look "scrambled" and that would require a lot of operations?
 - Explain Strong {0, 1}-reconstruction
 - Server for benchmarking?
+- Why is it that the multiplicative property of RD makes it less suited for decision problems?
 
 ## TODO
 - [ ] Update bounds in the constants to adhere for the newly chosen modulo q. (is this supposed to be the k parameter instead?)
