@@ -5,12 +5,13 @@
 - Is hashing hard inside MPC because output has to look "scrambled" and that would require a lot of operations?
 Answer: Dont want linear function, look scrambled + do bit decomposition
 - Explain Strong {0, 1}-reconstruction
+Answer: Qualified subset of parties to reconstruct... Want everyone to add local noise, so when reconstruct get sum of small noise. THink of shamir, want 0/1 coefficients. STRONG - only do this by adding 0 or 1.
 - Server for benchmarking?
 - Why is it that the multiplicative property of RD makes it less suited for decision problems?
 Answer: search problem = end up with ideal winning probability increase by multiplicative factor
 
 ## TODO
-- [ ] Make Kyder deterministic by hashing message and using that as coins
+- [ ] Make Kyder deterministic by hashing message and using digest as coins
 - [ ] Re-encrypt in distributed decryption for Kyber
 - [ ] Update bounds in the constants to adhere for the newly chosen modulo q. (is this supposed to be the k parameter instead?)
 - [ ] Update paramsPolyvecCompressedBytes variables for k > 3.
