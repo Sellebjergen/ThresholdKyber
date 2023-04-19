@@ -8,6 +8,8 @@
 - Why is it that the multiplicative property of RD makes it less suited for decision problems?
 
 ## TODO
+- [ ] Make Kyder deterministic by hashing message and using that as coins
+- [ ] Re-encrypt in distributed decryption for Kyber
 - [ ] Update bounds in the constants to adhere for the newly chosen modulo q. (is this supposed to be the k parameter instead?)
 - [ ] Update paramsPolyvecCompressedBytes variables for k > 3.
 - [ ] Update preliminaries with notation.
