@@ -12,12 +12,12 @@ Answer: search problem = end up with ideal winning probability increase by multi
 
 ## TODO
 - [ ] Correct feedback to report from Peter.
-- [ ] Make Kyder deterministic by hashing message and using digest as coins
+- [ ] Make Kyber deterministic by hashing message and using digest as coins
 - [ ] Re-encrypt in distributed decryption for Kyber
 - [ ] Update bounds in the constants to adhere for the newly chosen modulo q. (is this supposed to be the k parameter instead?)
 - [ ] Update paramsPolyvecCompressedBytes variables for k > 3.
 - [ ] Update preliminaries with notation.
-- [ ] Describe strong {0, 1}-reconstruction.
+- [x] Describe strong {0, 1}-reconstruction.
 - [ ] Benchmark MP SPDZ vs golang implementation.
 - [ ] Write notation section
 - [ ] Allow using different q than 3329 for Kyber
