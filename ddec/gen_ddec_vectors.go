@@ -1,31 +1,40 @@
 package ddec
 
 import (
+	"crypto/rand"
 	"fmt"
 	"os"
 
 	"ThresholdKyber.com/m/hybrid"
 	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
+	"golang.org/x/crypto/sha3"
 )
 
 func Generate_test_vec(paramsK int) {
-	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	pk, sk := hybrid.K_h1(paramsK)
+	k := make([]byte, 32)
+	rand.Read(k)
+	pk, _ := hybrid.K_h1(paramsK)
+	z := make([]byte, 32)
 	//s := kyberk2so.IndcpaUnpackPrivateKey(sk, paramsK)
 
 	coins := make([]byte, 32)
-	ct := hybrid.E_h1(pk, msg, paramsK, coins, true)
-	k := kyberk2so.IndcpaDecrypt(ct.C1, sk, paramsK)
-	u, v := kyberk2so.IndcpaUnpackCiphertext(ct.C1, paramsK)
+	ct, _ := kyberk2so.IndcpaEncrypt(k, pk, coins, paramsK)
 
-	file_key_expected, err := os.Create("C:/Users/Kasper/Desktop/Speciale/ThresholdKyber/ddec/test_vectors_ddec/test_vector4/expected_output") // creating...
+	h := sha3.Sum256(pk)
+	hash_c := sha3.Sum256(ct)
+
+	u, v := kyberk2so.IndcpaUnpackCiphertext(ct, paramsK)
+	t, seed := kyberk2so.IndcpaUnpackPublicKey(pk, paramsK)
+	A, _ := kyberk2so.IndcpaGenMatrix(seed, false, paramsK)
+
+	file_key_expected, err := os.Create("C:/Users/kaspe/Desktop/Speciale/ThresholdKyber/ddec/test_vectors_ddec/test_vector1/expected_output") // creating...
 	if err != nil {
 		fmt.Printf("error creating file: %v", err)
 		return
 	}
 	defer file_key_expected.Close()
 
-	file_public_input, err := os.Create("C:/Users/Kasper/Desktop/Speciale/mp-spdz-0.3.5/Programs/Public-Input/kyber_ddec") // creating...
+	file_public_input, err := os.Create("C:/Users/kaspe/Desktop/Speciale/mp-spdz-0.3.5/Programs/Public-Input/kyber_ddec") // creating...
 	if err != nil {
 		fmt.Printf("error creating file: %v", err)
 		return
@@ -43,8 +52,20 @@ func Generate_test_vec(paramsK int) {
 	WriteExpectedKey(k, file_key_expected)
 	WritePolyVec(u, file_public_input)
 	WritePoly(v, file_public_input)
-	WriteBytes(ct.C2, file_public_input)
-	WriteBytes(ct.C3, file_public_input)
+	for i := 0; i < paramsK; i++ {
+		WritePolyVec(A[i], file_public_input)
+	}
+	WritePolyVec(t, file_public_input)
+	WriteBytes(hash_c[:], file_public_input)
+
+	file_s_expected, err := os.Create("C:/Users/kaspe/Desktop/Speciale/mp-spdz-0.3.5/Player-Data/Input-P0-0") // creating...
+	if err != nil {
+		fmt.Printf("error creating file: %v", err)
+	}
+	defer file_s_expected.Close()
+	WriteBytes(z, file_s_expected)
+	WriteBytes(h[:], file_s_expected)
+
 }
 
 func WritePolyVec(s kyberk2so.PolyVec, f *os.File) {

@@ -121,10 +121,10 @@ func indcpaRejUniform(buf []byte, bufl int, l int) (Poly, int) {
 	return r, i
 }
 
-// indcpaGenMatrix deterministically generates a matrix `A` (or the transpose of `A`)
+// IndcpaGenMatrix deterministically generates a matrix `A` (or the transpose of `A`)
 // from a seed. Entries of the matrix are polynomials that look uniformly random.
 // Performs rejection sampling on the output of an extendable-output function (XOF).
-func indcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]PolyVec, error) {
+func IndcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]PolyVec, error) {
 	r := make([]PolyVec, paramsK)
 	buf := make([]byte, 672)
 	xof := sha3.NewShake128()
@@ -187,7 +187,7 @@ func IndcpaKeypair(paramsK int) ([]byte, []byte, error) {
 	buf = buf[:0]
 	buf = h.Sum(buf)
 	publicSeed, noiseSeed := buf[:paramsSymBytes], buf[paramsSymBytes:]
-	a, err := indcpaGenMatrix(publicSeed, false, paramsK)
+	a, err := IndcpaGenMatrix(publicSeed, false, paramsK)
 	if err != nil {
 		return []byte{}, []byte{}, err
 	}
@@ -201,12 +201,12 @@ func IndcpaKeypair(paramsK int) ([]byte, []byte, error) {
 		nonce = nonce + 1
 	}
 
-	/* file_s_expected, err := os.Create("C:/Users/Kasper/Desktop/Speciale/mp-spdz-0.3.5/Player-Data/Input-P0-0") // creating...
+	/* file_s, err := os.Create("C:/Users/kaspe/Desktop/Speciale/ThresholdKyber/ddec/test_vectors_ddec/test_vector1/s") // creating...
 	if err != nil {
 		fmt.Printf("error creating file: %v", err)
 	}
-	defer file_s_expected.Close()
-	WritePolyVec(skpv, file_s_expected) */
+	defer file_s.Close()
+	WritePolyVec(skpv, file_s) */
 
 	PolyvecNtt(skpv, paramsK)
 	polyvecReduce(skpv, paramsK)
@@ -239,7 +239,7 @@ func IndcpaEncrypt(m []byte, publicKey []byte, coins []byte, paramsK int) ([]byt
 	bp := PolyvecNew(paramsK)
 	publicKeyPolyvec, seed := IndcpaUnpackPublicKey(publicKey, paramsK)
 	k := PolyFromMsg(m)
-	at, err := indcpaGenMatrix(seed[:paramsSymBytes], true, paramsK)
+	at, err := IndcpaGenMatrix(seed[:paramsSymBytes], true, paramsK)
 	if err != nil {
 		return []byte{}, err
 	}
