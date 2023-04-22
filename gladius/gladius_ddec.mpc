@@ -4,13 +4,15 @@ from Compiler.GC import types
 program.use_edabit(True)
 cbit = cbits.get_type(1)
 
-n = 100
+n = 32
 mu = 128
 nu = 7 # This is x where mu = 2^x
 q = 2097143
 p = 512
 ell = 524288
 t = 2
+pi = 9
+log2qpluspi = 21 + pi
 
 # _____________________ Centre + bit op _______________________
 
@@ -30,7 +32,7 @@ def centre(x_i_angle):
     b_prime_prime = bitNeg(b_prime)
 
     # BitLT
-    q_div_2 = cint(1665).bit_decompose(bit_length = 21)
+    q_div_2 = cint(1048572).bit_decompose(bit_length = 21)
     f=floatingpoint.BITLT(b, q_div_2, 21)
 
     # Compute <a>
@@ -72,11 +74,39 @@ def vecSub(vec1, vec2):
 def kem_decap(ct1, ct2, R1):
     x = vecSub(ct2, vecMatMult(ct1, R1))
     w = [centre(x_i) for x_i in x]
-    k = [w_i[nu - 1].bit_xor(w_i[nu+1 - 1]) for w_i in w]
+    k = [w_i[nu - 1].bit_xor(w_i[nu+1 - 1]) for w_i in w] # the -1 is due to 0 indexing
     return k
 
-def validity_check():
-    pass
+def validity_check(k, A1, A2, ct1, ct2):
+    y = vecMatMult(k, A1).concat(vecMatMult(k, A2))
+    z = sint(1)
+    for i in range(2*n):
+        u = floatingpoint.BitDecFull(y[i], 21)
+        q_div_2 = cint(1048572).bit_decompose(bit_length = 21)
+        b = 1 - floatingpoint.BITLT(u, q_div_2, 21)
+        v = b * floatingpoint.BITLT(u, cint(1050620).bit_decompose(bit_length = 21), bit_length = 21)
+        u_prime = [sint(0)] * pi + u # Shift by pi by appending 0's
+        w = []
+        if i < n:
+            w = floatingpoint.BitAdd(u_prime, cint(2 ** log2qpluspi - ct1[i] * q).bit_decompose(bit_length = 30))
+        else:
+            w = floatingpoint.BitAdd(u_prime, cint(2 ** log2qpluspi - ct2[i - n] * q).bit_decompose(bit_length = 30))
+        to_add_f = cint(-p*q).bit_decompose(bit_length = 31) # Hardcoded -pq
+        for i in range(len(to_add_f)):
+            to_add_f[i] = to_add_f[i] * (b - v)
+        f = floatingpoint.BitAdd(w, to_add_f)
+        f_prime = bitNeg(f)
+        print_ln("f len")
+        print_ln("%s", len(f))
+        g = f[log2qpluspi - 1]
+        s = []
+        for i in range(len(f)):
+            s.append(g * f_prime[i] + (1 - g) * f[i])
+            #print_ln("%s", s[i].reveal())
+        j = floatingpoint.BITLT(s, cint(1048572).bit_decompose(bit_length = 32), bit_length = 32)
+        z = z * j
+    z_rev = z.reveal()
+    print_ln("%s", z_rev)
 
 # Hash check:
 def hash_check(k_angle, c_2, c_3):
@@ -124,21 +154,30 @@ def read_public_values_from_file():
     for i in range(n):
         ct2[i] = public_input()
 
-    """for i in range(256+128): # IV + C2
+    """ for i in range(256+128): # IV + C2
         c2[i] = cbit(public_input())
 
     for i in range(256):
-        c3[i] = cbit(public_input())
+        c3[i] = cbit(public_input()) """
 
-     for i in range(n):
+    for i in range(n):
         for j in range(n):
             A1[i][j] = cbit(public_input())
 
     for i in range(n):
         for j in range(n):
-            A2[i][j] = cbit(public_input()) """
+            A2[i][j] = cbit(public_input())
 
-    return ct1, ct2, #c2, c3 , A1, A2 
+    return ct1, ct2, A1, A2 #c2, c3
+
+# _____________________ Testing _______________________
+
+# Negative validity check test, should output 0!!!!!
+def test_validity_negative():
+    R1 = read_R1_from_file()
+    ct1, ct2, A1, A2 = read_public_values_from_file()
+    k = kem_decap(ct1, ct2, R1)
+    validity_check(k, Matrix(n, n, cint), Matrix(n, n, cint), ct1, ct2)
 
 # _____________________ main _______________________
 
@@ -147,9 +186,12 @@ def run_ddec(R1, ct1, ct2, c2, c3):
     hash_check(k, c2, c3)
     msg_ext(k)
 
-R1 = read_R1_from_file()
-ct1, ct2 = read_public_values_from_file()
+""" R1 = read_R1_from_file()
+ct1, ct2, A1, A2 = read_public_values_from_file()
 
 k = kem_decap(ct1, ct2, R1)
-msg_ext(k)
+validity_check(k, A1, A2, ct1, ct2)
+msg_ext(k) """
+
+test_validity_negative()
 
