@@ -88,22 +88,22 @@ def validity_check(k, A1, A2, ct1, ct2):
         u_prime = [sint(0)] * pi + u # Shift by pi by appending 0's
         w = []
         if i < n:
-            w = floatingpoint.BitAdd(u_prime, cint(2 ** log2qpluspi - ct1[i] * q).bit_decompose(bit_length = 30))
+            c1_i = regint(ct1[i]) # Conversion to regint to avoid modulo q in next computation
+            to_add_w = (2 ** log2qpluspi - c1_i * q).bit_decompose(bit_length = 30)
         else:
-            w = floatingpoint.BitAdd(u_prime, cint(2 ** log2qpluspi - ct2[i - n] * q).bit_decompose(bit_length = 30))
-        to_add_f = cint(-p*q).bit_decompose(bit_length = 31) # Hardcoded -pq
+            c2_i = regint(ct2[i - n])
+            to_add_w = (2 ** log2qpluspi - c2_i * q).bit_decompose(bit_length = 30)
+        w = floatingpoint.BitAdd(u_prime, to_add_w)[:30]
+        to_add_f = (-regint(p)*regint(q)).bit_decompose(bit_length = 30) # Hardcoded -pq
         for i in range(len(to_add_f)):
             to_add_f[i] = to_add_f[i] * (b - v)
-        f = floatingpoint.BitAdd(w, to_add_f)
+        f = floatingpoint.BitAdd(w, to_add_f)[:30]
         f_prime = bitNeg(f)
-        print_ln("f len")
-        print_ln("%s", len(f))
         g = f[log2qpluspi - 1]
         s = []
         for i in range(len(f)):
             s.append(g * f_prime[i] + (1 - g) * f[i])
-            #print_ln("%s", s[i].reveal())
-        j = floatingpoint.BITLT(s, cint(1048572).bit_decompose(bit_length = 32), bit_length = 32)
+        j = floatingpoint.BITLT(s, cint(1048572).bit_decompose(bit_length = 30), bit_length = 30)
         z = z * j
     z_rev = z.reveal()
     print_ln("%s", z_rev)
@@ -162,11 +162,11 @@ def read_public_values_from_file():
 
     for i in range(n):
         for j in range(n):
-            A1[i][j] = cbit(public_input())
+            A1[i][j] = public_input()
 
     for i in range(n):
         for j in range(n):
-            A2[i][j] = cbit(public_input())
+            A2[i][j] = public_input()
 
     return ct1, ct2, A1, A2 #c2, c3
 
@@ -179,6 +179,12 @@ def test_validity_negative():
     k = kem_decap(ct1, ct2, R1)
     validity_check(k, Matrix(n, n, cint), Matrix(n, n, cint), ct1, ct2)
 
+def print_bit_decomposed(a):
+    test = Array(len(a), sint)
+    for i in range(len(a)):
+        test[i] = a[i]
+    test.print_reveal_nested()
+
 # _____________________ main _______________________
 
 def run_ddec(R1, ct1, ct2, c2, c3):
@@ -186,12 +192,14 @@ def run_ddec(R1, ct1, ct2, c2, c3):
     hash_check(k, c2, c3)
     msg_ext(k)
 
-""" R1 = read_R1_from_file()
+#test_validity_negative()
+
+R1 = read_R1_from_file()
 ct1, ct2, A1, A2 = read_public_values_from_file()
 
 k = kem_decap(ct1, ct2, R1)
 validity_check(k, A1, A2, ct1, ct2)
-msg_ext(k) """
+msg_ext(k)
 
-test_validity_negative()
+
 
