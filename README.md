@@ -1,5 +1,8 @@
 # Threshold Kyber
 
+## New meeting questions.
+- What exactly is the formal definition of the advantage between using the RLWE and MLWE function? When in both cases we encrypt around 32 bytes of information.
+
 ## Meeting Questions
 - Is IND-CPA Kyber inherently rigid?
 - Is hashing hard inside MPC because output has to look "scrambled" and that would require a lot of operations?
