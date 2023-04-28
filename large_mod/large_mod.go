@@ -1,7 +1,6 @@
 package large_mod
 
 import (
-	"fmt"
 	"math"
 
 	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
@@ -14,24 +13,11 @@ func Merge(poly_1 kyberk2so.Poly, poly_2 kyberk2so.Poly, q_1 int, q_2 int) []int
 	// Euclid's Extended Algorithm
 	res := make([]int, kyberk2so.ParamsN)
 	for i := 0; i < kyberk2so.ParamsN; i++ {
-		fmt.Println("Input")
-		fmt.Println(poly_1[i])
-		fmt.Println(poly_2[i])
 		_, x, y := euclidsExtendedAlgorithm(float64(q_1), float64(q_2))
-
-		fmt.Println("x")
-		fmt.Println(x)
-		fmt.Println("y")
-		fmt.Println(y)
 
 		// Solve CRT using res of EEA
 		res[i] = util.Euc_mod(q_1*x*int(poly_2[i])+q_2*y*int(poly_1[i]), N)
-
-		fmt.Println("Res")
-		fmt.Println(res[i])
 	}
-
-	fmt.Println(res)
 
 	// Scaling and rounding
 	for i := 0; i < kyberk2so.ParamsN; i++ {

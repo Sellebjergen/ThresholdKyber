@@ -63,8 +63,6 @@ func TestWritePartialTestVectorToFile(t *testing.T) {
 
 	y := owcpa.Combine(params, ct, d_is, n_param, t_param)
 
-	fmt.Println(y)
-
 	file_poly, err := os.Create("C:/Users/Kasper/Desktop/Speciale/ThresholdKyber/large_mod/test_vectors_crt/vector1_q3329") // creating...
 	if err != nil {
 		fmt.Printf("error creating file: %v", err)
@@ -109,9 +107,7 @@ func TestMerge(t *testing.T) {
 	q1 := 3329
 	q2 := 3313
 
-	res := Merge(poly1, poly2, q1, q2)
-
-	fmt.Println(res)
+	Merge(poly1, poly2, q1, q2)
 
 	//t.Errorf("AAAAAAAA") TODO: FIX THIS LATER
 }

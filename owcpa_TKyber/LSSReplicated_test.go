@@ -1,7 +1,6 @@
 package owcpa_TKyber
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -125,8 +124,6 @@ func TestReplicatedRecSimple(t *testing.T) {
 	lss := &LSSReplicated{}
 	res := lss.Rec(d_is, 3, 1)
 
-	fmt.Println(res)
-
 	if !reflect.DeepEqual(expected, res) {
 		t.Errorf("WEE WOO WEE WOO")
 	}
@@ -145,8 +142,6 @@ func TestReplicatedRecAdvanced(t *testing.T) {
 
 	lss := &LSSReplicated{}
 	res := lss.Rec(d_is, 3, 1)
-
-	fmt.Println(res)
 
 	if !reflect.DeepEqual(expected, res) {
 		t.Errorf("WEE WOO WEE WOO")

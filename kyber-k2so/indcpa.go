@@ -5,7 +5,6 @@ package kyberk2so
 
 import (
 	"crypto/rand"
-	"encoding/hex"
 	"fmt"
 	"os"
 
@@ -167,9 +166,7 @@ func IndcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]PolyVec, erro
 // to instantiate the PRF's underlying hash function.
 func indcpaPrf(l int, key []byte, nonce byte) []byte {
 	hash := make([]byte, l)
-	fmt.Println(l)
 	sha3.ShakeSum256(hash, append(key, nonce))
-	fmt.Println(hex.EncodeToString(hash))
 	return hash
 }
 

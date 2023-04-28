@@ -3,7 +3,6 @@ package gladius
 import (
 	"bytes"
 	"crypto/rand"
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -17,9 +16,6 @@ func TestGladiusEnc(t *testing.T) {
 	pk, sk := keygen(params)
 	ct := encrypt(params, msg, pk)
 	res := decrypt(params, ct, sk)
-
-	fmt.Println(res)
-	fmt.Println(msg)
 
 	if !reflect.DeepEqual(msg, res) {
 		t.Errorf(("AAAAAAAAAAA"))
@@ -44,12 +40,7 @@ func TestByteMsgConversion(t *testing.T) {
 	rand.Read(k)
 
 	interm := bytesToGladiusMsg(params, k)
-
 	k_recomp := gladiusMsgToBytes(interm)
-
-	fmt.Println(k)
-	fmt.Println(interm)
-	fmt.Println(k_recomp)
 
 	if !reflect.DeepEqual(k, k_recomp) {
 		t.Errorf(("AAAAAAAAAAA"))
