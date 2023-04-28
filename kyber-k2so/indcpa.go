@@ -206,24 +206,13 @@ func IndcpaKeypair(paramsK int) ([]byte, []byte, error) {
 		nonce = nonce + 1
 	}
 
-	/* // Get s non-NTT form
-	file_s, err := os.Create("C:/Users/kasper/Desktop/Speciale/ThresholdKyber/ddec/test_vectors_ddec/test_vector1/s") // creating...
-	if err != nil {
-		fmt.Printf("error creating file: %v", err)
-	}
-	defer file_s.Close()
-	WritePolyVec(skpv, file_s) */
-
 	PolyvecNtt(skpv, paramsK)
 	PolyvecReduce(skpv, paramsK)
 	PolyvecNtt(e, paramsK)
 	for i := 0; i < paramsK; i++ {
-		pkpv[i] = PolyvecPointWiseAccMontgomery(a[i], skpv, paramsK)
+		pkpv[i] = polyToMont(PolyvecPointWiseAccMontgomery(a[i], skpv, paramsK))
 	}
 
-	for i := 0; i < paramsK; i++ {
-		pkpv[i] = polyToMont(pkpv[i])
-	}
 	polyvecAdd(pkpv, e, paramsK)
 	PolyvecReduce(pkpv, paramsK)
 	return IndcpaPackPrivateKey(skpv, paramsK), IndcpaPackPublicKey(pkpv, publicSeed, paramsK), nil
@@ -249,8 +238,6 @@ func IndcpaEncrypt(m []byte, publicKey []byte, coins []byte, paramsK int) ([]byt
 	bp := PolyvecNew(paramsK)
 	publicKeyPolyvec, seed := IndcpaUnpackPublicKey(publicKey, paramsK)
 	k := PolyFromMsg(m)
-	fmt.Println("k")
-	fmt.Println(k)
 	at, err := IndcpaGenMatrix(seed[:paramsSymBytes], true, paramsK)
 	if err != nil {
 		return []byte{}, err
