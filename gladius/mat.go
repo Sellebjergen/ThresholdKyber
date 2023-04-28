@@ -2,7 +2,6 @@ package gladius
 
 import (
 	"crypto/rand"
-	"fmt"
 	"math"
 	"math/big"
 	randmath "math/rand"
@@ -131,7 +130,6 @@ func matProd(a Mat, b Mat, n int) Mat {
 func round_mod(x int64, p int64, q int) int64 {
 	scale := float64(x) * float64(p) / float64(q)
 	rounded := math.Round(scale)
-	fmt.Println(rounded)
 	mod := int64(util.Euc_mod(int(rounded), int(p)))
 	if mod > int64(q)/2 {
 		return mod - int64(q) // Centre

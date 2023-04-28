@@ -11,3 +11,4 @@ def generateKyberParams(q, k, n):
 
 generateKyberParams(3329, 2, 256)
 generateKyberParams(3313, 2, 256)
+generateKyberParams(3329 * 5, 2, 256)

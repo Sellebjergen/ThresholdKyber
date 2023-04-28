@@ -3,6 +3,8 @@
 
 package kyberk2so
 
+import "fmt"
+
 // byteopsLoad32 returns a 32-bit unsigned integer loaded from byte x.
 func byteopsLoad32(x []byte) uint32 {
 	var r uint32
@@ -54,6 +56,7 @@ func byteopsCbd(buf []byte, paramsK int) Poly {
 			}
 		}
 	}
+	fmt.Println(r)
 	return r
 }
 

@@ -5,6 +5,9 @@ package kyberk2so
 
 import (
 	"crypto/rand"
+	"encoding/hex"
+	"fmt"
+	"os"
 
 	"golang.org/x/crypto/sha3"
 )
@@ -164,7 +167,9 @@ func IndcpaGenMatrix(seed []byte, transposed bool, paramsK int) ([]PolyVec, erro
 // to instantiate the PRF's underlying hash function.
 func indcpaPrf(l int, key []byte, nonce byte) []byte {
 	hash := make([]byte, l)
+	fmt.Println(l)
 	sha3.ShakeSum256(hash, append(key, nonce))
+	fmt.Println(hex.EncodeToString(hash))
 	return hash
 }
 
@@ -201,7 +206,8 @@ func IndcpaKeypair(paramsK int) ([]byte, []byte, error) {
 		nonce = nonce + 1
 	}
 
-	/* file_s, err := os.Create("C:/Users/kaspe/Desktop/Speciale/ThresholdKyber/ddec/test_vectors_ddec/test_vector1/s") // creating...
+	/* // Get s non-NTT form
+	file_s, err := os.Create("C:/Users/kasper/Desktop/Speciale/ThresholdKyber/ddec/test_vectors_ddec/test_vector1/s") // creating...
 	if err != nil {
 		fmt.Printf("error creating file: %v", err)
 	}
@@ -209,17 +215,21 @@ func IndcpaKeypair(paramsK int) ([]byte, []byte, error) {
 	WritePolyVec(skpv, file_s) */
 
 	PolyvecNtt(skpv, paramsK)
-	polyvecReduce(skpv, paramsK)
+	PolyvecReduce(skpv, paramsK)
 	PolyvecNtt(e, paramsK)
 	for i := 0; i < paramsK; i++ {
-		pkpv[i] = polyToMont(PolyvecPointWiseAccMontgomery(a[i], skpv, paramsK))
+		pkpv[i] = PolyvecPointWiseAccMontgomery(a[i], skpv, paramsK)
+	}
+
+	for i := 0; i < paramsK; i++ {
+		pkpv[i] = polyToMont(pkpv[i])
 	}
 	polyvecAdd(pkpv, e, paramsK)
-	polyvecReduce(pkpv, paramsK)
+	PolyvecReduce(pkpv, paramsK)
 	return IndcpaPackPrivateKey(skpv, paramsK), IndcpaPackPublicKey(pkpv, publicSeed, paramsK), nil
 }
 
-/* func WritePolyVec(s PolyVec, f *os.File) {
+func WritePolyVec(s PolyVec, f *os.File) {
 	for _, poly := range s {
 		for i, coef := range poly {
 			if i > 255 {
@@ -229,7 +239,7 @@ func IndcpaKeypair(paramsK int) ([]byte, []byte, error) {
 		}
 		f.WriteString(fmt.Sprintf("\n"))
 	}
-} */
+}
 
 // IndcpaEncrypt is the encryption function of the CPA-secure
 // public-key encryption scheme underlying Kyber.
@@ -239,26 +249,30 @@ func IndcpaEncrypt(m []byte, publicKey []byte, coins []byte, paramsK int) ([]byt
 	bp := PolyvecNew(paramsK)
 	publicKeyPolyvec, seed := IndcpaUnpackPublicKey(publicKey, paramsK)
 	k := PolyFromMsg(m)
+	fmt.Println("k")
+	fmt.Println(k)
 	at, err := IndcpaGenMatrix(seed[:paramsSymBytes], true, paramsK)
 	if err != nil {
 		return []byte{}, err
 	}
+
 	for i := 0; i < paramsK; i++ {
 		sp[i] = polyGetNoise(coins, byte(i), paramsK)
 		ep[i] = polyGetNoise(coins, byte(i+paramsK), 3)
 	}
 	epp := polyGetNoise(coins, byte(paramsK*2), 3)
 	PolyvecNtt(sp, paramsK)
-	polyvecReduce(sp, paramsK)
+	PolyvecReduce(sp, paramsK)
 	for i := 0; i < paramsK; i++ {
 		bp[i] = PolyvecPointWiseAccMontgomery(at[i], sp, paramsK)
 	}
+
 	v := PolyvecPointWiseAccMontgomery(publicKeyPolyvec, sp, paramsK)
 	PolyvecInvNttToMont(bp, paramsK)
 	v = PolyInvNttToMont(v)
 	polyvecAdd(bp, ep, paramsK)
 	v = PolyAdd(PolyAdd(v, epp), k)
-	polyvecReduce(bp, paramsK)
+	PolyvecReduce(bp, paramsK)
 	return IndcpaPackCiphertext(bp, PolyReduce(v), paramsK), nil
 }
 

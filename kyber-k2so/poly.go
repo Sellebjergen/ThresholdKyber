@@ -378,9 +378,9 @@ func PolyvecPointWiseAccMontgomery(a PolyVec, b PolyVec, paramsK int) Poly {
 	return PolyReduce(r)
 }
 
-// polyvecReduce applies Barrett reduction to each coefficient of each element
+// PolyvecReduce applies Barrett reduction to each coefficient of each element
 // of a vector of polynomials.
-func polyvecReduce(r PolyVec, paramsK int) {
+func PolyvecReduce(r PolyVec, paramsK int) {
 	for i := 0; i < paramsK; i++ {
 		r[i] = PolyReduce(r[i])
 	}

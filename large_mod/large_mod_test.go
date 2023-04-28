@@ -47,9 +47,9 @@ func TestEuclid2(t *testing.T) {
 	}
 }
 
-func testWritePartialTestVectorToFile(t *testing.T) {
-	t_param := 2
-	n_param := 3
+func TestWritePartialTestVectorToFile(t *testing.T) {
+	t_param := 1
+	n_param := 2
 
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	params := owcpa.NewParameterSet("TKyber-Test")
@@ -62,6 +62,8 @@ func testWritePartialTestVectorToFile(t *testing.T) {
 	}
 
 	y := owcpa.Combine(params, ct, d_is, n_param, t_param)
+
+	fmt.Println(y)
 
 	file_poly, err := os.Create("C:/Users/Kasper/Desktop/Speciale/ThresholdKyber/large_mod/test_vectors_crt/vector1_q3329") // creating...
 	if err != nil {
@@ -100,7 +102,7 @@ func readTestVectorFromFile(name string) kyberk2so.Poly {
 	return poly
 }
 
-func testMerge(t *testing.T) {
+func TestMerge(t *testing.T) {
 	poly1 := readTestVectorFromFile("vector1_q3329")
 	poly2 := readTestVectorFromFile("vector1_q3313")
 
@@ -111,5 +113,5 @@ func testMerge(t *testing.T) {
 
 	fmt.Println(res)
 
-	//t.Errorf("AAAAAAAA")
+	t.Errorf("AAAAAAAA")
 }

@@ -14,7 +14,7 @@ type GaussianNoiseDist struct {
 }
 
 type BinomialNoiseDist struct {
-	eta int
+	Eta int
 }
 
 // TODO: UNSAFE, does not use crypto/rand
@@ -38,7 +38,7 @@ func (d *GaussianNoiseDist) SampleNoise(params *OwcpaParams, deg int) kyberk2so.
 // Implemented as in Kyber specification 3.2
 // Uses crypto/rand, so sampling is cryptographically secure
 func (d *BinomialNoiseDist) SampleNoise(params *OwcpaParams, deg int) kyberk2so.Poly {
-	b := make([]byte, 64*d.eta)
+	b := make([]byte, 64*d.Eta)
 	rand.Read(b)
 
 	var f kyberk2so.Poly
@@ -46,9 +46,9 @@ func (d *BinomialNoiseDist) SampleNoise(params *OwcpaParams, deg int) kyberk2so.
 	for i := 0; i < 256; i++ {
 		a := int16(0)
 		b := int16(0)
-		for j := 0; j < d.eta; j++ {
-			a += int16(beta[2*i*d.eta+j])
-			b += int16(beta[2*i*d.eta+d.eta+j])
+		for j := 0; j < d.Eta; j++ {
+			a += int16(beta[2*i*d.Eta+j])
+			b += int16(beta[2*i*d.Eta+d.Eta+j])
 		}
 		f[i] = a - b
 	}

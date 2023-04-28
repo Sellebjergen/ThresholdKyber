@@ -4,7 +4,7 @@ from Compiler.GC import types
 program.use_edabit(True)
 cbit = cbits.get_type(1)
 
-n = 32
+n = 256
 mu = 128
 nu = 7 # This is x where mu = 2^x
 q = 2097143
@@ -143,22 +143,16 @@ def read_R1_from_file():
 def read_public_values_from_file():
     ct1 = Array(n, cint)
     ct2 = Array(n, cint)
-    c2 = [cbit(0)] * (256+128)
-    c3 = [cbit(0)] * 256
     A1 = Matrix(n, n, cint)
     A2 = Matrix(n, n, cint)
+    c2 = [cbit(0)] * (256+128)
+    c3 = [cbit(0)] * 256
 
     for i in range(n):
         ct1[i] = public_input()
 
     for i in range(n):
         ct2[i] = public_input()
-
-    """ for i in range(256+128): # IV + C2
-        c2[i] = cbit(public_input())
-
-    for i in range(256):
-        c3[i] = cbit(public_input()) """
 
     for i in range(n):
         for j in range(n):
@@ -167,6 +161,12 @@ def read_public_values_from_file():
     for i in range(n):
         for j in range(n):
             A2[i][j] = public_input()
+
+    for i in range(256+128): # IV + C2
+        c2[i] = cbit(public_input())
+
+    for i in range(256):
+        c3[i] = cbit(public_input())
 
     return ct1, ct2, A1, A2 #c2, c3
 
@@ -189,17 +189,16 @@ def print_bit_decomposed(a):
 
 def run_ddec(R1, ct1, ct2, c2, c3):
     k = kem_decap(ct1, ct2, R1)
+    validity_check(k, A1, A2, ct1, ct2)
     hash_check(k, c2, c3)
     msg_ext(k)
 
 #test_validity_negative()
 
 R1 = read_R1_from_file()
-ct1, ct2, A1, A2 = read_public_values_from_file()
+ct1, ct2, A1, A2, c2, c3 = read_public_values_from_file()
 
-k = kem_decap(ct1, ct2, R1)
-validity_check(k, A1, A2, ct1, ct2)
-msg_ext(k)
+run_ddec(R1, ct1, ct2, c2, c3)
 
 
 

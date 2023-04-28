@@ -192,7 +192,7 @@ func TestWithReplicatedLSSNoCombine(t *testing.T) {
 func TestWithBinomialNoise(t *testing.T) {
 	msg := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	params := NewParameterSet("TKyber-Test")
-	params.D_flood_dist = &BinomialNoiseDist{eta: 2}
+	params.D_flood_dist = &BinomialNoiseDist{Eta: 2}
 	pk, sk_shares := Setup(params, 2, 2)
 
 	for i := 0; i < 100; i++ {
