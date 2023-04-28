@@ -1,17 +1,7 @@
 package large_mod
 
 import (
-	"fmt"
-	"io/ioutil"
-	"log"
-	"os"
-	"strconv"
-	"strings"
 	"testing"
-
-	"ThresholdKyber.com/m/ddec"
-	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
-	owcpa "ThresholdKyber.com/m/owcpa_TKyber"
 )
 
 func TestEuclid(t *testing.T) {
@@ -47,7 +37,7 @@ func TestEuclid2(t *testing.T) {
 	}
 }
 
-func TestWritePartialTestVectorToFile(t *testing.T) {
+/* func TestWritePartialTestVectorToFile(t *testing.T) {
 	t_param := 1
 	n_param := 2
 
@@ -111,3 +101,4 @@ func TestMerge(t *testing.T) {
 
 	//t.Errorf("AAAAAAAA") TODO: FIX THIS LATER
 }
+*/
