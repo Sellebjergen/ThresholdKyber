@@ -1,14 +1,116 @@
 from circuit import sha3_256
 from Compiler import floatingpoint
 from Compiler.GC import types
+from circuit import Circuit
 program.use_edabit(True)
 
 # Params (Kyber512)
 n = 256
 q = 3329
 r = 2
+eta1 = 3
+eta2 = 2
 
 cbit = cbits.get_type(1)
+
+# _____________________ Hash functions ________________________
+
+Keccak_f = None
+
+def keccak(x, rate, delim, output_len):
+
+    global Keccak_f
+    if Keccak_f is None:
+        # only one instance
+        Keccak_f = Circuit('Keccak_f')
+
+    # whole bytes
+    assert len(x.v) % 8 == 0
+    # only one block
+    r = rate
+    assert len(x.v) < rate
+    if x.v:
+        n = x.v[0].n
+    else:
+        n = 1
+    d = sbitvec([sbits.get_type(8)(delim)] * n)
+    sbn = sbits.get_type(n)
+    padding = [sbn(0)] * (r - 8 - len(x.v))
+    P_flat = x.v + d.v + padding
+    assert len(P_flat) == r
+    P_flat[-1] = ~P_flat[-1]
+    w = 64
+    P1 = [P_flat[i * w:(i + 1) * w] for i in range(r // w)]
+
+    S = [[[sbn(0) for i in range(w)] for i in range(5)] for i in range(5)]
+    for x in range(5):
+        for y in range(5):
+            if x + 5 * y < r // w:
+                for i in range(w):
+                    S[x][y][i] ^= P1[x + 5 * y][i]
+
+    def flatten(S):
+        res = [None] * 1600
+        for y in range(5):
+            for x in range(5):
+                for i in range(w):
+                    j = (5 * y + x) * w + i // 8 * 8 + 7 - i % 8
+                    res[1600 - 1 - j] = S[x][y][i]
+        return res
+
+    def unflatten(S_flat):
+        res = [[[None] * w for j in range(5)] for i in range(5)]
+        for y in range(5):
+            for x in range(5):
+                for i in range(w):
+                    j = (5 * y + x) * w + i // 8 * 8 + 7 - i % 8
+                    res[x][y][i] = S_flat[1600 - 1 -j]
+        return res
+
+    S = unflatten(Keccak_f(flatten(S)))
+
+    Z = []
+    while len(Z) <= output_len:
+        for y in range(5):
+            for x in range(5):
+                if x + 5 * y < r // w:
+                    Z += S[x][y]
+        if len(Z) <= output_len:
+            S = unflatten(Keccak_f(flatten(S)))
+    return sbitvec.from_vec(Z[:output_len])
+
+# SHA3-512
+def G(m_prime, h):
+    m_prime_sintbit = [sintbit(x_i) for x_i in m_prime] # Convert to sintbit to indicate that they contain bits.
+    m_prime_sbit = [sbit(x_i) for x_i in m_prime_sintbit] # Conversion from sintbit to sbit can be done in any domain.
+    input = m_prime_sbit + h  # Have to reverse inputs since lists of bits have index 0 to contain lsb, whereas hashing expects the order to be reversed
+
+    to_hash = sbitvec.from_vec(input) #.reverse_bytes()
+    out = keccak(to_hash, 576, 0x06, 512) # Note: Input and output for sha3_512 are bit-reversed
+
+    return out.v[:256], out.v[256:]
+
+# SHAKE256
+def KDF(in_1, in_2):
+    in_1_sintbit = [sintbit(x_i) for x_i in in_1] # Convert to sintbit to indicate that they contain bits.
+    in_1_sbit = [sbit(x_i) for x_i in in_1_sintbit] # Conversion from sintbit to sbit can be done in any domain.
+    input = in_1_sbit + in_2  # Have to reverse inputs since lists of bits have index 0 to contain lsb, whereas hashing expects the order to be reversed
+
+    to_hash = sbitvec.from_vec(input) #.reverse_bytes()
+    out = keccak(to_hash, 1088, 0x1F, 256) # Note: Input and output for sha3_512 are bit-reversed
+    return out
+
+# SHAKE256
+def PRF(coins, N, eta):
+    N_decomp = N.bit_decompose(bit_length = 8)
+
+    input = coins + N_decomp
+    to_hash = sbitvec.from_vec(input) #.reverse_bytes()
+    out = keccak(to_hash, 1088, 0x1F, 64 * eta * 8) # Note: Input and output for sha3_512 are bit-reversed
+    out.reveal_print_hex()
+    return out.v
+
+    
 
 # _____________________ Centre + bit op _______________________
 
@@ -16,9 +118,6 @@ cbit = cbits.get_type(1)
 def centre(x_i_angle):
     # BitDecomp
     b = floatingpoint.BitDecFull(x_i_angle, 12)
-    """ print_ln("%s", x_i_angle.reveal())
-    for i in range(len(b)):
-        print_ln("%s", b[i].reveal()) """
 
     # BitAdd
     qp1_bits = cint(q + 1).bit_decompose(bit_length = 12)
@@ -66,10 +165,22 @@ def poly_mult(a, b):
             res[i + j] = res[i + j] + a[i] * b[j]
     return res
 
+def scalar_mult(a, b):
+    res = Array(len(a), sint)
+    for i in range(len(a)):
+        res[i] = a[i] * b
+    return res
+
 def poly_sub(a, b):
     res = Array(len(b), sint)
     for i in range(len(a)):
         res[i] = a[i] - b[i]
+    return res
+
+def poly_add(a, b):
+    res = Array(n, sint)
+    for i in range(n):
+        res[i] = a[i] + b[i]
     return res
 
 # Only supports f_n => 2*len(a), this is enough in our case
@@ -84,6 +195,56 @@ def poly_rem(a, f_n):
             rem[i % f_n] -= a[i]
     return rem
 
+# _____________________ Kyber encryption _______________________
+
+def CBD(rand, eta):
+    f = Array(n, sint)
+    for i in range(n):
+        a = sint(0)
+        b = sint(0)
+        for j in range(eta):
+            a = a + sint(rand[2*i*eta + j])
+            b = b + sint(rand[2*i*eta + eta + j])
+        f[i] = a - b
+    return f
+
+
+def CPAPKE_kyber_encryption(A_t, t, m, coins):
+    N = cint(0)
+    r_bold = []
+    for i in range(r):
+        r_bold.append(CBD(PRF(coins, N, eta1), eta1))
+        N = N + 1
+    
+    e_1_bold = []
+    for i in range(r):
+        e_1_bold.append(CBD(PRF(coins, N, eta2), eta2))
+        N = N + 1
+    e_2 = CBD(PRF(coins, N, eta2), eta2)
+    
+    # Compute A^t r + e_1
+    u = Matrix(r, n, sint)
+    for i in range(r):
+        res = inner_prod(A_t[i], r_bold)
+        for j in range(n):
+            u[i][j] = res[j] + e_1_bold[i][j]
+
+    # Compute tr + e_2 + m scaled
+    print_ln("e_2")
+    e_2.print_reveal_nested()
+    tr = inner_prod(t, r_bold)
+    print_ln("tr")
+    tr.print_reveal_nested()
+    tre = poly_add(tr, e_2)
+    print_ln("tre")
+    tre.print_reveal_nested()
+    m_scaled = scalar_mult(m, 1665)
+    print_ln("m scaled")
+    m_scaled.print_reveal_nested()
+    v = poly_add(tre, m_scaled)
+    return u, v
+
+
 # _____________________ main functionality _______________________
 
 # KEM decapsulation:
@@ -96,27 +257,31 @@ def kem_decap(u, v, s_angle):
     k = [w_i[-1] for w_i in w] # get msb of each w_i
     return k
 
-# Hash check:
-def hash_check(k_angle, c_2, c_3):
-    # Distributed hashing to get <t>
-    k_angle_sintbit = [sintbit(x_i) for x_i in k_angle] # Convert to sintbit to indicate that they contain bits.
-    k_angle_sbit = [sbit(x_i) for x_i in k_angle_sintbit] # Conversion from sintbit to sbit can be done in any domain.
-    input = c_2 + k_angle_sbit  # Have to reverse inputs since lists of bits have index 0 to contain lsb, whereas hashing expects the order to be reversed
+def re_encryption(k_angle, hash_pk, A_t, t):
+    K_bar_prime, r_prime = G(k_angle, hash_pk)
+    u_prime, v_prime = CPAPKE_kyber_encryption(A_t, t, k_angle, r_prime)
+    return u_prime, v_prime, K_bar_prime
 
-    to_hash = sbitvec.from_vec(input) #.reverse_bytes()
-    t_angle = sha3_256(to_hash) # Note: Input and output for sha3_256 are bit-reversed
+def key_derivation(u_prime, v_prime, u, v, K_bar_prime, hash_c, z):
+    test = sint(1)
+    # Check u
+    for i in range(r):
+        for j in range(n):
+            check = u_prime[i][j] == u[i][j]
+            test = test * check
+    # Check v
+    for i in range(n):
+        check = v_prime[i] == v[i]
+        test = test * check
 
-    # Compare t and c_3
-    for i in range(len(t_angle.v)):
-        current_bit = cbit(t_angle.v[i].reveal())
-        c_3[i].bit_xor(current_bit).print_if("Fail")
- 
-# Message extraction
-def msg_ext(k_angle):
-    k_bits_clear = Array(n, cint)
-    for i in range(len(k_angle)):
-        k_bits_clear[i] = k_angle[i].reveal()
-    k_bits_clear.print_reveal_nested()
+    # Compute KDF input
+    in_1 = [test*sint(k_i) for k_i in K_bar_prime]
+    in_2 = [(1 - test)*z_i for z_i in z]
+    input = [sint(0)] * 256
+    for i in range(256):
+        input[i] = in_1[i] + in_2[i]
+
+    return KDF(input, hash_c)
 
 # _____________________ Testing _______________________
 
@@ -168,20 +333,58 @@ def test_inner_prod_sub():
     res2 = poly_sub(v, res)
     res2.print_reveal_nested()
 
+# Should return
+def test_PRF():
+    res = PRF([sbit(0)] * 256, cint(0), 3)
+    for i in range(len(res)):
+        print_ln("%s", res[i].reveal())
+
+def test_enc():
+    u, v, A_t, t, hash_c = read_public_values_from_file()
+    print_ln("A transposed")
+    for i in range(r):
+        A_t[i].print_reveal_nested()
+    u, v = CPAPKE_kyber_encryption(A_t, t, [sint(0)] * 256, [sbit(0)] * 256)
+    print_ln("v")
+    v.print_reveal_nested()
+    print_ln("u")
+    u.print_reveal_nested()
+
+def test_key_deriv():
+    u, v, A_t, t, hash_c = read_public_values_from_file()
+    # 0x68daf96d3cfd70be40b30779a60ce3fb0226a42cb497a327f1237e108fd16cda
+    poss_key = key_derivation(u, v, u, v, [sint(1)]*256, [cbit(0)] * 256, [sint(0)] * 256) 
+    poss_key.reveal_print_hex()
+    # 0x7ea5f2ea9e9487de4753918bbf5308eb91fa641889236c55d708ecb4d9666a36
+    poss_key = key_derivation(u, v, u, Array(n, sint), [sint(1)]*256, [cbit(0)] * 256, [sint(0)] * 256)
+    poss_key.reveal_print_hex()
+
+# Helper function
+# Message extraction
+def print_sints(k_angle):
+    k_clear = Array(n, cint)
+    for i in range(len(k_angle)):
+        k_clear[i] = k_angle[i].reveal()
+    k_clear.print_reveal_nested()
+
+
 # _____________________ Get Input _______________________
 
 def read_s_from_file():
     s = Matrix(r, n, sint)
-    for i in range(r):
-        for j in range(n):
-            s[i][j] = sint.get_input_from(0)
-    return s
+    s.input_from(0)
+    z = Array(256, sint)
+    z.input_from(0)
+
+    return s, z
 
 def read_public_values_from_file():
     u = Matrix(r, n, cint)
     v = Array(n, cint)
-    c2 = [cbit(0)] * (256+128)
-    c3 = [cbit(0)] * 256
+    A_t = MultiArray([r, r, n], cint)
+    t = Matrix(r, n, cint)
+    hash_c = []
+    hash_pk = []
 
     for i in range(r):
         for j in range(n):
@@ -190,26 +393,29 @@ def read_public_values_from_file():
     for i in range(n):
         v[i] = public_input()
 
-    for i in range(256+128): # IV + C2
-        c2[i] = cbit(public_input())
+    for i in range(r):
+        for j in range(r):
+            for l in range(n):
+                A_t[i][j][l] = public_input()
+
+    for i in range(r):
+        for j in range(n):
+            t[i][j] = public_input()
 
     for i in range(256):
-        c3[i] = cbit(public_input())
+        hash_c.append(public_input())
 
-    return u, v, c2, c3
+    for i in range(256):
+        hash_pk.append(public_input())
+
+    return u, v, A_t, t, hash_c, hash_pk
 
 def test_input():
-    s_angle = read_s_from_file()
+    s_angle, z = read_s_from_file()
     s_angle.print_reveal_nested()
-    u, v, c2, c3 = read_public_values_from_file()
+    u, v, A_t, t, c_hash, hash_pk = read_public_values_from_file()
     u.print_reveal_nested()
     v.print_reveal_nested()
-
-    for i in range(n):
-        print_ln("%s", c2[i])
-
-    for i in range(n):
-        print_ln("%s", c3[i])
 
 def reverse(bits):
     rev = []
@@ -219,19 +425,25 @@ def reverse(bits):
 
 # _____________________ Main _______________________
 
-def run_ddec(ct_1, ct_2, s_angle, c2, c3):
+def run_ddec(u, v, s_angle, hash_pk, A_t, t, hash_c, z):
     # Run protocol
-    k_angle = kem_decap(ct_1, ct_2, s_angle)
-    hash_check(k_angle, c2, c3)
-    msg_ext(k_angle)
+    k_angle = kem_decap(u, v, s_angle)
+    print_sints(k_angle)
+    u_prime, v_prime, K_bar_prime = re_encryption(k_angle, hash_pk, A_t, t)
+    key = key_derivation(u_prime, v_prime, u, v, K_bar_prime, hash_c, z)
+    print_sints(key)
+
 
 #test_centre()
 #test_rq_mult()
 #test_inner_prod_sub()
 #test_input()
+#test_PRF()
+#test_enc()
+#test_key_deriv()
 
-s_angle = read_s_from_file()
-u, v, c2, c3 = read_public_values_from_file()
+s_angle, z = read_s_from_file()
+u, v, A, t, hash_c, hash_pk = read_public_values_from_file()
 iterations = 1
 for i in range(iterations):
-    run_ddec(u, v, s_angle, c2, c3)
+    run_ddec(u, v, s_angle, hash_pk, A, t, hash_c, z)

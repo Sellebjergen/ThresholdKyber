@@ -27,14 +27,14 @@ func Generate_test_vec(paramsK int) {
 	t, seed := kyberk2so.IndcpaUnpackPublicKey(pk, paramsK)
 	A, _ := kyberk2so.IndcpaGenMatrix(seed, false, paramsK)
 
-	file_key_expected, err := os.Create("C:/Users/kaspe/Desktop/Speciale/ThresholdKyber/ddec/test_vectors_ddec/test_vector1/expected_output") // creating...
+	file_key_expected, err := os.Create("C:/Users/kasper/Desktop/Speciale/ThresholdKyber/ddec/test_vectors_ddec/test_vector1/expected_output") // creating...
 	if err != nil {
 		fmt.Printf("error creating file: %v", err)
 		return
 	}
 	defer file_key_expected.Close()
 
-	file_public_input, err := os.Create("C:/Users/kaspe/Desktop/Speciale/mp-spdz-0.3.5/Programs/Public-Input/kyber_ddec") // creating...
+	file_public_input, err := os.Create("C:/Users/kasper/Desktop/Speciale/mp-spdz-0.3.5/Programs/Public-Input/kyber_ddec") // creating...
 	if err != nil {
 		fmt.Printf("error creating file: %v", err)
 		return
@@ -58,7 +58,7 @@ func Generate_test_vec(paramsK int) {
 	WritePolyVec(t, file_public_input)
 	WriteBytes(hash_c[:], file_public_input)
 
-	file_s_expected, err := os.Create("C:/Users/kaspe/Desktop/Speciale/mp-spdz-0.3.5/Player-Data/Input-P0-0") // creating...
+	file_s_expected, err := os.Create("C:/Users/kasper/Desktop/Speciale/mp-spdz-0.3.5/Player-Data/Input-P0-0") // creating...
 	if err != nil {
 		fmt.Printf("error creating file: %v", err)
 	}
@@ -66,6 +66,65 @@ func Generate_test_vec(paramsK int) {
 	WriteBytes(z, file_s_expected)
 	WriteBytes(h[:], file_s_expected)
 
+}
+
+func Generate_Enc_Vec(paramsK int) {
+	k := make([]byte, 32)
+	_, pk, _ := kyberk2so.IndcpaKeypair(paramsK)
+
+	coins := make([]byte, 32)
+	ct, _ := kyberk2so.IndcpaEncrypt(k, pk, coins, paramsK)
+
+	file_public_input, err := os.Create("C:/Users/kasper/Desktop/Speciale/mp-spdz-0.3.5/Programs/Public-Input/kyber_ddec") // creating...
+	if err != nil {
+		fmt.Printf("error creating file: %v", err)
+		return
+	}
+	defer file_public_input.Close()
+
+	file_key_expected, err := os.Create("C:/Users/kasper/Desktop/Speciale/ThresholdKyber/ddec/test_vectors_ddec/test_vector1/expected_output") // creating...
+	if err != nil {
+		fmt.Printf("error creating file: %v", err)
+		return
+	}
+	defer file_key_expected.Close()
+
+	u, v := kyberk2so.IndcpaUnpackCiphertext(ct, paramsK)
+	t, seed := kyberk2so.IndcpaUnpackPublicKey(pk, paramsK)
+	A_t, _ := kyberk2so.IndcpaGenMatrix(seed, true, paramsK)
+	hash_c := sha3.Sum256(ct)
+
+	for _, pv := range A_t {
+		kyberk2so.PolyvecInvNttToMont(pv, kyberk2so.ParamsK)
+		FromMontPolyVec(pv)
+		kyberk2so.PolyvecReduce(pv, paramsK)
+	}
+	kyberk2so.PolyvecInvNttToMont(t, kyberk2so.ParamsK)
+	FromMontPolyVec(t)
+	kyberk2so.PolyvecReduce(t, paramsK)
+
+	WriteExpectedKey(k, file_key_expected)
+	WritePolyVec(u, file_public_input)
+	WritePoly(v, file_public_input)
+	for i := 0; i < paramsK; i++ {
+		WritePolyVec(A_t[i], file_public_input)
+	}
+	WritePolyVec(t, file_public_input)
+	WriteBytes(hash_c[:], file_public_input)
+}
+
+func FromMont(p kyberk2so.Poly) kyberk2so.Poly {
+	res := new(kyberk2so.Poly)
+	for i := range p {
+		res[i] = p[i] * 169
+	}
+	return *res
+}
+
+func FromMontPolyVec(pv kyberk2so.PolyVec) {
+	for i, p := range pv {
+		pv[i] = FromMont(p)
+	}
 }
 
 func WritePolyVec(s kyberk2so.PolyVec, f *os.File) {
