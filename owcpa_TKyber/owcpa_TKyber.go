@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
+	"ThresholdKyber.com/m/util"
 )
 
 func Setup(params *OwcpaParams, n int, t int) ([]byte, [][]kyberk2so.PolyVec) {
@@ -26,7 +27,7 @@ func Enc(params *OwcpaParams, msg []byte, pk []byte) []byte {
 	return ct
 }
 
-func PartDec(params *OwcpaParams, sk_i []kyberk2so.PolyVec, ct []byte, party int) []kyberk2so.Poly {
+func PartDec(params *OwcpaParams, sk_i []kyberk2so.PolyVec, ct []byte, party int, n int, t int) []kyberk2so.Poly {
 	var zero kyberk2so.Poly
 
 	u, v := kyberk2so.IndcpaUnpackCiphertext(ct, kyberk2so.ParamsK)
@@ -47,7 +48,7 @@ func PartDec(params *OwcpaParams, sk_i []kyberk2so.PolyVec, ct []byte, party int
 		d_i[j] = kyberk2so.PolyvecPointWiseAccMontgomery(sk_i[j], u, kyberk2so.ParamsK)
 		d_i[j] = kyberk2so.PolyInvNttToMont(d_i[j])
 
-		if shouldSubV(params, party, j) {
+		if shouldSubV(params, party, j, n, t) {
 			d_i[j] = kyberk2so.PolySub(v, d_i[j])
 		} else {
 			d_i[j] = kyberk2so.PolySub(zero, d_i[j])
@@ -110,13 +111,14 @@ func Upscale(in kyberk2so.Poly, p int, q int) kyberk2so.Poly {
 	return out
 }
 
-func shouldSubV(params *OwcpaParams, party, combination int) bool {
+func shouldSubV(params *OwcpaParams, party, combination int, n int, t int) bool {
 	if reflect.DeepEqual(params.LSS_scheme, &LSSAdditive{}) {
 		return party == 0
 	} else if reflect.DeepEqual(params.LSS_scheme, &LSSReplicated{}) {
 		return combination == 0
 	} else if reflect.DeepEqual(params.LSS_scheme, &LSSNaive{}) {
-		return combination == 0
+		combinations := util.MakeCombinations(n, t)
+		return combinations[combination][0] == party
 	}
 
 	return false

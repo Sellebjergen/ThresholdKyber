@@ -11,7 +11,7 @@ func TestShareGivesCorrectAmountOfShares(t *testing.T) {
 	amountOfPlayers := 3
 	MockKyber512Key := SampleUniformPolyVec(17, 2)
 
-	shares := ShareRepNaive(MockKyber512Key, amountOfPlayers, 1, false)
+	shares := new(LSSReplicated).Share(MockKyber512Key, amountOfPlayers, 1)
 
 	if !reflect.DeepEqual(len(shares), amountOfPlayers) {
 		t.Errorf("Something went wrong, combination of shares are not equal starting value!")
@@ -22,7 +22,7 @@ func TestSharesCanBeReconstructed(t *testing.T) {
 	amountOfPlayers := 3
 	MockKyber512Key := SampleUniformPolyVec(17, 2)
 
-	shares := ShareRepNaive(MockKyber512Key, amountOfPlayers, 1, false)
+	shares := new(LSSReplicated).Share(MockKyber512Key, amountOfPlayers, 1)
 
 	var p1 kyberk2so.Poly
 	p1 = kyberk2so.PolyAdd(p1, shares[0][1][0]) // player 1 share of first poly, Share 2
@@ -46,7 +46,7 @@ func TestSharesCanBeReconstructedUsingARealKyberKey(t *testing.T) {
 	sk, _, _ := kyberk2so.IndcpaKeypair(2)
 	unpackedSk := kyberk2so.IndcpaUnpackPrivateKey(sk, 2)
 
-	shares := ShareRepNaive(unpackedSk, amountOfPlayers, 1, false)
+	shares := new(LSSReplicated).Share(unpackedSk, amountOfPlayers, 1)
 
 	// todo: this seems like the nesting is to deep? shouldn't this only be a matrix?
 	var p1 kyberk2so.Poly
@@ -69,7 +69,7 @@ func TestSharesCanBeReconstructedUsingARealKyberKey(t *testing.T) {
 
 func TestSinglePolyCanBeReconstructed(t *testing.T) {
 	toShare := []kyberk2so.Poly{{1, 2, 3, 4, 5, 6}}
-	shared := ShareRepNaive(toShare, 3, 1, false)
+	shared := new(LSSReplicated).Share(toShare, 3, 1)
 
 	var p1 kyberk2so.Poly
 	p1 = kyberk2so.PolyAdd(p1, shared[0][1][0])
@@ -97,7 +97,7 @@ func TestSinglePolyCanBeReconstructed(t *testing.T) {
 
 func TestSinglePolyCanBeReconstructedN4T2(t *testing.T) {
 	toShare := []kyberk2so.Poly{{1, 2, 3, 4, 5, 6}}
-	shared := ShareRepNaive(toShare, 4, 2, false)
+	shared := new(LSSReplicated).Share(toShare, 4, 2)
 
 	var p1 kyberk2so.Poly
 	p1 = kyberk2so.PolyAdd(p1, shared[0][3][0])
@@ -151,7 +151,7 @@ func TestReplicatedRecAdvanced(t *testing.T) {
 // Share test
 func TestReplicatedSharesAreEqual(t *testing.T) {
 	toShare := []kyberk2so.Poly{{1, 2, 3, 4, 5, 6}}
-	shared := ShareRepNaive(toShare, 3, 1, false)
+	shared := new(LSSReplicated).Share(toShare, 3, 1)
 
 	if !reflect.DeepEqual(shared[0][1], shared[2][1]) {
 		t.Errorf("WEE WOO WEE WOO")

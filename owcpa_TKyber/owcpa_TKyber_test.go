@@ -46,7 +46,7 @@ func testConsistencyCheck(t *testing.T, TKyberVariant string, n, t_param int) {
 	// Decrypt
 	d_is := make([][]kyberk2so.Poly, n)
 	for i := 0; i < t_param+1; i++ {
-		d_is[i] = PartDec(params, sk_shares[i], ct, i)
+		d_is[i] = PartDec(params, sk_shares[i], ct, i, n, t_param)
 	}
 
 	combined := Combine(params, ct, d_is, n, t_param)
@@ -69,9 +69,9 @@ func TestFullDeterministic(t *testing.T) {
 
 	// Decrypt
 	d_is := make([][]kyberk2so.Poly, 3)
-	d_is[0] = PartDec(params, sk_shares[0], ct, 0)
-	d_is[1] = PartDec(params, sk_shares[1], ct, 1)
-	d_is[2] = PartDec(params, sk_shares[2], ct, 2)
+	d_is[0] = PartDec(params, sk_shares[0], ct, 0, 3, 2)
+	d_is[1] = PartDec(params, sk_shares[1], ct, 1, 3, 2)
+	d_is[2] = PartDec(params, sk_shares[2], ct, 2, 3, 2)
 
 	combined := Combine(params, ct, d_is, 3, 2)
 	output_msg := kyberk2so.PolyToMsg(combined)
@@ -91,7 +91,7 @@ func TestSimINDCPATransform(t *testing.T) {
 
 	coins := make([]byte, 32)
 	ct, _ := kyberk2so.IndcpaEncrypt(m_bytes, pk, coins, kyberk2so.ParamsK)
-	part := PartDec(params, skShares[0], ct, 0)
+	part := PartDec(params, skShares[0], ct, 0, 1, 0)
 
 	res := Combine(params, ct, [][]kyberk2so.Poly{part}, 1, 0)
 	downscaled := Downscale(res, 2, params.Q)
@@ -167,9 +167,9 @@ func TestWithReplicatedLSSNoCombine(t *testing.T) {
 	ct := Enc(params, msg, pk)
 
 	// Decrypt
-	d_1 := PartDec(params, sk_shares[0], ct, 0)
-	d_2 := PartDec(params, sk_shares[1], ct, 1)
-	d_3 := PartDec(params, sk_shares[2], ct, 2)
+	d_1 := PartDec(params, sk_shares[0], ct, 0, n, t_param)
+	d_2 := PartDec(params, sk_shares[1], ct, 1, n, t_param)
+	d_3 := PartDec(params, sk_shares[2], ct, 2, n, t_param)
 
 	d_is := [][]kyberk2so.Poly{d_1, d_2, d_3}
 
@@ -200,8 +200,8 @@ func TestWithBinomialNoise(t *testing.T) {
 
 		// Decrypt
 		d_is := make([][]kyberk2so.Poly, 2)
-		d_is[0] = PartDec(params, sk_shares[0], ct, 0)
-		d_is[1] = PartDec(params, sk_shares[1], ct, 1)
+		d_is[0] = PartDec(params, sk_shares[0], ct, 0, 2, 2)
+		d_is[1] = PartDec(params, sk_shares[1], ct, 1, 2, 2)
 
 		combined := Combine(params, ct, d_is, 2, 2)
 		output_msg := kyberk2so.PolyToMsg(combined)

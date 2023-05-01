@@ -52,7 +52,7 @@ func testConsistencyCheck(t *testing.T, TKyberVariant string, n, t_param, delta 
 	// Decrypt
 	d_is := make([][][]kyberk2so.Poly, n)
 	for i := 0; i < t_param+1; i++ {
-		d_is[i] = PartDec(params, sk_shares[i], ct, i, delta)
+		d_is[i] = PartDec(params, sk_shares[i], ct, i, delta, n, t_param)
 	}
 	for i := t_param + 1; i < n; i++ {
 		d_is[i] = make([][]kyberk2so.Poly, len(sk_shares[i]))
@@ -115,7 +115,7 @@ func benchmarkPartDec(b *testing.B, paramSet string, n int, t int, delta int) {
 	ct := Enc(params, randMsg, pk, delta)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		PartDec(params, sk_shares[0], ct, 0, delta) // Er det fint med party 0 her?
+		PartDec(params, sk_shares[0], ct, 0, delta, n, t) // Er det fint med party 0 her?
 	}
 }
 
@@ -128,7 +128,7 @@ func benchmarkCombine(b *testing.B, paramSet string, n int, t int, delta int) {
 
 	d_is := make([][][]kyberk2so.Poly, 0)
 	for i := 0; i < t; i++ {
-		d_is = append(d_is, PartDec(params, sk_shares[i], ct, i, delta))
+		d_is = append(d_is, PartDec(params, sk_shares[i], ct, i, delta, n, t))
 	}
 
 	b.ResetTimer()

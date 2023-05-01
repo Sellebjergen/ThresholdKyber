@@ -8,14 +8,6 @@ import (
 type LSSReplicated struct{}
 
 func (s *LSSReplicated) Share(sk kyberk2so.PolyVec, n int, t int) [][]kyberk2so.PolyVec {
-	return ShareRepNaive(sk, n, t, false)
-}
-
-func (s *LSSReplicated) Rec(d_is [][]kyberk2so.Poly, n int, t int) kyberk2so.Poly {
-	return RecRepNaive(d_is, n, t, false)
-}
-
-func ShareRepNaive(sk kyberk2so.PolyVec, n int, t int, isNaive bool) [][]kyberk2so.PolyVec {
 	r := len(sk)
 	skShares := make([][]kyberk2so.Poly, r)
 
@@ -39,11 +31,7 @@ func ShareRepNaive(sk kyberk2so.PolyVec, n int, t int, isNaive bool) [][]kyberk2
 		// Combinations
 		for j := 0; j < len(combinations); j++ {
 			comb := combinations[j]
-			shouldGetShare := util.Contains(comb, i+1)
-
-			if !isNaive {
-				shouldGetShare = !shouldGetShare
-			}
+			shouldGetShare := !util.Contains(comb, i+1)
 			if shouldGetShare {
 				// Iterate over the r = k polynomials of the sk
 				for poly_num := 0; poly_num < r; poly_num++ {
@@ -59,7 +47,7 @@ func ShareRepNaive(sk kyberk2so.PolyVec, n int, t int, isNaive bool) [][]kyberk2
 	return shares
 }
 
-func RecRepNaive(d_is [][]kyberk2so.Poly, n int, t int, isNaive bool) kyberk2so.Poly {
+func (s *LSSReplicated) Rec(d_is [][]kyberk2so.Poly, n int, t int) kyberk2so.Poly {
 	var p kyberk2so.Poly
 
 	combinations := util.MakeCombinations(n, t)
@@ -67,10 +55,7 @@ func RecRepNaive(d_is [][]kyberk2so.Poly, n int, t int, isNaive bool) kyberk2so.
 	for j := 0; j < len(combinations); j++ {
 		comb := combinations[j]
 		for i := 0; i < n; i++ {
-			hasShare := util.Contains(comb, i+1)
-			if !isNaive {
-				hasShare = !hasShare
-			}
+			hasShare := !util.Contains(comb, i+1)
 			if hasShare { // TODO: Do we need  && (d_is[i][j] != kyberk2so.Poly{0}) ???
 				p = kyberk2so.PolyAdd(p, d_is[i][j])
 				break

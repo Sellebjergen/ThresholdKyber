@@ -42,10 +42,10 @@ func Enc(params *owcpa.OwcpaParams, msg []byte, pk []byte, delta int) *indcpaCip
 	return c
 }
 
-func PartDec(params *owcpa.OwcpaParams, sk_i []kyberk2so.PolyVec, ct *indcpaCiphertext, party, delta int) [][]kyberk2so.Poly {
+func PartDec(params *owcpa.OwcpaParams, sk_i []kyberk2so.PolyVec, ct *indcpaCiphertext, party, delta int, n int, t int) [][]kyberk2so.Poly {
 	d_i := make([][]kyberk2so.Poly, delta)
 	for j := 0; j < delta; j++ {
-		d_i[j] = owcpa.PartDec(params, sk_i, ct.encyptions[j], party)
+		d_i[j] = owcpa.PartDec(params, sk_i, ct.encyptions[j], party, n, t)
 	}
 	return d_i
 }
