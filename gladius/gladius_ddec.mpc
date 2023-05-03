@@ -80,7 +80,7 @@ def kem_decap(ct1, ct2, R1):
 def validity_check(k, A1, A2, ct1, ct2):
     y = vecMatMult(k, A1).concat(vecMatMult(k, A2))
     z = sint(1)
-    for i in range(2*n):
+    for i in range(2*n): # NOTE: REMEMBER TO CHANGE THIS TO 2n
         u = floatingpoint.BitDecFull(y[i], 21)
         q_div_2 = cint(1048572).bit_decompose(bit_length = 21)
         b = 1 - floatingpoint.BITLT(u, q_div_2, 21)
@@ -89,24 +89,25 @@ def validity_check(k, A1, A2, ct1, ct2):
         w = []
         if i < n:
             c1_i = regint(ct1[i]) # Conversion to regint to avoid modulo q in next computation
-            to_add_w = (2 ** log2qpluspi - c1_i * q).bit_decompose(bit_length = 30)
+            to_add_w = (2 ** log2qpluspi - c1_i * q).bit_decompose(bit_length = log2qpluspi)
         else:
             c2_i = regint(ct2[i - n])
-            to_add_w = (2 ** log2qpluspi - c2_i * q).bit_decompose(bit_length = 30)
-        w = floatingpoint.BitAdd(u_prime, to_add_w)[:30]
-        to_add_f = (-regint(p)*regint(q)).bit_decompose(bit_length = 30) # Hardcoded -pq
+            to_add_w = (2 ** log2qpluspi - c2_i * q).bit_decompose(bit_length = log2qpluspi)
+        w = floatingpoint.BitAdd(u_prime, to_add_w)
+        to_add_f = (regint(-p*q)).bit_decompose(bit_length = log2qpluspi + 1) # Hardcoded -pq
         for i in range(len(to_add_f)):
             to_add_f[i] = to_add_f[i] * (b - v)
-        f = floatingpoint.BitAdd(w, to_add_f)[:30]
+        f = floatingpoint.BitAdd(w, to_add_f)
         f_prime = bitNeg(f)
         g = f[log2qpluspi - 1]
         s = []
-        for i in range(len(f)):
+        for i in range(log2qpluspi):
             s.append(g * f_prime[i] + (1 - g) * f[i])
-        j = floatingpoint.BITLT(s, cint(1048572).bit_decompose(bit_length = 30), bit_length = 30)
+        j = floatingpoint.BITLT(s, cint(1048572).bit_decompose(bit_length = log2qpluspi), bit_length = log2qpluspi)
         z = z * j
     z_rev = z.reveal()
-    print_ln("%s", z_rev)
+    z_rev.print_if("Pass")
+    sint.bit_not(z_rev).print_if("Fail")
 
 # Hash check:
 def hash_check(k_angle, c_2, c_3):
@@ -134,9 +135,7 @@ def msg_ext(k_angle):
 
 def read_R1_from_file():
     R1 = Matrix(n, n, sint)
-    for i in range(n):
-        for j in range(n):
-            R1[i][j] = sint.get_input_from(0)
+    R1.input_from(0)
 
     return R1
 
@@ -168,14 +167,14 @@ def read_public_values_from_file():
     for i in range(256):
         c3[i] = cbit(public_input())
 
-    return ct1, ct2, A1, A2 #c2, c3
+    return ct1, ct2, A1, A2, c2, c3
 
 # _____________________ Testing _______________________
 
 # Negative validity check test, should output 0!!!!!
 def test_validity_negative():
     R1 = read_R1_from_file()
-    ct1, ct2, A1, A2 = read_public_values_from_file()
+    ct1, ct2, A1, A2, c2, c3 = read_public_values_from_file()
     k = kem_decap(ct1, ct2, R1)
     validity_check(k, Matrix(n, n, cint), Matrix(n, n, cint), ct1, ct2)
 
@@ -199,6 +198,5 @@ R1 = read_R1_from_file()
 ct1, ct2, A1, A2, c2, c3 = read_public_values_from_file()
 
 run_ddec(R1, ct1, ct2, c2, c3)
-
 
 

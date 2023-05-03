@@ -230,17 +230,9 @@ def CPAPKE_kyber_encryption(A_t, t, m, coins):
             u[i][j] = res[j] + e_1_bold[i][j]
 
     # Compute tr + e_2 + m scaled
-    print_ln("e_2")
-    e_2.print_reveal_nested()
     tr = inner_prod(t, r_bold)
-    print_ln("tr")
-    tr.print_reveal_nested()
     tre = poly_add(tr, e_2)
-    print_ln("tre")
-    tre.print_reveal_nested()
     m_scaled = scalar_mult(m, 1665)
-    print_ln("m scaled")
-    m_scaled.print_reveal_nested()
     v = poly_add(tre, m_scaled)
     return u, v
 
