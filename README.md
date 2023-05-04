@@ -25,7 +25,7 @@ Answer: search problem = end up with ideal winning probability increase by multi
 - [ ] Write notation section
 - [ ] Allow using different q than 3329 for Kyber
 - [x] Fix details (primarily rigidity) in security section of DDec for Kyber.
-- [ ] Update Rényi Divergence section in report
+- [x] Update Rényi Divergence section in report
 - [ ] Write introduction
 - [ ] Write conclusion
 - [ ] Write abstract (Do this as the very last thing)
