@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rand"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -23,6 +24,96 @@ func TestCPAEncryptDecrypt(t *testing.T) {
 	if !reflect.DeepEqual(msg, output_msg) {
 		t.Errorf("Error: Decrypt(Encrypt(M)) != M")
 	}
+}
+
+func TestEncDecNoCompression(t *testing.T) {
+	msg := make([]byte, 32)
+	rand.Read(msg)
+
+	skpv, pkpv, Aseed := kyberk2so.IndcpaKeypair_nocomp(kyberk2so.ParamsK)
+
+	coins := make([]byte, 32)
+	rand.Read(coins)
+	u, v := kyberk2so.IndcpaEncrypt_nocomp(msg, pkpv, Aseed, coins, kyberk2so.ParamsK)
+
+	output_msg := kyberk2so.IndcpaDecrypt_nocomp(u, v, skpv, kyberk2so.ParamsK)
+	fmt.Println(output_msg)
+
+	if !reflect.DeepEqual(msg, output_msg) {
+		t.Errorf("Error: Decrypt(Encrypt(M)) != M")
+	}
+}
+
+func TestBarretReduceOtherModulus(t *testing.T) {
+	res := kyberk2so.ByteopsBarrettReduce(int16(8000))
+	fmt.Println(res)
+	t.Errorf("AAAAAAAA")
+}
+
+func TestMontgReduceOtherModulus(t *testing.T) {
+	res := kyberk2so.ByteopsMontgomeryReduce(int32(8000))
+	fmt.Println(res)
+	t.Errorf("AAAAAAAA")
+}
+
+func TestByteOpsCondSub(t *testing.T) {
+	res := kyberk2so.ByteopsCSubQ(16000)
+	fmt.Println(res)
+	t.Errorf("AAAAAAAA")
+}
+
+func TestNTT(t *testing.T) {
+	pv1 := kyberk2so.PolyvecNew(2)
+	pv2 := kyberk2so.PolyvecNew(2)
+
+	pv1[0][0] = 17
+	pv1[0][1] = 42
+
+	pv2[0][0] = 2
+	pv2[0][1] = 1
+
+	kyberk2so.PolyvecNtt(pv1, 2)
+	kyberk2so.PolyvecNtt(pv2, 2)
+
+	res := kyberk2so.PolyvecPointWiseAccMontgomery(pv1, pv2, 2)
+
+	res = kyberk2so.PolyInvNttToMont(res)
+
+	fmt.Println(res)
+	t.Errorf("AAAAAAAA")
+}
+
+func TestInvNTTIsInverse(t *testing.T) {
+	pv1 := kyberk2so.PolyvecNew(2)
+
+	pv1[0][0] = 34
+	pv1[0][1] = 101
+	pv1[0][2] = 42
+
+	kyberk2so.PolyvecNtt(pv1, 2)
+
+	kyberk2so.PolyvecInvNttToMont(pv1, kyberk2so.ParamsK)
+
+	fmt.Println(pv1)
+	t.Errorf("AAAAAAAA")
+}
+
+func TestOwnNTT(t *testing.T) {
+	pv1 := new(Poly)
+
+	fmt.Println(pv1)
+
+	pv1[0] = 17
+	pv1[1] = 101
+	pv1[2] = 42
+
+	pv1.nttGeneric()
+
+	pv1.invNTTGeneric()
+
+	fmt.Println(pv1)
+
+	t.Errorf("AAAAAAAA")
 }
 
 func BenchmarkKyberKeygen(b *testing.B) {

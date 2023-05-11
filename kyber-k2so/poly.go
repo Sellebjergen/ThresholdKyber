@@ -188,7 +188,7 @@ func polyBaseMulMontgomery(a Poly, b Poly) Poly {
 func polyToMont(r Poly) Poly {
 	var f int16 = int16((uint64(1) << 32) % uint64(ParamsQ))
 	for i := 0; i < ParamsN; i++ {
-		r[i] = byteopsMontgomeryReduce(int32(r[i]) * int32(f))
+		r[i] = ByteopsMontgomeryReduce(int32(r[i]) * int32(f))
 	}
 	return r
 }
@@ -196,7 +196,7 @@ func polyToMont(r Poly) Poly {
 // PolyReduce applies Barrett reduction to all coefficients of a polynomial.
 func PolyReduce(r Poly) Poly {
 	for i := 0; i < ParamsN; i++ {
-		r[i] = byteopsBarrettReduce(r[i])
+		r[i] = ByteopsBarrettReduce(r[i])
 	}
 	return r
 }
@@ -205,7 +205,7 @@ func PolyReduce(r Poly) Poly {
 // of a polynomial.
 func polyCSubQ(r Poly) Poly {
 	for i := 0; i < ParamsN; i++ {
-		r[i] = byteopsCSubQ(r[i])
+		r[i] = ByteopsCSubQ(r[i])
 	}
 	return r
 }

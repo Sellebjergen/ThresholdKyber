@@ -4,9 +4,9 @@
 package kyberk2so
 
 const ParamsN int = 256
-const ParamsQ int = 3329
+const ParamsQ int = 10753
 const ParamsK int = 2
-const paramsQinv int = 62209
+const paramsQinv int = 54785
 const ParamsPolyBytes int = 384 // 12 * 256 / 8 = 384
 
 const paramsSymBytes int = 32
