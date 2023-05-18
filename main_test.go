@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
+	owcpa "ThresholdKyber.com/m/owcpa_TKyber"
 )
 
 func TestCPAEncryptDecrypt(t *testing.T) {
@@ -21,6 +22,7 @@ func TestCPAEncryptDecrypt(t *testing.T) {
 
 	output_msg := kyberk2so.IndcpaDecrypt(ct, sk, kyberk2so.ParamsK)
 
+	fmt.Println(output_msg)
 	if !reflect.DeepEqual(msg, output_msg) {
 		t.Errorf("Error: Decrypt(Encrypt(M)) != M")
 	}
@@ -34,10 +36,11 @@ func TestEncDecNoCompression(t *testing.T) {
 
 	coins := make([]byte, 32)
 	rand.Read(coins)
+
 	u, v := kyberk2so.IndcpaEncrypt_nocomp(msg, pkpv, Aseed, coins, kyberk2so.ParamsK)
 
 	output_msg := kyberk2so.IndcpaDecrypt_nocomp(u, v, skpv, kyberk2so.ParamsK)
-	fmt.Println(output_msg)
+	fmt.Println(owcpa.Downscale(output_msg, 2, kyberk2so.ParamsQ))
 
 	if !reflect.DeepEqual(msg, output_msg) {
 		t.Errorf("Error: Decrypt(Encrypt(M)) != M")
@@ -93,6 +96,10 @@ func TestInvNTTIsInverse(t *testing.T) {
 	kyberk2so.PolyvecNtt(pv1, 2)
 
 	kyberk2so.PolyvecInvNttToMont(pv1, kyberk2so.ParamsK)
+
+	for i, elem := range pv1[0] {
+		pv1[0][i] = kyberk2so.Montgomery_reduce(int32(elem))
+	}
 
 	fmt.Println(pv1)
 	t.Errorf("AAAAAAAA")

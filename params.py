@@ -9,6 +9,8 @@ def generateKyberParams(q, k, n):
         ctr += 1
     print(f"q: {q}, k: {k}, n: {n}, paramsPolyBytes: {paramsPolyBytes}, paramsQInv: {ctr}")
 
+generateKyberParams(10753, 2, 256)
+generateKyberParams(3585, 2, 256)
 generateKyberParams(3329, 2, 256)
-generateKyberParams(3313, 2, 256)
-generateKyberParams(3329 * 5, 2, 256)
+
+print(pow(pow(2, 16), -1, 10753))

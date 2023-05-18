@@ -6,7 +6,6 @@ package kyberk2so
 import (
 	"crypto/rand"
 	"fmt"
-	"os"
 
 	"golang.org/x/crypto/sha3"
 )
@@ -215,18 +214,6 @@ func IndcpaKeypair(paramsK int) ([]byte, []byte, error) {
 	return IndcpaPackPrivateKey(skpv, paramsK), IndcpaPackPublicKey(pkpv, publicSeed, paramsK), nil
 }
 
-func WritePolyVec(s PolyVec, f *os.File) {
-	for _, poly := range s {
-		for i, coef := range poly {
-			if i > 255 {
-				break
-			}
-			f.WriteString(fmt.Sprintf("%d ", coef))
-		}
-		f.WriteString(fmt.Sprintf("\n"))
-	}
-}
-
 // IndcpaEncrypt is the encryption function of the CPA-secure
 // public-key encryption scheme underlying Kyber.
 func IndcpaEncrypt(m []byte, publicKey []byte, coins []byte, paramsK int) ([]byte, error) {
@@ -235,6 +222,8 @@ func IndcpaEncrypt(m []byte, publicKey []byte, coins []byte, paramsK int) ([]byt
 	bp := PolyvecNew(paramsK)
 	publicKeyPolyvec, seed := IndcpaUnpackPublicKey(publicKey, paramsK)
 	k := PolyFromMsg(m)
+	fmt.Println("k")
+	fmt.Println(k)
 	at, err := IndcpaGenMatrix(seed[:paramsSymBytes], true, paramsK)
 	if err != nil {
 		return []byte{}, err

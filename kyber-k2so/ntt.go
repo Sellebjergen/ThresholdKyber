@@ -12,21 +12,24 @@ const f = 5072
 // nttFqMul performs multiplication followed by Montgomery reduction
 // and returns a 16-bit integer congruent to `a*b*R^{-1} mod Q`.
 func nttFqMul(a int16, b int16) int16 {
-	return ByteopsMontgomeryReduce(int32(a) * int32(b))
+	return Montgomery_reduce(int32(a) * int32(b))
 }
 
 // ntt performs an inplace number-theoretic transform (NTT) in `Rq`.
 // The input is in standard order, the output is in bit-reversed order.
 func ntt(r Poly) Poly {
-	j := 0
-	k := 1
-	for l := 128; l >= 2; l >>= 1 {
-		for start := 0; start < 256; start = j + l {
-			zeta := nttZetas[k]
-			k = k + 1
-			for j = start; j < start+l; j++ {
-				t := nttFqMul(zeta, r[j+l])
-				r[j+l] = r[j] - t
+	var len, start, j, k int
+	var t, zeta int16
+
+	k = 1
+
+	for len = 128; len >= 2; len >>= 1 {
+		for start = 0; start < 256; start = j + len {
+			zeta = nttZetas[k]
+			k++
+			for j = start; j < start+len; j++ {
+				t = nttFqMul(zeta, r[j+len])
+				r[j+len] = r[j] - t
 				r[j] = r[j] + t
 			}
 		}
@@ -38,25 +41,55 @@ func ntt(r Poly) Poly {
 // in `Rq` and multiplication by Montgomery factor 2^16.
 // The input is in bit-reversed order, the output is in standard order.
 func nttInv(r Poly) Poly {
-	j := 0
-	k := 127
-	for l := 2; l <= 128; l <<= 1 {
-		for start := 0; start < 256; start = j + l {
-			zeta := nttZetas[k]
-			k = k - 1
-			for j = start; j < start+l; j++ {
-				t := r[j]
-				r[j] = ByteopsBarrettReduce(t + r[j+l])
-				r[j+l] = r[j+l] - t
-				r[j+l] = nttFqMul(zeta, r[j+l])
+	var start, len, j, k int
+	var t, zeta int16
+
+	k = 127
+	for len = 2; len <= 128; len <<= 1 {
+		for start = 0; start < 256; start = j + len {
+			zeta = nttZetas[k]
+			k--
+			for j = start; j < start+len; j++ {
+				t = r[j]
+				r[j] = Barrett_reduce(t + r[j+len])
+				r[j+len] = r[j+len] - t
+				r[j+len] = nttFqMul(zeta, r[j+len])
 			}
 		}
 	}
-	for j := 0; j < 256; j++ {
+
+	for j = 0; j < 256; j++ {
 		r[j] = nttFqMul(r[j], f)
 	}
 	return r
 }
+
+func Barrett_reduce(a int16) int16 {
+	var t int16
+	const v = ((1 << 26) + ParamsQ/2) / ParamsQ
+
+	t = int16((int32(v)*int32(a) + (1 << 25)) >> 26)
+	t *= int16(ParamsQ)
+	return a - t
+
+}
+
+func Montgomery_reduce(a int32) int16 {
+	var t int16
+
+	t = int16(a * int32(paramsQinv))
+	t = int16((a - int32(t)*int32(ParamsQ)) >> 16)
+	return t
+}
+
+/* int16_t montgomery_reduce(int32_t a)
+{
+  int16_t t;
+
+  t = (int16_t)a*QINV;
+  t = (a - (int32_t)t*KYBER_Q) >> 16;
+  return t;
+} */
 
 // nttBaseMul performs the multiplication of polynomials
 // in `Zq[X]/(X^2-zeta)`. Used for multiplication of elements

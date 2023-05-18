@@ -60,10 +60,14 @@ func byteopsCbd(buf []byte, paramsK int) Poly {
 // ByteopsMontgomeryReduce computes a Montgomery reduction; given
 // a 32-bit integer `a`, returns `a * R^-1 mod Q` where `R=2^16`.
 func ByteopsMontgomeryReduce(a int32) int16 {
-	u := int16(a * int32(paramsQinv))
-	t := int32(u) * int32(ParamsQ)
+	u := a * int32(paramsQinv)
+	t := u * int32(ParamsQ)
 	t = a - t
 	t >>= 16
+	t %= int32(ParamsQ)
+	if t < 0 {
+		return int16(t + int32(ParamsQ))
+	}
 	return int16(t)
 }
 
@@ -71,11 +75,13 @@ func ByteopsMontgomeryReduce(a int32) int16 {
 // a 16-bit integer `a`, returns a 16-bit integer congruent to
 // `a mod Q` in {0,...,Q}.
 func ByteopsBarrettReduce(a int16) int16 {
-	var t int16
-	var v int16 = int16(((uint32(1) << 26) + uint32(ParamsQ/2)) / uint32(ParamsQ))
-	t = int16(int32(v) * int32(a) >> 26)
-	t = t * int16(ParamsQ)
-	return a - t
+	var t int64
+	shift := int64(1 << 26)
+	v := ((shift + int64(ParamsQ)/2) / int64(ParamsQ))
+	t = int64((v * int64(a)) >> 26)
+	t *= int64(ParamsQ)
+	return int16(int64(a) - t)
+
 }
 
 // ByteopsCSubQ conditionally subtracts Q from a.

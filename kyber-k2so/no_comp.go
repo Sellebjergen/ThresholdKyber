@@ -76,13 +76,11 @@ func IndcpaEncrypt_nocomp(m []byte, publicKey PolyVec, seed []byte, coins []byte
 
 // IndcpaDecrypt is the decryption function of the CPA-secure
 // public-key encryption scheme underlying Kyber.
-func IndcpaDecrypt_nocomp(u PolyVec, v Poly, privateKey PolyVec, paramsK int) []byte {
+func IndcpaDecrypt_nocomp(u PolyVec, v Poly, privateKey PolyVec, paramsK int) Poly {
 	PolyvecNtt(u, paramsK)
 	mp := PolyvecPointWiseAccMontgomery(privateKey, u, paramsK)
 	mp = PolyInvNttToMont(mp)
 	mp = PolySub(v, mp)
 	mp = PolyReduce(mp)
-	fmt.Println("mp")
-	fmt.Println(mp)
-	return PolyToMsg(mp)
+	return mp
 }
