@@ -1,0 +1,4 @@
+Input-P0-0 til \mp-spdz-0.3.6\Player-Data
+kyber_ddec til \mp-spdz-0.3.6\Programs\Public-Input
+kyber_ddec.mpc til \mp-spdz-0.3.6\Programs\Source
+Keccak_f.txt til \mp-spdz-0.3.6\Programs\Circuits
