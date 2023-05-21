@@ -6,16 +6,109 @@ player_numb = 2
 
 # _____________________ Rq arith. _______________________
 
-def rq_mult(a, b, f_n):
-    prod = poly_mult(a, b)
-    rem = poly_rem(prod, f_n)
-    return rem
+zetas = [2285, 2571, 2970, 1812, 1493, 1422, 287, 202, 3158, 622, 1577, 182, 962, 2127, 1855, 1468, 
+                     573, 2004, 264, 383, 2500, 1458, 1727, 3199, 2648, 1017, 732, 608, 1787, 411, 3124, 1758, 
+                     1223, 652, 2777, 1015, 2036, 1491, 3047, 1785, 516, 3321, 3009, 2663, 1711, 2167, 126, 1469, 
+                     2476, 3239, 3058, 830, 107, 1908, 3082, 2378, 2931, 961, 1821, 2604, 448, 2264, 677, 2054, 
+                     2226, 430, 555, 843, 2078, 871, 1550, 105, 422, 587, 177, 3094, 3038, 2869, 1574, 1653, 3083, 
+                     778, 1159, 3182, 2552, 1483, 2727, 1119, 1739, 644, 2457, 349, 418, 329, 3173, 3254, 817, 
+                     1097, 603, 610, 1322, 2044, 1864, 384, 2114, 3193, 1218, 1994, 2455, 220, 2142, 1670, 2144, 
+                     1799, 2051, 794, 1819, 2475, 2459, 478, 3221, 3021, 996, 991, 958, 1869, 1522, 1628]
 
-def poly_mult(a, b):
-    res = Array(len(a) + len(b), sint)
+f = 1441
+inv_2_16 = 169
+
+def mont_reduce(a):
+    return a * inv_2_16 # mod q = 3329 implicit from arith. MPC mod prime
+
+def ntt_mul(a, b):
+    return mont_reduce(a * b)
+
+def to_ntt(poly):
+    k, l = 1, 128
+    coeffs = Array.create_from(poly)
+    while l >= 2:
+        start = 0
+        while start < 256:
+            zeta = cint(zetas[k])
+            k = k + 1
+            for j in range(start, start + l):
+                t = ntt_mul(zeta, coeffs[j+l])
+                coeffs[j+l] = coeffs[j] - t
+                coeffs[j]   = coeffs[j] + t
+            start = l + (j + 1)
+        l = l >> 1
+    
+    return coeffs
+
+def from_ntt(poly):
+        l, l_upper = 2, 128
+        k = l_upper - 1
+        coeffs = poly
+        while l <= 128:
+            start = 0
+            while start < n:
+                zeta = cint(zetas[k])
+                k = k - 1
+                for j in range(start, start+l):
+                    t = coeffs[j]
+                    coeffs[j]   = t + coeffs[j+l]
+                    coeffs[j+l] = coeffs[j+l] - t
+                    coeffs[j+l] = ntt_mul(zeta, coeffs[j+l])
+                start = j + l + 1
+            l = l << 1
+        for j in range(n):
+            coeffs[j] = ntt_mul(coeffs[j], f)
+            
+        return poly
+
+def ntt_base_multiplication(a0, a1, b0, b1, zeta):
+        r0  = ntt_mul(a1, b1)
+        r0  = ntt_mul(r0, zeta)
+        r0 += ntt_mul(a0, b0)
+        r1  = ntt_mul(a0, b1)
+        r1 += ntt_mul(a1, b0)
+        return r0, r1
+        
+def ntt_coefficient_multiplication(f_coeffs, g_coeffs):
+    new_coeffs = []
+    for i in range(64):
+        r0, r1 = ntt_base_multiplication(
+                            f_coeffs[4*i+0], f_coeffs[4*i+1],
+                            g_coeffs[4*i+0], g_coeffs[4*i+1],
+                            zetas[64+i])
+        r2, r3 = ntt_base_multiplication(
+                            f_coeffs[4*i+2], f_coeffs[4*i+3],
+                            g_coeffs[4*i+2], g_coeffs[4*i+3],
+                            -zetas[64+i])
+        new_coeffs += [r0, r1, r2, r3]
+    return to_mpspdz_array(new_coeffs)
+
+def polyvecNTT(poly):
+    res = Matrix.same_shape(poly)
+    for i in range(r):
+        res[i] = to_ntt(poly[i])
+    return res
+
+def to_mpspdz_array(list):
+    array = Array(n, sint)
+    for i in range(n):
+        array[i] = list[i]
+    return array
+
+def inner_prod_NTT(u, s):
+    d = Array(n, sint)
+    for i in range(r):
+        ui = Array.create_from(u[i])
+        si = Array.create_from(s[i])
+        d += ntt_coefficient_multiplication(ui, si)
+    return from_ntt(d)
+
+
+def scalar_mult(a, b):
+    res = Array(len(a), sint)
     for i in range(len(a)):
-        for j in range(len(b)):
-            res[i + j] = res[i + j] + a[i] * b[j]
+        res[i] = a[i] * b
     return res
 
 def poly_sub(a, b):
@@ -25,22 +118,18 @@ def poly_sub(a, b):
     return res
 
 def poly_add(a, b):
-    res = Array(len(b), sint)
-    for i in range(len(a)):
+    res = Array(n, sint)
+    for i in range(n):
         res[i] = a[i] + b[i]
     return res
 
-# Only supports f_n => 2*len(a), this is enough in our case
-def poly_rem(a, f_n):
-    if len(a) <= f_n:
-        return a
-    rem = Array(f_n, sint)
-    for i in range(len(a)):
-        if i < f_n:
-            rem[i] += a[i]
-        else:
-            rem[i % f_n] -= a[i]
-    return rem
+def copy_polyvec(pv):
+    pv_copy = Matrix(r, n, sint)
+    for i in range(r):
+        for j in range(n):
+            pv_copy[i][j] = pv[i][j]
+    return pv_copy
+
 
 # _____________________ Main code _______________________
 
@@ -74,14 +163,18 @@ def dkeygen(s_values, e_values):
     t_angle = Matrix(r, n, sint)
 
     # t = As + e
+    s_ntt = polyvecNTT(s_angle)
     for i in range(r):
-        for j in range (r):
-            t_angle[i] = poly_add(t_angle[i], rq_mult(A[i][j], s_angle[j], n))
-        t_angle[i] = poly_add(t_angle[i], e_angle[i])
+        
+        A[i] = polyvecNTT(A[i])
+        res = inner_prod_NTT(A[i], s_ntt)
+        for j in range(n):
+            t_angle[i][j] = res[j] + e_angle[i][j]
 
     t = t_angle.reveal()
 
-    return A, t, s_angle, e_angle
+    # Here A, s_ntt, t are on NTT form at the end
+    return A, t, s_ntt, e_angle
 
 # _____________________ Testing _______________________
 
