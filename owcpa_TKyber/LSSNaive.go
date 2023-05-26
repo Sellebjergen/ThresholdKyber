@@ -1,8 +1,6 @@
 package owcpa_TKyber
 
 import (
-	"fmt"
-
 	kyberk2so "ThresholdKyber.com/m/kyber-k2so"
 	"ThresholdKyber.com/m/util"
 )
@@ -13,8 +11,6 @@ func (s *LSSNaive) Share(sk kyberk2so.PolyVec, n int, t int) [][]kyberk2so.PolyV
 	r := len(sk)
 
 	combinations := util.MakeCombinations(n, t+1)
-
-	fmt.Println(combinations)
 
 	skShares := make([][][]kyberk2so.Poly, len(combinations))
 	for i := 0; i < len(combinations); i++ {
@@ -41,9 +37,6 @@ func (s *LSSNaive) Share(sk kyberk2so.PolyVec, n int, t int) [][]kyberk2so.PolyV
 		}
 	}
 
-	fmt.Println("SHARES")
-	fmt.Println(shares)
-
 	return shares
 }
 
@@ -51,9 +44,6 @@ func (s *LSSNaive) Rec(d_is [][]kyberk2so.Poly, n int, t int) kyberk2so.Poly {
 	var p kyberk2so.Poly
 
 	combinations := util.MakeCombinations(n, t+1)
-
-	fmt.Println("YAAAA")
-	fmt.Println(d_is)
 
 	for j := 0; j < len(combinations); j++ {
 		comb := combinations[j]

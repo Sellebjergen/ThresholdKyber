@@ -75,9 +75,9 @@ func BenchmarkTKyber(b *testing.B) {
 		t             int
 		delta         int
 	}{
-		{TKyberVariant: "TKyber-Test", n: 1, t: 1, delta: 1},
-		{TKyberVariant: "TKyber-Test", n: 2, t: 2, delta: 1},
-		{TKyberVariant: "TKyber-Test", n: 3, t: 3, delta: 1},
+		{TKyberVariant: "TKyber-Test", n: 3, t: 2, delta: 1},
+		{TKyberVariant: "TKyber-Test-Replicated", n: 3, t: 1, delta: 1},
+		{TKyberVariant: "TKyber-Test-Naive", n: 3, t: 1, delta: 1},
 	}
 
 	for _, bCase := range cases {
@@ -126,9 +126,12 @@ func benchmarkCombine(b *testing.B, paramSet string, n int, t int, delta int) {
 	pk, sk_shares := Setup(params, n, t)
 	ct := Enc(params, randMsg, pk, delta)
 
-	d_is := make([][][]kyberk2so.Poly, 0)
-	for i := 0; i < t; i++ {
-		d_is = append(d_is, PartDec(params, sk_shares[i], ct, i, delta, n, t))
+	d_is := make([][][]kyberk2so.Poly, n)
+	for i := 0; i < t+1; i++ {
+		d_is[i] = PartDec(params, sk_shares[i], ct, i, delta, n, t)
+	}
+	for i := t + 1; i < n; i++ {
+		d_is[i] = make([][]kyberk2so.Poly, len(sk_shares[i]))
 	}
 
 	b.ResetTimer()
