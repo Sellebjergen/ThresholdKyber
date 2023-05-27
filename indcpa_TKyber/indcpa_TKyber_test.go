@@ -77,7 +77,9 @@ func BenchmarkTKyber(b *testing.B) {
 	}{
 		{TKyberVariant: "TKyber-Test", n: 3, t: 2, delta: 1},
 		{TKyberVariant: "TKyber-Test-Replicated", n: 3, t: 1, delta: 1},
+		{TKyberVariant: "TKyber-Test-Replicated", n: 3, t: 2, delta: 1},
 		{TKyberVariant: "TKyber-Test-Naive", n: 3, t: 1, delta: 1},
+		{TKyberVariant: "TKyber-Test-Naive", n: 3, t: 2, delta: 1},
 	}
 
 	for _, bCase := range cases {
