@@ -15,8 +15,8 @@ Answer: search problem = end up with ideal winning probability increase by multi
 
 ## TODO
 - [ ] Write last 5-10 lines of abstract
-- [ ] Mention performance downside may be worth it compared to Gladius because Kyber is standardized
-- [ ] Mention that we we are in the full Threshold case for Kyber and Gladius because of specific scheme used
+- [x] Mention performance downside may be worth it compared to Gladius because Kyber is standardized
+- [x] Mention that we we are in the full Threshold case for Kyber and Gladius because of specific scheme used
 - [ ] Mention mama MACs adjust to be least amount needed to get security level specified
 - [ ] Mention use default security level of 40
 - [ ] Re-benchmark keygen, because we do not generate z in the program at the moment
