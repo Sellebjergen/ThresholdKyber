@@ -17,10 +17,10 @@ Answer: search problem = end up with ideal winning probability increase by multi
 - [ ] Write last 5-10 lines of abstract
 - [x] Mention performance downside may be worth it compared to Gladius because Kyber is standardized
 - [x] Mention that we we are in the full Threshold case for Kyber and Gladius because of specific scheme used
-- [ ] Mention mama MACs adjust to be least amount needed to get security level specified
-- [ ] Mention use default security level of 40
+- [x] Mention mama MACs adjust to be least amount needed to get security level specified
+- [x] Mention use default security level of 40
 - [ ] Re-benchmark keygen, because we do not generate z in the program at the moment
-- [ ] Add details about rigidity comparison in comparison of TKyber and Kyber DDec
+- [ ] Add details about robustness in comparison of TKyber and Kyber DDec
 - [ ] Add details about parameters of LSS schemes in appendix (L, min valid, max invalid)
 - [ ] Fix up appendix (actually refer to Kyber algorithms in appendix A, remove or revise appendix on benchmarks (B))
 - [ ] Add details about MP-SPDZ benchmarks done for 2 players only in bencharking section (already mentioned in limitations)
