@@ -21,7 +21,7 @@ Answer: search problem = end up with ideal winning probability increase by multi
 - [x] Mention use default security level of 40
 - [ ] Re-benchmark keygen, because we do not generate z in the program at the moment
 - [ ] Add details about robustness in comparison of TKyber and Kyber DDec
-- [ ] Add details about parameters of LSS schemes in appendix (L, min valid, max invalid)
+- [x] Add details about parameters of LSS schemes in appendix (L, min valid, max invalid)
 - [ ] Fix up appendix (actually refer to Kyber algorithms in appendix A, remove or revise appendix on benchmarks (B))
 - [ ] Add details about MP-SPDZ benchmarks done for 2 players only in bencharking section (already mentioned in limitations)
 - [ ] Mention that we would also need one additional AES decryption + hashing in practice, but both in the clear so very fast
