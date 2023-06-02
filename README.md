@@ -14,23 +14,30 @@ Answer: Qualified subset of parties to reconstruct... Want everyone to add local
 Answer: search problem = end up with ideal winning probability increase by multiplicative factor
 
 ## TODO
-- [ ] Correct feedback to report from Peter
+- [ ] Write last 5-10 lines of abstract
+- [ ] Mention performance downside may be worth it compared to Gladius because Kyber is standardized
+- [ ] Mention that we we are in the full Threshold case for Kyber and Gladius because of specific scheme used
+- [ ] Mention mama MACs adjust to be least amount needed to get security level specified
+- [ ] Mention use default security level of 40
+- [ ] Re-benchmark keygen, because we do not generate z in the program at the moment
+- [ ] Add details about rigidity comparison in comparison of TKyber and Kyber DDec
+- [ ] Add details about parameters of LSS schemes in appendix (L, min valid, max invalid)
+- [ ] Fix up appendix (actually refer to Kyber algorithms in appendix A, remove or revise appendix on benchmarks (B))
+- [ ] Add details about MP-SPDZ benchmarks done for 2 players only in bencharking section (already mentioned in limitations)
+
+## Completed
+- [x] Correct feedback to report from Peter
 - [x] Implement new Kyber KEM based ddec
 - [x] Implement Gladius ddec
 - [x] Update ddec implementation section (both Gladius and Kyber KEM)
-- [ ] Update paramsPolyvecCompressedBytes variables for k > 3.
-- [ ] Update preliminaries with notation.
+- [x] Update preliminaries with notation.
 - [x] Describe strong {0, 1}-reconstruction.
-- [ ] Benchmark MP SPDZ vs golang implementation.
-- [ ] Write notation section
-- [ ] Allow using different q than 3329 for Kyber
+- [x] Benchmark MP SPDZ vs golang implementation.
+- [x] Write notation section
 - [x] Fix details (primarily rigidity) in security section of DDec for Kyber.
 - [x] Update Rényi Divergence section in report
-- [ ] Write introduction
-- [ ] Write conclusion
-- [ ] Write abstract (Do this as the very last thing)
-
-## Completed
+- [x] Write introduction
+- [x] Write conclusion
 - [x] Update preliminaries with quotient rings etc. (half page that every article has)
 - [x] Formal definition and properties of LSS.
 - [X] Describe proof of security of OW-CPA TKyber
@@ -41,12 +48,16 @@ Answer: search problem = end up with ideal winning probability increase by multi
 - [x] Make protocols in report consistent (use crytocode).
 - [x] Inserting code fragments in implementation section.
 - [x] Fixing inner product in MP SPDZ implementation of DDec.
-- [X] Optimize DDec implementation.
+- [x] Optimize DDec implementation.
 - [x] Write about inner product in report.
 - [x] Implementing Distributed key generation in MP SPDZ.
 - [x] Write about distributed key generation in report.
 - [x] Update Kyber params to be generated using python script.
 - [X] Describe proof of security of OW-CPA to IND-CPA transformation for TKyber
+
+## Dropped
+- [-] Allow using different q than 3329 for Kyber
+- [-] Update paramsPolyvecCompressedBytes variables for k > 3.
 
 ## Low priority
 - [ ] Make CBD byte operation more efficient by removing the need for uint8.
@@ -54,7 +65,7 @@ Answer: search problem = end up with ideal winning probability increase by multi
 
 ## Further Ideas
 - [ ] Explore parameter sets using TKyber parameter script
-- [ ] Implement NTT's for DDec implementation
+- [x] Implement NTT's for DDec implementation
 - [ ] Zero knowledge for distributed key generation.
 
 ## Other Ideas
