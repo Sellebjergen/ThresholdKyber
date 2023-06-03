@@ -134,8 +134,8 @@ def copy_polyvec(pv):
 # _____________________ Main code _______________________
 
 def read_sk_input():
-    s_values = MultiArray([p, r, n], sint)
-    e_values = MultiArray([p, r, n], sint)
+    s_values = MultiArray([player_numb, r, n], sint)
+    e_values = MultiArray([player_numb, r, n], sint)
     for p in range(player_numb):
         s_values[p].input_from(p)
         e_values[p].input_from(p)
@@ -195,10 +195,10 @@ def test_dkeygen():
 
     A, t, s, e, z = dkeygen(s_values, e_values)
 
-    t.print_reveal_nested()
+    A.print_reveal_nested()
     z.print_reveal_nested()
 
-#s_p, e_p = read_sk_input()
-#dkeygen(s_p, e_p)
+s_p, e_p = read_sk_input()
+A, t, s_ntt, e_angle, z = dkeygen(s_p, e_p)
+t.print_reveal_nested()
 
-test_dkeygen()
