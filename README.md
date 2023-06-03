@@ -14,7 +14,7 @@ Answer: Qualified subset of parties to reconstruct... Want everyone to add local
 Answer: search problem = end up with ideal winning probability increase by multiplicative factor
 
 ## TODO
-- [ ] Write last 5-10 lines of abstract
+- [x] Write last 5-10 lines of abstract
 - [x] Mention performance downside may be worth it compared to Gladius because Kyber is standardized
 - [x] Mention that we we are in the full Threshold case for Kyber and Gladius because of specific scheme used
 - [x] Mention mama MACs adjust to be least amount needed to get security level specified
