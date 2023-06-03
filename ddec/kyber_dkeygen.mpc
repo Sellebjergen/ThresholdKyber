@@ -160,6 +160,10 @@ def dkeygen(s_values, e_values):
                 e_angle[i][j] += e_values[p][i][j]
 
     A = get_rand_A()
+    z = Array(256, sint)
+    for i in range(256):
+        z[i] = sint.get_random_bit()
+
     t_angle = Matrix(r, n, sint)
 
     # t = As + e
@@ -174,7 +178,7 @@ def dkeygen(s_values, e_values):
     t = t_angle.reveal()
 
     # Here A, s_ntt, t are on NTT form at the end
-    return A, t, s_ntt, e_angle
+    return A, t, s_ntt, e_angle, z
 
 # _____________________ Testing _______________________
 
@@ -189,9 +193,10 @@ def test_dkeygen():
     e_values[0][0][15] = 1
     e_values[1][0][65] = 3
 
-    A, t, s, e = dkeygen(s_values, e_values)
+    A, t, s, e, z = dkeygen(s_values, e_values)
 
     t.print_reveal_nested()
+    z.print_reveal_nested()
 
 #s_p, e_p = read_sk_input()
 #dkeygen(s_p, e_p)
