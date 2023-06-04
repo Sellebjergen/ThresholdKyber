@@ -19,7 +19,7 @@ Answer: search problem = end up with ideal winning probability increase by multi
 - [x] Mention that we we are in the full Threshold case for Kyber and Gladius because of specific scheme used
 - [x] Mention mama MACs adjust to be least amount needed to get security level specified
 - [x] Mention use default security level of 40
-- [ ] Re-benchmark keygen, because we do not generate z in the program at the moment
+- [x] Re-benchmark keygen, because we do not generate z in the program at the moment
 - [ ] Add details about robustness in comparison of TKyber and Kyber DDec
 - [x] Add details about parameters of LSS schemes in appendix (L, min valid, max invalid)
 - [x] Fix up appendix (actually refer to Kyber algorithms in appendix A, remove or revise appendix on benchmarks (B))
