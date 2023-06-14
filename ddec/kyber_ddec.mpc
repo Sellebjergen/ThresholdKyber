@@ -324,8 +324,8 @@ def kem_decap(u, v, s_angle):
 
     y = [x_i + sint(832) for x_i in x]
     w = [centre(y_i) for y_i in y]
-    k = [w_i[-1] for w_i in w] # get msb of each w_i
-    return k
+    m_prime = [w_i[-1] for w_i in w] # get msb of each w_i
+    return m_prime
 
 def re_encryption(k_angle, hash_pk, A_t, t):
     K_bar_prime, r_prime = G(k_angle, hash_pk)
@@ -497,8 +497,8 @@ def reverse(bits):
 
 def run_ddec(u, v, s_angle, hash_pk, A_t, t, hash_c, z):
     # Run protocol
-    k_angle = kem_decap(u, v, s_angle)
-    u_prime, v_prime, K_bar_prime = re_encryption(k_angle, hash_pk, A_t, t)
+    m_prime_angle = kem_decap(u, v, s_angle)
+    u_prime, v_prime, K_bar_prime = re_encryption(m_prime_angle, hash_pk, A_t, t)
     key = key_derivation(u_prime, v_prime, u, v, K_bar_prime, hash_c, z)
     print_sints(key)
 
