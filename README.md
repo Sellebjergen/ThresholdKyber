@@ -14,19 +14,19 @@ Answer: Qualified subset of parties to reconstruct... Want everyone to add local
 Answer: search problem = end up with ideal winning probability increase by multiplicative factor
 
 ## TODO
+
+
+## Completed
 - [x] Write last 5-10 lines of abstract
 - [x] Mention performance downside may be worth it compared to Gladius because Kyber is standardized
 - [x] Mention that we we are in the full Threshold case for Kyber and Gladius because of specific scheme used
 - [x] Mention mama MACs adjust to be least amount needed to get security level specified
 - [x] Mention use default security level of 40
 - [x] Re-benchmark keygen, because we do not generate z in the program at the moment
-- [ ] Add details about robustness in comparison of TKyber and Kyber DDec
 - [x] Add details about parameters of LSS schemes in appendix (L, min valid, max invalid)
 - [x] Fix up appendix (actually refer to Kyber algorithms in appendix A, remove or revise appendix on benchmarks (B))
 - [x] Add details about MP-SPDZ benchmarks done for 2 players only in bencharking section (already mentioned in limitations)
-- [x] Mention that we would also need one additional AES decryption + hashing in practice, but both in the clear so very fast (!!! Apparently already done, but only in implementation section, is this fine? !!!)
-
-## Completed
+- [x] Mention that we would also need one additional AES decryption + hashing in practice, but both in the clear so very fast
 - [x] Correct feedback to report from Peter
 - [x] Implement new Kyber KEM based ddec
 - [x] Implement Gladius ddec
