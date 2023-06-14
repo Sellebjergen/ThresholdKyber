@@ -128,7 +128,7 @@ def hash_check(k_angle, c_2, c_3):
 def msg_ext(k_angle):
     k_bits_clear = Array(d, cint)
     for i in range(len(k_angle)):
-        k_bits_clear[i] = k_angle[i]
+        k_bits_clear[i] = k_angle[i].reveal()
     k_bits_clear.print_reveal_nested()
 
 # _____________________ I/O _______________________ 
