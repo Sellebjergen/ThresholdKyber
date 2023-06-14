@@ -145,8 +145,8 @@ def get_rand_A():
     A = MultiArray([k, k, d], regint)
     for i in range(k):
         for j in range(k):
-            for k in range(d):
-                A[i][j][k] = regint.get_random(64)
+            for l in range(d):
+                A[i][j][l] = regint.get_random(64)
     return A
 
 def dkeygen(s_values, e_values):
@@ -195,10 +195,11 @@ def test_dkeygen():
 
     A, t, s, e, z = dkeygen(s_values, e_values)
 
-    A.print_reveal_nested()
-    z.print_reveal_nested()
+    t.print_reveal_nested()
 
-s_p, e_p = read_sk_input()
-A, t, s_ntt, e_angle, z = dkeygen(s_p, e_p)
-t.print_reveal_nested()
+#s_p, e_p = read_sk_input()
+#A, t, s_ntt, e_angle, z = dkeygen(s_p, e_p)
+#t.print_reveal_nested()
+
+test_dkeygen()
 
