@@ -1,5 +1,5 @@
-n = 256
-r = 2
+d = 256
+k = 2
 q = 3329
 
 player_numb = 2
@@ -47,7 +47,7 @@ def from_ntt(poly):
         coeffs = poly
         while l <= 128:
             start = 0
-            while start < n:
+            while start < d:
                 zeta = cint(zetas[k])
                 k = k - 1
                 for j in range(start, start+l):
@@ -57,7 +57,7 @@ def from_ntt(poly):
                     coeffs[j+l] = ntt_mul(zeta, coeffs[j+l])
                 start = j + l + 1
             l = l << 1
-        for j in range(n):
+        for j in range(d):
             coeffs[j] = ntt_mul(coeffs[j], f)
             
         return poly
@@ -86,23 +86,23 @@ def ntt_coefficient_multiplication(f_coeffs, g_coeffs):
 
 def polyvecNTT(poly):
     res = Matrix.same_shape(poly)
-    for i in range(r):
+    for i in range(k):
         res[i] = to_ntt(poly[i])
     return res
 
 def to_mpspdz_array(list):
-    array = Array(n, sint)
-    for i in range(n):
+    array = Array(d, sint)
+    for i in range(d):
         array[i] = list[i]
     return array
 
 def inner_prod_NTT(u, s):
-    d = Array(n, sint)
-    for i in range(r):
+    prod = Array(d, sint)
+    for i in range(k):
         ui = Array.create_from(u[i])
         si = Array.create_from(s[i])
-        d += ntt_coefficient_multiplication(ui, si)
-    return from_ntt(d)
+        prod += ntt_coefficient_multiplication(ui, si)
+    return from_ntt(prod)
 
 
 def scalar_mult(a, b):
@@ -118,15 +118,15 @@ def poly_sub(a, b):
     return res
 
 def poly_add(a, b):
-    res = Array(n, sint)
-    for i in range(n):
+    res = Array(d, sint)
+    for i in range(d):
         res[i] = a[i] + b[i]
     return res
 
 def copy_polyvec(pv):
-    pv_copy = Matrix(r, n, sint)
-    for i in range(r):
-        for j in range(n):
+    pv_copy = Matrix(k, d, sint)
+    for i in range(k):
+        for j in range(d):
             pv_copy[i][j] = pv[i][j]
     return pv_copy
 
@@ -134,28 +134,28 @@ def copy_polyvec(pv):
 # _____________________ Main code _______________________
 
 def read_sk_input():
-    s_values = MultiArray([player_numb, r, n], sint)
-    e_values = MultiArray([player_numb, r, n], sint)
+    s_values = MultiArray([player_numb, k, d], sint)
+    e_values = MultiArray([player_numb, k, d], sint)
     for p in range(player_numb):
         s_values[p].input_from(p)
         e_values[p].input_from(p)
     return s_values, e_values
 
 def get_rand_A():
-    A = MultiArray([r, r, n], regint)
-    for i in range(r):
-        for j in range(r):
-            for k in range(n):
+    A = MultiArray([k, k, d], regint)
+    for i in range(k):
+        for j in range(k):
+            for k in range(d):
                 A[i][j][k] = regint.get_random(64)
     return A
 
 def dkeygen(s_values, e_values):
     # Sum
-    s_angle = Matrix(r, n, sint)
-    e_angle = Matrix(r, n, sint)
+    s_angle = Matrix(k, d, sint)
+    e_angle = Matrix(k, d, sint)
     for p in range(player_numb):
-        for i in range(r):
-            for j in range(n):
+        for i in range(k):
+            for j in range(d):
                 s_angle[i][j] += s_values[p][i][j]
                 e_angle[i][j] += e_values[p][i][j]
 
@@ -164,15 +164,15 @@ def dkeygen(s_values, e_values):
     for i in range(256):
         z[i] = sint.get_random_bit()
 
-    t_angle = Matrix(r, n, sint)
+    t_angle = Matrix(k, d, sint)
 
     # t = As + e
     s_ntt = polyvecNTT(s_angle)
-    for i in range(r):
+    for i in range(k):
         
         A[i] = polyvecNTT(A[i])
         res = inner_prod_NTT(A[i], s_ntt)
-        for j in range(n):
+        for j in range(d):
             t_angle[i][j] = res[j] + e_angle[i][j]
 
     t = t_angle.reveal()
@@ -184,8 +184,8 @@ def dkeygen(s_values, e_values):
 
 def test_dkeygen():
     # Mock input values
-    s_values = MultiArray([player_numb, r, n], sint)
-    e_values = MultiArray([player_numb, r, n], sint)
+    s_values = MultiArray([player_numb, k, d], sint)
+    e_values = MultiArray([player_numb, k, d], sint)
 
     s_values[0][0][42] = 500
     s_values[1][0][12] = 300

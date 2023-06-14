@@ -3,9 +3,9 @@ from circuit import Circuit
 program.use_edabit(True)
 
 # Params (Kyber512)
-n = 256
+d = 256
 q = 3329
-r = 2
+k = 2
 eta1 = 3
 eta2 = 2
 
@@ -185,7 +185,7 @@ def from_ntt(poly):
         coeffs = poly
         while l <= 128:
             start = 0
-            while start < n:
+            while start < d:
                 zeta = cint(zetas[k])
                 k = k - 1
                 for j in range(start, start+l):
@@ -195,7 +195,7 @@ def from_ntt(poly):
                     coeffs[j+l] = ntt_mul(zeta, coeffs[j+l])
                 start = j + l + 1
             l = l << 1
-        for j in range(n):
+        for j in range(d):
             coeffs[j] = ntt_mul(coeffs[j], f)
             
         return poly
@@ -224,23 +224,23 @@ def ntt_coefficient_multiplication(f_coeffs, g_coeffs):
 
 def polyvecNTT(poly):
     res = Matrix.same_shape(poly)
-    for i in range(r):
+    for i in range(k):
         res[i] = to_ntt(poly[i])
     return res
 
 def to_mpspdz_array(list):
-    array = Array(n, sint)
-    for i in range(n):
+    array = Array(d, sint)
+    for i in range(d):
         array[i] = list[i]
     return array
 
 def inner_prod_NTT(u, s):
-    d = Array(n, sint)
-    for i in range(r):
+    prod = Array(d, sint)
+    for i in range(k):
         ui = Array.create_from(u[i])
         si = Array.create_from(s[i])
-        d += ntt_coefficient_multiplication(ui, si)
-    return from_ntt(d)
+        prod += ntt_coefficient_multiplication(ui, si)
+    return from_ntt(prod)
 
 
 def scalar_mult(a, b):
@@ -256,15 +256,15 @@ def poly_sub(a, b):
     return res
 
 def poly_add(a, b):
-    res = Array(n, sint)
-    for i in range(n):
+    res = Array(d, sint)
+    for i in range(d):
         res[i] = a[i] + b[i]
     return res
 
 def copy_polyvec(pv):
-    pv_copy = Matrix(r, n, sint)
-    for i in range(r):
-        for j in range(n):
+    pv_copy = Matrix(k, d, sint)
+    for i in range(k):
+        for j in range(d):
             pv_copy[i][j] = pv[i][j]
     return pv_copy
 
@@ -272,8 +272,8 @@ def copy_polyvec(pv):
 # _____________________ Kyber encryption _______________________
 
 def CBD(rand, eta):
-    f = Array(n, sint)
-    for i in range(n):
+    f = Array(d, sint)
+    for i in range(d):
         a = sint(0)
         b = sint(0)
         for j in range(eta):
@@ -285,23 +285,23 @@ def CBD(rand, eta):
 
 def CPAPKE_kyber_encryption(A_t, t, m, coins):
     N = cint(0)
-    r_bold = Matrix(r, n, sint)
-    for i in range(r):
+    r_bold = Matrix(k, d, sint)
+    for i in range(k):
         r_bold[i] = CBD(PRF(coins, N, eta1), eta1)
         N = N + 1
     
-    e_1_bold = Matrix(r, n, sint)
-    for i in range(r):
+    e_1_bold = Matrix(k, d, sint)
+    for i in range(k):
         e_1_bold[i] = CBD(PRF(coins, N, eta2), eta2)
         N = N + 1
     e_2 = CBD(PRF(coins, N, eta2), eta2)
     
     # Compute A^t r + e_1
     r_bold_ntt = polyvecNTT(r_bold)
-    u = Matrix(r, n, sint)
-    for i in range(r):
+    u = Matrix(k, d, sint)
+    for i in range(k):
         res = inner_prod_NTT(A_t[i], r_bold_ntt)
-        for j in range(n):
+        for j in range(d):
             u[i][j] = res[j] + e_1_bold[i][j]
 
     # Compute tr + e_2 + m scaled
@@ -335,12 +335,12 @@ def re_encryption(k_angle, hash_pk, A_t, t):
 def key_derivation(u_prime, v_prime, u, v, K_bar_prime, hash_c, z):
     test = sint(1)
     # Check u
-    for i in range(r):
-        for j in range(n):
+    for i in range(k):
+        for j in range(d):
             check = u_prime[i][j] == u[i][j]
             test = test * check
     # Check v
-    for i in range(n):
+    for i in range(d):
         check = v_prime[i] == v[i]
         test = test * check
 
@@ -383,8 +383,8 @@ def test_rq_mult():
 
 
 def test_inner_prod_sub():
-    lhs = Matrix(r, n, sint)
-    rhs = Matrix(r, n, cint)
+    lhs = Matrix(k, d, sint)
+    rhs = Matrix(k, d, cint)
 
     lhs[0][0] = sint(3200)
     lhs[0][1] = sint(17)
@@ -397,7 +397,7 @@ def test_inner_prod_sub():
     res.print_reveal_nested() 
 
     # Expected result is [-1071, 1192, -714], since 177 - 1248 = -1071 and 874 - -318 = 1192
-    v = Array(n, cint)
+    v = Array(d, cint)
     v[0] = cint(177)
     v[1] = cint(874)
     res2 = poly_sub(v, res)
@@ -412,7 +412,7 @@ def test_PRF():
 def test_enc():
     u, v, A_t, t, hash_c = read_public_values_from_file()
     print_ln("A transposed")
-    for i in range(r):
+    for i in range(k):
         A_t[i].print_reveal_nested()
     u, v = CPAPKE_kyber_encryption(A_t, t, [sint(0)] * 256, [sbit(0)] * 256)
     print_ln("v")
@@ -426,13 +426,13 @@ def test_key_deriv():
     poss_key = key_derivation(u, v, u, v, [sint(1)]*256, [cbit(0)] * 256, [sint(0)] * 256) 
     poss_key.reveal_print_hex()
     # 0x7ea5f2ea9e9487de4753918bbf5308eb91fa641889236c55d708ecb4d9666a36
-    poss_key = key_derivation(u, v, u, Array(n, sint), [sint(1)]*256, [cbit(0)] * 256, [sint(0)] * 256)
+    poss_key = key_derivation(u, v, u, Array(d, sint), [sint(1)]*256, [cbit(0)] * 256, [sint(0)] * 256)
     poss_key.reveal_print_hex()
 
 # Helper function
 # Message extraction
 def print_sints(k_angle):
-    k_clear = Array(n, cint)
+    k_clear = Array(d, cint)
     for i in range(len(k_angle)):
         k_clear[i] = k_angle[i].reveal()
     k_clear.print_reveal_nested()
@@ -441,7 +441,7 @@ def print_sints(k_angle):
 # _____________________ Get Input _______________________
 
 def read_s_from_file():
-    s = Matrix(r, n, sint)
+    s = Matrix(k, d, sint)
     s.input_from(0)
     z = Array(256, sint)
     z.input_from(0)
@@ -449,27 +449,27 @@ def read_s_from_file():
     return s, z
 
 def read_public_values_from_file():
-    u = Matrix(r, n, cint)
-    v = Array(n, cint)
-    A_t = MultiArray([r, r, n], cint)
-    t = Matrix(r, n, cint)
+    u = Matrix(k, d, cint)
+    v = Array(d, cint)
+    A_t = MultiArray([k, k, d], cint)
+    t = Matrix(k, d, cint)
     hash_c = []
     hash_pk = []
 
-    for i in range(r):
-        for j in range(n):
+    for i in range(k):
+        for j in range(d):
             u[i][j] = public_input()
 
-    for i in range(n):
+    for i in range(d):
         v[i] = public_input()
 
-    for i in range(r):
-        for j in range(r):
-            for l in range(n):
+    for i in range(k):
+        for j in range(k):
+            for l in range(d):
                 A_t[i][j][l] = public_input()
 
-    for i in range(r):
-        for j in range(n):
+    for i in range(k):
+        for j in range(d):
             t[i][j] = public_input()
 
     for i in range(256):

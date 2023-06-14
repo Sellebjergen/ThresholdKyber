@@ -4,7 +4,7 @@ from Compiler.GC import types
 program.use_edabit(True)
 cbit = cbits.get_type(1)
 
-n = 256
+d = 256
 mu = 128
 nu = 7 # This is x where mu = 2^x
 q = 2097143
@@ -53,17 +53,17 @@ def bitNeg(a_angle):
 # _____________________ Math helpers _______________________
 
 def vecMatMult(c1, R1):
-    res = Array(n, sint)
-    for j in range(n):
+    res = Array(d, sint)
+    for j in range(d):
         sum = sint(0)
-        for k in range(n):
+        for k in range(d):
             sum = sum + c1[k]*R1[k][j]
         res[j] = sum
     return res
 
 def vecSub(vec1, vec2):
-    res = Array(n, sint)
-    for i in range(n):
+    res = Array(d, sint)
+    for i in range(d):
         res[i] = vec1[i] - vec2[i]
     return res
 
@@ -80,18 +80,18 @@ def kem_decap(ct1, ct2, R1):
 def validity_check(k, A1, A2, ct1, ct2):
     y = vecMatMult(k, A1).concat(vecMatMult(k, A2))
     z = sint(1)
-    for i in range(2*n): # NOTE: REMEMBER TO CHANGE THIS TO 2n
+    for i in range(2*d): # NOTE: REMEMBER TO CHANGE THIS TO 2n
         u = floatingpoint.BitDecFull(y[i], 21)
         q_div_2 = cint(1048572).bit_decompose(bit_length = 21)
         b = 1 - floatingpoint.BITLT(u, q_div_2, 21)
         v = b * floatingpoint.BITLT(u, cint(1050620).bit_decompose(bit_length = 21), bit_length = 21)
         u_prime = [sint(0)] * pi + u # Shift by pi by appending 0's
         w = []
-        if i < n:
+        if i < d:
             c1_i = regint(ct1[i]) # Conversion to regint to avoid modulo q in next computation
             to_add_w = (2 ** log2qpluspi - c1_i * q).bit_decompose(bit_length = log2qpluspi)
         else:
-            c2_i = regint(ct2[i - n])
+            c2_i = regint(ct2[i - d])
             to_add_w = (2 ** log2qpluspi - c2_i * q).bit_decompose(bit_length = log2qpluspi)
         w = floatingpoint.BitAdd(u_prime, to_add_w)
         to_add_f = (regint(-p*q)).bit_decompose(bit_length = log2qpluspi + 1) # Hardcoded -pq
@@ -126,39 +126,39 @@ def hash_check(k_angle, c_2, c_3):
  
 # Message extraction
 def msg_ext(k_angle):
-    k_bits_clear = Array(n, cint)
+    k_bits_clear = Array(d, cint)
     for i in range(len(k_angle)):
-        k_bits_clear[i] = k_angle[i].reveal()
+        k_bits_clear[i] = k_angle[i]
     k_bits_clear.print_reveal_nested()
 
 # _____________________ I/O _______________________ 
 
 def read_R1_from_file():
-    R1 = Matrix(n, n, sint)
+    R1 = Matrix(d, d, sint)
     R1.input_from(0)
 
     return R1
 
 def read_public_values_from_file():
-    ct1 = Array(n, cint)
-    ct2 = Array(n, cint)
-    A1 = Matrix(n, n, cint)
-    A2 = Matrix(n, n, cint)
+    ct1 = Array(d, cint)
+    ct2 = Array(d, cint)
+    A1 = Matrix(d, d, cint)
+    A2 = Matrix(d, d, cint)
     c2 = [cbit(0)] * (256+128)
     c3 = [cbit(0)] * 256
 
-    for i in range(n):
+    for i in range(d):
         ct1[i] = public_input()
 
-    for i in range(n):
+    for i in range(d):
         ct2[i] = public_input()
 
-    for i in range(n):
-        for j in range(n):
+    for i in range(d):
+        for j in range(d):
             A1[i][j] = public_input()
 
-    for i in range(n):
-        for j in range(n):
+    for i in range(d):
+        for j in range(d):
             A2[i][j] = public_input()
 
     for i in range(256+128): # IV + C2
@@ -176,7 +176,7 @@ def test_validity_negative():
     R1 = read_R1_from_file()
     ct1, ct2, A1, A2, c2, c3 = read_public_values_from_file()
     k = kem_decap(ct1, ct2, R1)
-    validity_check(k, Matrix(n, n, cint), Matrix(n, n, cint), ct1, ct2)
+    validity_check(k, Matrix(d, d, cint), Matrix(d, d, cint), ct1, ct2)
 
 def print_bit_decomposed(a):
     test = Array(len(a), sint)
