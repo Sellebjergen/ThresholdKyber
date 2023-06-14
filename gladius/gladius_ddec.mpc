@@ -53,13 +53,8 @@ def bitNeg(a_angle):
 # _____________________ Math helpers _______________________
 
 def vecMatMult(c1, R1):
-    res = Array(d, sint)
-    for j in range(d):
-        sum = sint(0)
-        for k in range(d):
-            sum = sum + c1[k]*R1[k][j]
-        res[j] = sum
-    return res
+    res = to_mpspdz_matrix(c1).dot(R1)
+    return res[0]
 
 def vecSub(vec1, vec2):
     res = Array(d, sint)
@@ -67,6 +62,17 @@ def vecSub(vec1, vec2):
         res[i] = vec1[i] - vec2[i]
     return res
 
+def to_mpspdz_matrix(list):
+    matrix = Matrix(1, d, sint)
+    for i in range(d):
+        matrix[0][i] = list[i]
+    return matrix
+
+def to_mpspdz_array(list):
+    array = Array(d, sint)
+    for i in range(d):
+        array[i] = list[i]
+    return array
 
 # _____________________ main functionality _______________________
 
@@ -78,13 +84,20 @@ def kem_decap(ct1, ct2, R1):
     return k
 
 def validity_check(k, A1, A2, ct1, ct2):
-    y = vecMatMult(k, A1).concat(vecMatMult(k, A2))
+    k_array = to_mpspdz_array(k)
+    y = vecMatMult(k_array, A1).concat(vecMatMult(k_array, A2))
     z = sint(1)
-    for i in range(2*d): # NOTE: REMEMBER TO CHANGE THIS TO 2n
+
+    # Consts to use
+    to_add_f = (regint(-p*q)).bit_decompose(bit_length = log2qpluspi + 1)
+    q_div_2 = cint(1048572).bit_decompose(bit_length = 21)
+    j_rhs = cint(1048572).bit_decompose(bit_length = log2qpluspi)
+    v_rhs = cint(1050620).bit_decompose(bit_length = 21)
+
+    for i in range(2*d):
         u = floatingpoint.BitDecFull(y[i], 21)
-        q_div_2 = cint(1048572).bit_decompose(bit_length = 21)
         b = 1 - floatingpoint.BITLT(u, q_div_2, 21)
-        v = b * floatingpoint.BITLT(u, cint(1050620).bit_decompose(bit_length = 21), bit_length = 21)
+        v = b * floatingpoint.BITLT(u, v_rhs, bit_length = 21)
         u_prime = [sint(0)] * pi + u # Shift by pi by appending 0's
         w = []
         if i < d:
@@ -94,7 +107,6 @@ def validity_check(k, A1, A2, ct1, ct2):
             c2_i = regint(ct2[i - d])
             to_add_w = (2 ** log2qpluspi - c2_i * q).bit_decompose(bit_length = log2qpluspi)
         w = floatingpoint.BitAdd(u_prime, to_add_w)
-        to_add_f = (regint(-p*q)).bit_decompose(bit_length = log2qpluspi + 1) # Hardcoded -pq
         for i in range(len(to_add_f)):
             to_add_f[i] = to_add_f[i] * (b - v)
         f = floatingpoint.BitAdd(w, to_add_f)
@@ -103,7 +115,7 @@ def validity_check(k, A1, A2, ct1, ct2):
         s = []
         for i in range(log2qpluspi):
             s.append(g * f_prime[i] + (1 - g) * f[i])
-        j = floatingpoint.BITLT(s, cint(1048572).bit_decompose(bit_length = log2qpluspi), bit_length = log2qpluspi)
+        j = floatingpoint.BITLT(s, j_rhs, bit_length = log2qpluspi)
         z = z * j
     z_rev = z.reveal()
     z_rev.print_if("Pass")
